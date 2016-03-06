@@ -1,0 +1,8 @@
+// This is to test basic functionality and relations
+
+r1 newPacket(@NEXTHOP, SRC, DST, DATA) :-
+	packet(@SWITCH, SRC, DST, DATA),
+	forwardingEntry(@SWITCH, DST, NEXTHOP),
+	SRC < DST.
+
+// Expected static analysis core attributes: {SWITCH, SRC, DST}

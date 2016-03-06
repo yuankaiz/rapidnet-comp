@@ -1,0 +1,75 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def configure(conf):
+  conf.env['BOOST_DATE_TIME'] = conf.check(lib='boost_date_time', define_name='BOOST_DATE_TIME', uselib='BOOST_DATE_TIME')
+  conf.report_optional_feature("boost_date_time", "boost_date_time library",
+  conf.env['BOOST_DATE_TIME'], "library 'boost_date_time' not found")  
+
+  
+def build(bld):
+    module = bld.create_ns3_module('rapidnet-compiler', ['node'])
+    module.source = [
+        'all-values.cc',
+        'eca-context.cc',
+        'localize-context.cc',
+        'ol-context.cc',
+        'ol-lexer.cc',
+        'ol-parser.cc',
+        'parser-util.cc',
+        'rapidnet-context.cc',
+        'table-store.cc',
+        'comp-attr-graph.cc',
+        # 'sdn-graph.cc',
+        # 'sdn-derivation.cc',
+        # 'sdn-formula.cc',
+        # 'sdn-auxiliary.cc',
+        # 'sdn-property.cc',
+        # 'sdn-parse-smtlib.cc',
+        # 'sdn-verification.cc',        
+        # 'prov-analyzer-context.cc',
+        # 'prov-variable-graph.cc',
+        ]    
+
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'rapidnet-compiler'
+    headers.source = [
+        'all-values.h',
+        'eca-context.h',
+        'localize-context.h',
+        'ol-context.h',
+        'ol-lexer.h',
+        'ol-parser.hh',
+        'parser-util.h',
+        'rapidnet-context.h',
+        'table-store.h',
+        'comp-attr-graph.h',
+        # 'sdn-derivation.h',
+        # 'sdn-graph.h',
+        # 'sdn-formula.h',
+        # 'sdn-auxiliary.h',
+        # 'sdn-property.h',
+        # 'sdn-parse-smtlib.h',
+        # 'sdn-verification.h',
+        # 'prov-analyzer-context.h',
+        # 'prov-variable-graph.h',
+        ]     
+    
+    # objprov = bld.create_ns3_program('prov-static-analyzer')
+    # objprov.source = 'prov-static-analyzer.cc'
+    obj = bld.create_ns3_program('rapidnet-compiler')
+    obj.source = 'rapidnet-compiler.cc'
+    # objdp = bld.create_ns3_program('rapidnet-dpcompiler')
+    # objdp.source = 'rapidnet-dpcompiler.cc'
+
+    ## ********************** Linux ********************************* ##
+    # obj.env.append_value("CXXFLAGS", "-I/usr/include")
+    # obj.env.append_value("LINKFLAGS", ["-L/usr/lib"])
+    # obj.env.append_value("LIB", ["z3"])
+
+    ## ********************** MacOS ********************************* ##
+    # obj.env.append_value("CXXFLAGS", "-I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include")
+    # obj.env.append_value("LINKFLAGS", "-L/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib")
+    # obj.env.append_value("LIB", ["z3"])
+    
+    bld.env.append_value('LINKFLAGS', ['-lgmp'])
+    # bld.env.append_value('LINKFLAGS', ['-lz3'])

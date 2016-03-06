@@ -1,0 +1,99 @@
+Learning Bridge
+
+1. 
+forall Switch, Mac_A, OutPort, Priority, flowEntry(Switch, MAC_A, OutPort, Priority) ->
+	exists Nei, DstMac, packet(Switch, Nei, Mac_A, DstMac) 
+
+Result: True
+Time: 60ms
+
+*********************
+
+2. 
+forall EndHost, Switch, SrcMac, DstMac, InPort, OPort, Outport, Mac, Priority,
+	packet(EndHost, Switch, SrcMac, DstMac), 
+	swToHst(Switch, EndHost, OPort),
+	flowEntry(Switch, Mac, Outport, Priority), DstMac != EndHost -> Mac != DstMac
+
+Base constraints:
+initPacket(v1,v2,v3,v4)
+v1 != v2
+v1 == v3
+v1 != v4
+v2 != v4
+
+maxPriority(v5,v6)
+v6 > 0
+v5 != v6
+
+ofconn(v7,v8)
+v7 != v8
+
+swToHst(v9,v10,v11):
+v9 != v10
+v10 != v11
+v9 != v11
+
+link(v12,v13,v14) /\ link(v15,v16,v17)
+(v12 == v15 /\ v13 == v16 => v14 == v17) /\
+(v12 == v15 /\ v14 == v17 => v13 == v16)
+
+ofconn(v18,v19) /\ ofconn(v20,v21)
+v18 == v20 => v19 == v21
+
+ofconn(v22,v23) /\ initPacket(v24,v25,v26,v27)
+v23 != v24 /\ v23 != v25 /\ v23 != v26 /\ v23 != v27
+
+Result: counter-example-second-prop.txt
+Time: 50ms
+
+*********************
+
+3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
+QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT? 
+
+forall Switch, Mac_A, OutPort, Nei, DstMac, Mac,
+	(Mac!=Mac_A) -> 
+		(flowEntry(Switch,Mac,Outport) != flowEntry(@Switch,Mac_A,OutPort)) 
+		->
+		(packet(Switch,Nei,Mac,DstMac) != packet(Switch,Nei,Mac_A,DstMac)) **received packet from A** 
+		AND (packet(Nei,Switch,Mac_A,DstMac) != packet(Nei,Switch,Mac_A,DstMac)) **forward packet sourced from from A**
+
+This is a liveness property
+
+*********************
+4.
+- (@EndHost) Receives a packet destined to EndHost -> 
+  	(@Switch) exist a flowEntry which matches on EndHost.
+
+Formal specification:
+forall EndHost, Switch, SrcMac, DstMac, OPort,
+	packet(EndHost, Switch, SrcMac, DstMac), 
+	swToHst(Switch, EndHost, OPort),
+		DstMac == EndHost -> 
+		       exists Switch', Mac, Outport, Priority, 
+		       	       flowEntry(Switch', Mac, Outport, Priority) /\
+			         	Switch' == Switch,
+					Mac == DstMac.
+
+Result: counter-example-fourth-prop.txt
+Time: 50
+
+*********************
+5.
+- (@Switch) Installs a flow entry ->
+  	    (@Switch) Exists a flow table miss
+
+Formal specification:
+forall Switch, Mac, Outport, Priority,
+	flowEntry(Switch, Mac, Outport, Priority) ->
+		exists Switch', SrcMac, DstMac, InPort, Priority,
+		       matchingPacket(Switch', SrcMac, DstMac, InPort,
+		       Priority'),
+				Switch' == Switch,
+				SrcMac == Mac,
+				InPort == Outport,
+				Priority' == 0.
+
+Result: True
+Time: 30ms

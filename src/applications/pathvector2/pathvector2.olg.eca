@@ -1,0 +1,7 @@
+ECA Rule r1Eca0Ins ACTION_ADD<path(@X, Y, C, P)> :- EVENT_INSERT<link(@X, Y, C)>, P1 := f_append(X), P2 := f_append(Y), P := f_concat(P1, P2).
+ECA Rule r1Eca0Del ACTION_DELETE<path(@X, Y, C, P)> :- EVENT_DELETE<link(@X, Y, C)>, P1 := f_append(X), P2 := f_append(Y), P := f_concat(P1, P2).
+ECA Rule r2Local1_eca ACTION_REMOTE_SEND<r2link1Z(X, @Z, C1)> :- EVENT_RECV<link1(@X, Z, C1)>.
+ECA Rule r2Local2ECAMat ACTION_ADD<path(@X, Y, C, P)> :- EVENT_RECV<r2Local2pathsend(@X, Y, C, P)>.
+ECA Rule r2Local2_eca ACTION_REMOTE_SEND<r2Local2pathsend(@X, Y, C, P)> :- EVENT_RECV<r2link1Z(X, @Z, C1)>, bestPath(@Z, Y, C2, P2), C := C1+ C2, f_member(P2, X) == 0, P1 := f_append(X), P := f_concat(P1, P2).
+ECA Rule r3eca ACTION_ADD<bestPath(@X, Y, MIN< C >, P)> :- EVENT_INSERT<path(@X, Y, C, P)>.
+ECA Rule r3eca2 ACTION_DELETE<bestPath(@X, Y, MIN< C >, P)> :- EVENT_DELETE<path(@X, Y, C, P)>.

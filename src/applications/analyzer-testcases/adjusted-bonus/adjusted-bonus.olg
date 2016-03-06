@@ -1,0 +1,12 @@
+// This is to test assignments, arithmetic and functions. 
+
+r1 bonus(NAME, ID, BONUS) :-
+	employee(NAME, ID, PERFORMANCE, SALARY),
+	RATIO := f_ratio(PERFORMANCE),
+	BONUS := RATIO * SALARY.
+
+r2 adjustedBonus(NAME, ID, ADJUSTED_BONUS) :-
+	bonus(NAME, ID, BONUS),
+	ADJUSTED_BONUS := f_min(BONUS, 100000).
+
+// Expected static analysis core attributes:  {}

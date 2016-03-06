@@ -1,0 +1,3 @@
+./rapidnet/prov-static-analyzer/analyze analyzer-testcases/applications/pingpong
+
+./waf

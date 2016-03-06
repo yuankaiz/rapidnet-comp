@@ -1,0 +1,12 @@
+// This is to test assignments, arithmetic, functions and relations. 
+
+r1 bonus(NAME, ID, BONUS) :-
+	employee(NAME, ID, PERFORMANCE, SALARY),
+	RATIO := f_ratio(PERFORMANCE),
+	BONUS := RATIO * SALARY.
+
+r2 cappedBonus(NAME, ID) :-
+	bonus(NAME, ID, BONUS),
+	BONUS > 100000.
+
+// Expected static analysis core attributes:  {PERFORMANCE, SALARY}

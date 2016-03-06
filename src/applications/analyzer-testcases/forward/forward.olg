@@ -1,0 +1,7 @@
+// This is to test basic functionality
+
+r1 newPacket(@NEXTHOP, SRC, DST, DATA) :-
+	packet(@SWITCH, SRC, DST, DATA),
+	forwardingEntry(@SWITCH, DST, NEXTHOP).
+
+// Expected static analysis core attributes: {SWITCH, DST}

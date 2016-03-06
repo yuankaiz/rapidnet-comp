@@ -1,0 +1,8 @@
+In basic event packet(@SWITCH, SRC, DST, DATA):
+  Attribute SWITCH: type (0), composition (1), selects (0), joins(1)
+    Involved in joins of variable SWITCH in rule 'r1 newPacket(@NEXTHOP, SRC, DST, DATA) :- packet(@SWITCH, SRC, DST, DATA), forwardingEntry(@SWITCH, DST, NEXTHOP).'.
+  Attribute SRC: type (0), composition (1), selects (0), joins(0)
+  Attribute DST: type (0), composition (1), selects (0), joins(1)
+    Involved in joins of variable DST in rule 'r1 newPacket(@NEXTHOP, SRC, DST, DATA) :- packet(@SWITCH, SRC, DST, DATA), forwardingEntry(@SWITCH, DST, NEXTHOP).'.
+  Attribute DATA: type (0), composition (1), selects (0), joins(0)
+Static analysis identifies following core attributes: {SWITCH, DST}

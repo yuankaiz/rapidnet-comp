@@ -1,0 +1,11 @@
+In basic event people(NAME, AGE, GENDER, RACE, INCOME, ID):
+  Attribute NAME: type (0), composition (1), selects (0), joins(0)
+  Attribute AGE: type (0), composition (1), selects (1), joins(0)
+    Involved in 3-th term of rule 'r1 youngVoters(NAME, AGE, GENDER, RACE, INCOME) :- people(NAME, AGE, GENDER, RACE, INCOME, ID), voter(ID), AGE < 30.'.
+  Attribute GENDER: type (0), composition (1), selects (0), joins(0)
+  Attribute RACE: type (0), composition (1), selects (0), joins(0)
+  Attribute INCOME: type (0), composition (1), selects (1), joins(0)
+    Involved in 2-th term of rule 'r2 youngWealthyVoters(NAME, AGE, GENDER, RACE, INCOME) :- youngVoters(NAME, AGE, GENDER, RACE, INCOME), INCOME > 100000.'.
+  Attribute ID: type (0), composition (1), selects (0), joins(1)
+    Involved in joins of variable ID in rule 'r1 youngVoters(NAME, AGE, GENDER, RACE, INCOME) :- people(NAME, AGE, GENDER, RACE, INCOME, ID), voter(ID), AGE < 30.'.
+Static analysis identifies following core attributes: {AGE, INCOME, ID}

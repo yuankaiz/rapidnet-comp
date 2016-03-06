@@ -1,0 +1,6 @@
+In basic event employee(NAME, ID, PERFORMANCE, SALARY):
+  Attribute NAME: type (0), composition (1), selects (0), joins(0)
+  Attribute ID: type (0), composition (1), selects (0), joins(0)
+  Attribute PERFORMANCE: type (0), composition (1), selects (0), joins(0)
+  Attribute SALARY: type (0), composition (1), selects (0), joins(0)
+Static analysis identifies following core attributes: {}

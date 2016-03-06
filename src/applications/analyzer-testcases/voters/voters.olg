@@ -1,0 +1,12 @@
+// This is to test relations. 
+
+r1 youngVoters(NAME, AGE, GENDER, RACE, INCOME) :-
+	people(NAME, AGE, GENDER, RACE, INCOME, ID),
+	voter(ID),
+	AGE < 30.
+
+r2 youngWealthyVoters(NAME, AGE, GENDER, RACE, INCOME) :-
+	youngVoters(NAME, AGE, GENDER, RACE, INCOME),
+	INCOME > 100000.
+
+// Expected static analysis core attributes: {AGE, INCOME, ID}

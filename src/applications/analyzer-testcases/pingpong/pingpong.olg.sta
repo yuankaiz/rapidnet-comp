@@ -1,0 +1,6 @@
+In basic event periodic(@Src, E, Second):
+  Attribute Src: type (0), composition (1), selects (0), joins(1)
+    Involved in joins of variable Src in rule 'r1 ePing(@Next, Src) :- periodic(@Src, E, Second), tLink(@Src, Next).'.
+  Attribute E: type (0), composition (1), selects (0), joins(0)
+  Attribute Second: type (0), composition (1), selects (0), joins(0)
+Static analysis identifies following core attributes: {Src}
