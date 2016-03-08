@@ -44,7 +44,10 @@ struct AttriNode{
  * Adjacency list for AttriGraph
  */
 struct AttriList{
-	AttriNode* head;
+
+	bool reached; // A label for ease of reachability check
+
+	AttriNode* head; // Neighboring list
 };
 
 
@@ -77,11 +80,15 @@ public:
 
 	void FindEquiClass();
 
-	bool CouldReachBase(ParseFunctorName&, const int);
+	void ResetLabels();
 
-	bool IsBaseAttri(const AttriNode&);
+	bool CouldReachBase(int);
+
+	vector<int> GetEquiAttrs();
 
 	void PrintGraph();
+
+	void PrintEquiAttrs();
 
 	void DestroyRestList(AttriNode*);
 
@@ -96,6 +103,9 @@ private:
 
 	//The event tuple
 	ParseFunctor* event;
+
+	//attributes determining equivalence
+	vector<int> attrs;
 
 	// Mapping between variables and graph nodes
 	VarNodeMap vnMap;
