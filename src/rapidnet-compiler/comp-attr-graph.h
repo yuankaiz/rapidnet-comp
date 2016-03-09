@@ -32,7 +32,7 @@ typedef map<VarID, int> VarNodeMap; // A map between variables and graph nodes
 struct AttriNode{
 	int nodeID;
 
-	enum PredType {Base, Event, Assign, Intm};
+	enum PredType {Base, Event, Assign, Intm, Select};
 
 	PredType nodeType;
 
@@ -68,8 +68,8 @@ public:
 
 	void ConnAssignHead(ParseExpr*, string, int, int&);
 
-	void ProcExpr(ParseExpr*, string, int&,
-						ParseFunctor*, map<string, int>&);
+	void ProcExpr(ParseExpr*, AttriNode::PredType, string, int&,
+				  ParseFunctor*, map<string, int>&);
 
 	bool ProcNonEv(ParseFunctor*, AttriNode::PredType,
 				   ParseFunctor*, map<string, int>&);
@@ -78,11 +78,11 @@ public:
 
 	void AddEdge(int, AttriNode::PredType, int, AttriNode::PredType);
 
-	void FindEquiClass();
+	void FindEquiAttrs();
 
 	void ResetLabels();
 
-	bool CouldReachBase(int);
+	bool CouldReachBaseSel(int);
 
 	vector<int> GetEquiAttrs();
 
