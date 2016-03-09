@@ -139,7 +139,7 @@ void AttriGraph::BuildRuleGraph(OlContext::Rule* rl,
 
 			//Process the expression on the right side of the assignment
 			ParseExpr* assiExpr = assi->assign;
-			ProcExpr(assiExpr, assignName, varIdx, ev, asnVarNode);
+			ProcExpr(assiExpr, AttriNode::Assign, assignName, varIdx, ev, asnVarNode);
 			//For each variable on the right-hand side, connect to left-side variable node
 			int tempVarIdx = 1; // 0 is reserved for the left side variable
 			ConnAssignHead(assiExpr, assignName, headID, tempVarIdx);
@@ -165,8 +165,8 @@ void AttriGraph::BuildRuleGraph(OlContext::Rule* rl,
 
 			int varSltIdx = 0; // Identification of variables in a selection
 			ParseBool* sltBody = slt->select;
-			ProcExpr(sltBody->lhs, selectName, varSltIdx, ev, asnVarNode);
-			ProcExpr(sltBody->rhs, selectName, varSltIdx, ev, asnVarNode);
+			ProcExpr(sltBody->lhs, AttriNode::Select, selectName, varSltIdx, ev, asnVarNode);
+			ProcExpr(sltBody->rhs, AttriNode::Select, selectName, varSltIdx, ev, asnVarNode);
 		}
 
 		//We do not handle Aggregation for now
@@ -275,7 +275,21 @@ void AttriGraph::ConnAssignHead(ParseExpr* expr, string assignName, int headID, 
 	}
 }
 
-void AttriGraph::ProcExpr(ParseExpr* assignExpr,
+/*
+ * Process an NDLog expression
+ *
+ * Arguments:
+ * expr: the expression to be processed
+ * ptype: the type of the expression
+ * bodyName: the name assigned to the expression
+ * varIdx: index of the variable
+ * ev: the event relation
+ * asnVarNode: mapping between left-hand side variables of assignments
+ * 			   and their nodes in the graph
+ */
+
+void AttriGraph::ProcExpr(ParseExpr* expr,
+						  AttriNode::PredType ptype,
 						  string bodyName,
 						  int& varIdx,
 						  ParseFunctor* ev,
@@ -284,7 +298,7 @@ void AttriGraph::ProcExpr(ParseExpr* assignExpr,
 	NS_LOG_FUNCTION(bodyName);
 
 	//Process a variable
-	ParseVar* var = dynamic_cast<ParseVar*>(assignExpr);
+	ParseVar* var = dynamic_cast<ParseVar*>(expr);
 	if (var != NULL)
 	{
 		//Create a node for the variable
@@ -295,7 +309,7 @@ void AttriGraph::ProcExpr(ParseExpr* assignExpr,
 		varIdx++;
 
 		//Create an edge to the event variable, if possible
-		ConnectEventVar(var, nodeID, AttriNode::Assign, ev);
+		ConnectEventVar(var, nodeID, ptype, ev);
 
 		//Create edges to the same head variables of other assignments
 		string varName = var->ToString();
@@ -303,27 +317,27 @@ void AttriGraph::ProcExpr(ParseExpr* assignExpr,
 		if (itrVar != asnVarNode.end())
 		{
 			int headID = itrVar->second;
-			AddEdge(nodeID, AttriNode::Assign, headID, AttriNode::Assign);
+			AddEdge(nodeID, ptype, headID, AttriNode::Assign);
 		}
 	}
 
 	//Process an arithmetic expression
-	ParseMath* math = dynamic_cast<ParseMath*>(assignExpr);
+	ParseMath* math = dynamic_cast<ParseMath*>(expr);
 	if (math != NULL)
 	{
-		ProcExpr(math->lhs, bodyName, varIdx, ev, asnVarNode);
-		ProcExpr(math->rhs, bodyName, varIdx, ev, asnVarNode);
+		ProcExpr(math->lhs, ptype, bodyName, varIdx, ev, asnVarNode);
+		ProcExpr(math->rhs, ptype, bodyName, varIdx, ev, asnVarNode);
 	}
 
 	//Process a user-defined function
-	ParseFunction* func = dynamic_cast<ParseFunction*>(assignExpr);
+	ParseFunction* func = dynamic_cast<ParseFunction*>(expr);
 	if (func != NULL)
 	{
 		ParseExprList* args = func->m_args;
 		ParseExprList::iterator itrExprl;
 		for (itrExprl = args->begin();itrExprl != args->end();itrExprl++)
 		{
-			ProcExpr(*itrExprl, bodyName, varIdx, ev, asnVarNode);
+			ProcExpr(*itrExprl, ptype, bodyName, varIdx, ev, asnVarNode);
 		}
 	}
 }
@@ -340,9 +354,19 @@ bool AttriGraph::ProcNonEv(ParseFunctor* tp, AttriNode::PredType ptype,
 	{
 		//Create mapping between variables and node IDs
 		VarID vi(tname, i);
-		vnMap.insert(VarNodeMap::value_type(vi, varCount));
-		int tpIdx = varCount;
-		varCount++;
+		pair<VarNodeMap::iterator, bool> ret;
+		ret = vnMap.insert(VarNodeMap::value_type(vi, varCount));
+		int tpIdx = 0;
+		if (ret.second == false)
+		{
+			//A relation of the same name has existed
+			tpIdx = ret.first->second;
+		}
+		else
+		{
+			tpIdx = varCount;
+			varCount++;
+		}
 
 		//Create edges for join keys
 		ParseVar* varArg = dynamic_cast<ParseVar*>(*itrExpr);
@@ -414,7 +438,7 @@ void AttriGraph::AddEdge(int src, AttriNode::PredType srcType,
 /*
  * Find the event attributes that determine the equivalence class
  */
-void AttriGraph::FindEquiClass()
+void AttriGraph::FindEquiAttrs()
 {
 	NS_LOG_FUNCTION(event->fName->ToString());
 
@@ -429,7 +453,7 @@ void AttriGraph::FindEquiClass()
 		int evNodeID = vnMap.find(vid)->second;
 
 		ResetLabels();
-		bool res = CouldReachBase(evNodeID);
+		bool res = CouldReachBaseSel(evNodeID);
 		if (res == true)
 		{
 			attrs.push_back(i);
@@ -452,7 +476,7 @@ void AttriGraph::ResetLabels()
 /*
  * Determine if an event attribute could reach a base attribute
  */
-bool AttriGraph::CouldReachBase(int nodeID)
+bool AttriGraph::CouldReachBaseSel(int nodeID)
 {
 	NS_LOG_FUNCTION(nodeID);
 	nodeArray[nodeID].reached = true;
@@ -461,7 +485,10 @@ bool AttriGraph::CouldReachBase(int nodeID)
 	AttriNode* curNode = nodeArray[nodeID].head;
 	while (curNode != NULL)
 	{
-		if (curNode->nodeType == AttriNode::Base)
+		//An event attribute that joins with base attributes or
+		//appears in a selection should be qualified
+		if (curNode->nodeType == AttriNode::Base ||
+			curNode->nodeType == AttriNode::Select)
 		{
 			return true;
 		}
@@ -470,7 +497,7 @@ bool AttriGraph::CouldReachBase(int nodeID)
 			int curID = curNode->nodeID;
 			if (nodeArray[curID].reached == false)
 			{
-				bool res = CouldReachBase(curNode->nodeID);
+				bool res = CouldReachBaseSel(curNode->nodeID);
 				if (res == true)
 				{
 					return res;
@@ -519,6 +546,7 @@ void AttriGraph::PrintGraph()
 			case AttriNode::Event: std::cout << "Event";break;
 			case AttriNode::Assign: std::cout << "Assign";break;
 			case AttriNode::Intm: std::cout << "Intm";break;
+			case AttriNode::Select: std::cout << "Select";break;
 			}
 
 			std::cout << "), ";

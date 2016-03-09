@@ -128,9 +128,9 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
   {
 	  //TODO: use command-line argument for event name
 	  AttriGraph newGraph(ctxt, "packet");
-	  //newGraph.PrintGraph();
-	  newGraph.FindEquiClass();
-	  newGraph.PrintEquiAttrs();
+	  newGraph.PrintGraph();
+	  //newGraph.FindEquiAttrs();
+	  //newGraph.PrintEquiAttrs();
   }
 
   if(provenanceEnabled && !ctxt->IsSendlog())
