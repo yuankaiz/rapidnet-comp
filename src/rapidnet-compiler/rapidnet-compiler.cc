@@ -127,8 +127,10 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
   if (staticAnalysisEnabled == true)
   {
 	  //TODO: use command-line argument for event name
-	  AttriGraph newGraph(ctxt, "link");
-	  newGraph.PrintGraph();
+	  AttriGraph newGraph(ctxt, "packet");
+	  //newGraph.PrintGraph();
+	  newGraph.FindEquiClass();
+	  newGraph.PrintEquiAttrs();
   }
 
   if(provenanceEnabled && !ctxt->IsSendlog())
@@ -228,8 +230,8 @@ int main (int argc, char** argv)
   LogComponentEnable ("EcaContext", LOG_LEVEL_ERROR);
   LogComponentEnable ("RapidNetContext", LOG_LEVEL_ERROR);
   LogComponentEnable ("RapidNetCompiler", LOG_LEVEL_INFO);
-  LogComponentEnable ("AttriGraph", LOG_LEVEL_INFO);
-  //LogComponentEnable ("AttriGraph", LOG_LEVEL_FUNCTION);
+  //LogComponentEnable ("AttriGraph", LOG_LEVEL_INFO);
+  LogComponentEnable ("AttriGraph", LOG_LEVEL_FUNCTION);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

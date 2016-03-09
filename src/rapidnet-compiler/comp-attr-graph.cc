@@ -29,6 +29,7 @@ AttriGraph::AttriGraph(Ptr<OlContext> ctxt, string evName)
 	nodeArray = new AttriList[defaultSize];
 	for (int i = 0;i < defaultSize;i++)
 	{
+		nodeArray[i].reached = false;
 		nodeArray[i].head = NULL;
 	}
 
@@ -415,14 +416,76 @@ void AttriGraph::AddEdge(int src, AttriNode::PredType srcType,
  */
 void AttriGraph::FindEquiClass()
 {
+	NS_LOG_FUNCTION(event->fName->ToString());
+
 	assert (event != NULL);
 
 	ParseExprList* args = event->m_args;
-	deque<ParseExpr*>::iterator itrExpr = args->begin();
-	for(;itrExpr != args->end();++itrExpr)
+	for(int i = 0;i < args->size();i++)
 	{
+		//Find the node corresponding to the event attribute
+		string evName = event->fName->ToString();
+		VarID vid(evName, i);
+		int evNodeID = vnMap.find(vid)->second;
 
+		ResetLabels();
+		bool res = CouldReachBase(evNodeID);
+		if (res == true)
+		{
+			attrs.push_back(i);
+		}
 	}
+}
+
+/*
+ * Reset the labels of all nodes to false
+ */
+void AttriGraph::ResetLabels()
+{
+	NS_LOG_FUNCTION(this);
+	for (int i = 0;i < varCount;i++)
+	{
+		nodeArray[i].reached = false;
+	}
+}
+
+/*
+ * Determine if an event attribute could reach a base attribute
+ */
+bool AttriGraph::CouldReachBase(int nodeID)
+{
+	NS_LOG_FUNCTION(nodeID);
+	nodeArray[nodeID].reached = true;
+
+	//Recursively check each neighbor node
+	AttriNode* curNode = nodeArray[nodeID].head;
+	while (curNode != NULL)
+	{
+		if (curNode->nodeType == AttriNode::Base)
+		{
+			return true;
+		}
+		else
+		{
+			int curID = curNode->nodeID;
+			if (nodeArray[curID].reached == false)
+			{
+				bool res = CouldReachBase(curNode->nodeID);
+				if (res == true)
+				{
+					return res;
+				}
+			}
+		}
+		curNode = curNode->next;
+	}
+
+	return false;
+}
+
+vector<int> AttriGraph::GetEquiAttrs()
+{
+	return attrs;
 }
 
 void AttriGraph::PrintGraph()
@@ -467,31 +530,45 @@ void AttriGraph::PrintGraph()
 	std::cout << endl << endl;
 }
 
+void AttriGraph::PrintEquiAttrs()
+{
+	NS_LOG_FUNCTION(event->fName->ToString());
+	std::cout << endl;
+	std::cout << "Print the variables that determine equivalence classes";
+	std::cout << endl;
+	vector<int>::iterator itr;
+	for (itr = attrs.begin();itr != attrs.end();itr++)
+	{
+		cout << *itr << ",";
+	}
+
+	std::cout << endl;
+}
+
 /*
  * Recursively destroy the adjacency list
  */
 void AttriGraph::DestroyRestList(AttriNode* anode)
 {
-	if (anode->next == NULL)
+	while (anode != NULL)
 	{
-		return;
+		AttriNode* next = anode->next;
+		delete anode;
+		anode = next;
 	}
-	else
-	{
-		DestroyRestList(anode->next);
-		delete anode->next;
-		return;
-	}
+
+	return;
 }
 
 AttriGraph::~AttriGraph()
 {
+	NS_LOG_FUNCTION(event->fName->ToString());
 	for (int i = 0; i < varCount; i++)
 	{
-		AttriNode* head = nodeArray->head;
-		AttriNode* firstEle = head->next;
-		DestroyRestList(firstEle);
+		AttriNode* head = nodeArray[i].head;
+		DestroyRestList(head);
 	}
+
 	delete[] nodeArray;
 }
 
