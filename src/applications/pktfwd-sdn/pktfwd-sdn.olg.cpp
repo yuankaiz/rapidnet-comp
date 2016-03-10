@@ -1,0 +1,61 @@
+/*Materialized table*/
+materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
+materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
+materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
+materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
+materialize(flowEntry,infinity,infinity,keys(2,4:int32)). /*Links between routers and other devices*/
+materialize(maxPriority,infinity,infinity,keys(2:int32)). /*Links between routers and other devices*/
+materialize(device,infinity,infinity,keys(2:int32)). /*Identify the device type of the node*/
+
+
+
+
+/*Switch program*/
+/*Query the controller when receiving unknown packets */
+rs1 matchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority) :-
+        device(@Switch, Dvtype),
+ packet(@Switch, SrcAdd, DstAdd, Data),
+ maxPriority(@Switch, TopPriority),
+        Dvtype == 0 .
+
+/*Recursively matching entries in a routing table*/
+rs2 matchingPacket(@Switch, SrcAdd, DstAdd, Data, NextPriority) :-
+        device(@Switch, Dvtype),
+ matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority),
+ flowEntry(@Switch, DstEntry, Next, Priority),
+ Priority > 0,
+ DstAdd != DstEntry,
+ NextPriority := Priority - 1,
+        Dvtype == 0 .
+
+/*A hit in the routing table, forward the packet accordingly*/
+rs3 packet(@Next, SrcAdd, DstAdd, Data) :-
+        device(@Switch, Dvtype),
+        matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority),
+ flowEntry(@Switch, DstEntry, Next, Priority),
+ link(@Switch, Next),
+ Priority > 0,
+ DstAdd == DstEntry,
+        Dvtype == 0 .
+
+/*No hit in the routing table, follow the default routing*/
+rs4 packet(@Next, SrcAdd, DstAdd, Data) :-
+        device(@Switch, Dvtype),
+        matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority),
+ flowEntry(@Switch, DstAdd, Next, Priority),
+ link(@Switch, Next),
+ Priority == 0,
+        Dvtype == 0 .
+
+/*Host program*/
+rh1 packet(@Switch, SrcAdd, DstAdd, Data) :-
+        device(@Host, Dvtype),
+ initPacket(@Host, SrcAdd, DstAdd, Data),
+ linkhr(@Host, Switch),
+        Dvtype == 1 .
+
+/*Receive a packet*/
+rh2 recvPacket(@Host, SrcAdd, DstAdd, Data) :-
+        device(@Host, Dvtype),
+ packet(@Host, SrcAdd, DstAdd, Data),
+        Dvtype == 1 .

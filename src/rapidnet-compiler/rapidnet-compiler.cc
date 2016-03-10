@@ -236,7 +236,7 @@ int main (int argc, char** argv)
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
   bool provenance = 0;
-  bool staticAnalysis = true;
+  bool staticAnalysis = false;
 
   CommandLine cmd;
   cmd.AddValue ("ndlog", "Application NDlog file", overlogFile);

@@ -73,6 +73,7 @@ all_modules = (
     'applications/secure-pathvector',
     'applications/secure-simple-bgp',
     'applications/secure-pingpong',
+    'applications/pktfwd-sdn',
     )
 
 def set_options(opt):
