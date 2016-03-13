@@ -213,3 +213,4 @@ rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List) :-
 	List2 := f_append(PID2),
 	List := f_concat(List, List2),
 	RID := f_sha1(R + RLoc + List).
+
