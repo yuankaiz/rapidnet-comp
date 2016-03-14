@@ -74,7 +74,8 @@ all_modules = (
     'applications/secure-simple-bgp',
     'applications/secure-pingpong',
     'applications/pktfwd-sdn',
-    'applications/pktfwd-sdn-prov',    
+    'applications/pktfwd-sdn-prov',
+    'applications/pktfwd-sdn-prov-comp',        
     )
 
 def set_options(opt):
