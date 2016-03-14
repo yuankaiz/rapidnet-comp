@@ -11,8 +11,8 @@ materialize(device,infinity,infinity,keys(2:int32)). /*Identify the device type 
 //materialize(ruleExec,infinity,infinity,keys(2:str)). /*Record the rule execution*/
 //materialize(prov,infinity,infinity,keys(2:str,3:str)). /*Record the tuple generation*/
 
-#define SWITCH 0
-#define HOST 1
+
+
 
 /* Edb provenance rules*/
 r00 prov(@Host, VID, RID, Host) :-
@@ -42,7 +42,7 @@ rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, 
     device(@Switch, Dvtype),
     packet(@Switch, SrcAdd, DstAdd, Data),
     maxPriority(@Switch, TopPriority),
-    Dvtype == SWITCH,
+    Dvtype == 0,
     RLoc := Switch,
     R := "rs1",
     PID1 := f_sha1("device" + Switch + Dvtype),
@@ -76,7 +76,7 @@ rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID,
     Priority > 0,
     DstAdd != DstEntry,
     NextPriority := Priority - 1,
-    Dvtype == SWITCH,
+    Dvtype == 0,
     RLoc := Switch,
     R := "rs2",
     PID1 := f_sha1("device" + Switch + Dvtype),
@@ -90,67 +90,67 @@ rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID,
     RID := f_sha1(R + RLoc + List).
 
 /* rs21 - rs24 are identical to rs11 - rs14*/
- 
+
 
 /*A hit in the routing table, forward the packet accordingly*/
 rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
         device(@Switch, Dvtype),
         matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority),
-	flowEntry(@Switch, DstEntry, Next, Priority),
-	link(@Switch, Next),
-	Priority > 0,
-	DstAdd == DstEntry,
-        Dvtype == SWITCH,
-	RLoc := Switch,
-	R := "rs3",
-	PID1 := f_sha1("device" + Switch + Dvtype),
-	PID2 := f_sha1("matchingPacket" + Switch + SrcAdd + DstAdd + Data + Priority),
-	PID3 := f_sha1("flowEntry" + Switch + DstEntry + Next + Priority),
-	PID4 := f_sha1("link" + Switch + Next),
-	List := f_append(PID1),
-	List2 := f_append(PID2),
-	List := f_concat(List, List2),
-	List3 := f_append(PID3),
-	List := f_concat(List, List3),
-	List4 := f_append(PID4),
-	List := f_concat(List, List4),
-	RID := f_sha1(R + RLoc + List).
+ flowEntry(@Switch, DstEntry, Next, Priority),
+ link(@Switch, Next),
+ Priority > 0,
+ DstAdd == DstEntry,
+        Dvtype == 0,
+ RLoc := Switch,
+ R := "rs3",
+ PID1 := f_sha1("device" + Switch + Dvtype),
+ PID2 := f_sha1("matchingPacket" + Switch + SrcAdd + DstAdd + Data + Priority),
+ PID3 := f_sha1("flowEntry" + Switch + DstEntry + Next + Priority),
+ PID4 := f_sha1("link" + Switch + Next),
+ List := f_append(PID1),
+ List2 := f_append(PID2),
+ List := f_concat(List, List2),
+ List3 := f_append(PID3),
+ List := f_concat(List, List3),
+ List4 := f_append(PID4),
+ List := f_concat(List, List4),
+ RID := f_sha1(R + RLoc + List).
 
 rs31 ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc) :-
-	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List).
+ ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List).
 
 fs32 ruleExec(@RLoc, RID, R, List) :-
-	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List).
+ ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List).
 
 rs33 packet(@Next, SrcAdd, DstAdd, Data) :-
-	ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc).
+ ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc).
 
 rs34 prov(@Next, VID, RID, RLoc) :-
-	ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc),
-	VID := f_sha1("packet" + Next + SrcAdd + DstAdd + Data).
+ ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc),
+ VID := f_sha1("packet" + Next + SrcAdd + DstAdd + Data).
 
 /*No hit in the routing table, follow the default routing*/
 rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
         device(@Switch, Dvtype),
         matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority),
-	flowEntry(@Switch, DstAdd, Next, Priority),
-	link(@Switch, Next),
-	Priority == 0,
-        Dvtype == SWITCH,
-	RLoc := Switch,
-	R := "rs4",
-	PID1 := f_sha1("device" + Switch + Dvtype),
-	PID2 := f_sha1("matchingPacket" + Switch + SrcAdd + DstAdd + Data + Priority),
-	PID3 := f_sha1("flowEntry" + Switch + DstAdd + Next + Priority),
-	PID4 := f_sha1("link" + Switch + Next),
-	List := f_append(PID1),
-	List2 := f_append(PID2),
-	List := f_concat(List, List2),
-	List3 := f_append(PID3),
-	List := f_concat(List, List3),
-	List4 := f_append(PID4),
-	List := f_concat(List, List4),
-	RID := f_sha1(R + RLoc + List).
+ flowEntry(@Switch, DstAdd, Next, Priority),
+ link(@Switch, Next),
+ Priority == 0,
+        Dvtype == 0,
+ RLoc := Switch,
+ R := "rs4",
+ PID1 := f_sha1("device" + Switch + Dvtype),
+ PID2 := f_sha1("matchingPacket" + Switch + SrcAdd + DstAdd + Data + Priority),
+ PID3 := f_sha1("flowEntry" + Switch + DstAdd + Next + Priority),
+ PID4 := f_sha1("link" + Switch + Next),
+ List := f_append(PID1),
+ List2 := f_append(PID2),
+ List := f_concat(List, List2),
+ List3 := f_append(PID3),
+ List := f_concat(List, List3),
+ List4 := f_append(PID4),
+ List := f_concat(List, List4),
+ RID := f_sha1(R + RLoc + List).
 
 /* rs41 - rs44 are identical to rs31 - rs34*/
 
@@ -158,35 +158,35 @@ rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
 rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List) :-
         device(@Host, Dvtype),
         initPacket(@Host, SrcAdd, DstAdd, Data),
-	linkhr(@Host, Switch),
-        Dvtype == HOST,
-	RLoc := Host,
-	R := "rh1",
-	PID1 := f_sha1("device" + Host + Dvtype),
-	PID2 := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
-	PID3 := f_sha1("linkhr" + Host + Switch),
-	List := f_append(PID1),
-	List2 := f_append(PID2),
-	List := f_concat(List, List2),
-	List3 := f_append(PID3),
-	List := f_concat(List, List3),
-	RID := f_sha1(R + RLoc + List).
+ linkhr(@Host, Switch),
+        Dvtype == 1,
+ RLoc := Host,
+ R := "rh1",
+ PID1 := f_sha1("device" + Host + Dvtype),
+ PID2 := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
+ PID3 := f_sha1("linkhr" + Host + Switch),
+ List := f_append(PID1),
+ List2 := f_append(PID2),
+ List := f_concat(List, List2),
+ List3 := f_append(PID3),
+ List := f_concat(List, List3),
+ RID := f_sha1(R + RLoc + List).
 
 /* rh11 - rh14 are identical to rs21 - rs24*/
 
 /*Receive a packet*/
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List) :-
-	device(@Host, Dvtype),
-	packet(@Host, SrcAdd, DstAdd, Data),
-        Dvtype == HOST,
-	RLoc := Host,
-	R := "rh2",
-	PID1 := f_sha1("device" + Host + Dvtype),
-	PID2 := f_sha1("packet" + Host + SrcAdd + DstAdd + Data),
-	List := f_append(PID1),
-	List2 := f_append(PID2),
-	List := f_concat(List, List2),
-	RID := f_sha1(R + RLoc + List).
+ device(@Host, Dvtype),
+ packet(@Host, SrcAdd, DstAdd, Data),
+        Dvtype == 1,
+ RLoc := Host,
+ R := "rh2",
+ PID1 := f_sha1("device" + Host + Dvtype),
+ PID2 := f_sha1("packet" + Host + SrcAdd + DstAdd + Data),
+ List := f_append(PID1),
+ List2 := f_append(PID2),
+ List := f_concat(List, List2),
+ RID := f_sha1(R + RLoc + List).
 
 rh21 eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc) :-
     eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List).
@@ -200,5 +200,3 @@ rh23 recvPacket(@Host, SrcAdd, DstAdd, Data) :-
 rh24 prov(@Host, VID, RID, RLoc) :-
     eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc),
     VID := f_sha1("recvPacket" + Host + SrcAdd + DstAdd + Data).
-    
-
