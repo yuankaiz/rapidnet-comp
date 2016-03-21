@@ -239,4 +239,10 @@ def build(bld):
     obj.source = 'pktfwd-sdn-test.cc'
 
     obj = bld.create_ns3_program('pktfwd-sdn-prov-test')
-    obj.source = 'pktfwd-sdn-prov-test.cc'    
+    obj.source = 'pktfwd-sdn-prov-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-sdn-prov-comp-test')
+    obj.source = 'pktfwd-sdn-prov-comp-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-sdn-prov-comp-static-check-test')
+    obj.source = 'pktfwd-sdn-prov-comp-static-check-test.cc'        

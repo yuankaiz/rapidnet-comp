@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-sdn-prov-comp', ['internet-stack'])
+    module.source = [
+        'pktfwd-sdn-prov-comp.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-sdn-prov-comp'
+    headers.source = [
+        'pktfwd-sdn-prov-comp.h',
+        'pktfwd-sdn-prov-comp-helper.h',
+        ]
