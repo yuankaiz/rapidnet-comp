@@ -11,6 +11,10 @@
 #include "ns3/selector.h"
 #include "ns3/rapidnet-functions.h"
 
+// Add-on
+#include <boost/serialization/map.hpp> 
+#include <>
+
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -129,6 +133,7 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
     attrdef ("recvPacket_attr3", IPV4)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
+    attrdef ("ruleExec_attr3", STR),
     attrdef ("ruleExec_attr4", LIST)));
 
 }
