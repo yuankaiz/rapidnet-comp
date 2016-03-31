@@ -31,10 +31,21 @@
 #include "ns3/int32-value.h"
 #include "tuple-attribute.h"
 
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 #define QUAL(qual, name) qual + ":" + name
 #define EMPTY "EMPTY"
 
 using namespace std;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -68,7 +79,9 @@ public:
     return Tuple::GetTypeId();
   }
 
-  Tuple (string name = "no-name");
+  Tuple ();
+
+  Tuple (string name);
 
   Tuple (Tuple& attrList);
 
@@ -248,6 +261,19 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Reach Tuple?";
+    ar & boost::serialization::base_object<Object>(*this);
+    ar & m_attributes;
+    ar & m_timestamp;
+    ar & m_refCount;
+    //    ar & m_name;
+  }
+
   map<string, Ptr<TupleAttribute> > m_attributes;
 
   Ptr<StrValue> m_name;
@@ -267,5 +293,7 @@ ostream& operator << (ostream& os, const Ptr<Tuple>& tuple);
 
 } //namespace rapidnet
 } //namepsace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Tuple)
 
 #endif // TUPLE_H

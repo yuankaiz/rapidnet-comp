@@ -26,6 +26,13 @@
 
 using namespace std;
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 namespace rapidnet {
 
@@ -38,7 +45,9 @@ class Int32Value: public Value
 {
 public:
 
-  Int32Value (int32_t value = 0);
+  Int32Value ();
+
+  Int32Value (int32_t value);
 
   virtual ~Int32Value ();
 
@@ -73,6 +82,15 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & boost::serialization::base_object<Value>(*this);    
+    ar & m_value;
+  }  
+
   int32_t m_value;
 };
 
@@ -85,5 +103,7 @@ Int32Value::GetInt32Value () const
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Int32Value)
 
 #endif // INT32VALUE_H

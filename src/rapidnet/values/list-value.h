@@ -23,12 +23,23 @@
 #include <list>
 #include "value.h"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/list.hpp>
+
 #define rn_list(ptr) \
   DynamicCast<ListValue, Value> (ptr)->GetListValue ()
 
 #define rn_list_iterator list<Ptr<Value> >::const_iterator
 
 using namespace std;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -42,7 +53,9 @@ class ListValue: public Value
 {
 public:
 
-  ListValue (list<Ptr<Value> > value = list<Ptr<Value> > ());
+  ListValue ();
+
+  ListValue (list<Ptr<Value> > value);
 
   virtual ~ListValue ();
 
@@ -93,6 +106,18 @@ public:
   static Ptr<Value> New (list<Ptr<Value> > value = list<Ptr<Value> > ());
 
 protected:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Serialize ListValue" << endl;
+    ar & boost::serialization::base_object<Value>(*this);
+    std::cout << "Size of list: " << m_value.size();
+    ar & m_value;
+  }
+
   list<Ptr<Value> > m_value;
 };
 
@@ -122,5 +147,7 @@ ListValue::End () const
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::ListValue)
 
 #endif // LISTVALUE_H

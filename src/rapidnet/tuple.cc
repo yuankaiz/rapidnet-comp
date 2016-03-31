@@ -34,6 +34,12 @@ Tuple::GetTypeId (void)
   return tid;
 }
 
+Tuple::Tuple ()
+{
+  SetName ("no-name");
+  m_refCount = 1;
+}
+
 Tuple::Tuple (string name)
 {
   SetName (name);
@@ -376,3 +382,5 @@ Tuple::New (string name, list<Ptr<TupleAttribute> > attributes)
   tuple->AddAttributes (attributes);
   return tuple;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::Tuple)

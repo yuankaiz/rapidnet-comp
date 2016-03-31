@@ -78,6 +78,13 @@
 #define HP128INC(x)
 #endif
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 class HighPrecision 
@@ -99,6 +106,15 @@ public:
   inline int Compare (HighPrecision const &o) const;
   inline static HighPrecision Zero (void);
 private:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_isFast & m_fastValue & m_slowValue;
+  }
+  
   int64_t SlowGetInteger (void) const;
   double SlowGetDouble (void) const;
   bool SlowAdd (HighPrecision const &o);

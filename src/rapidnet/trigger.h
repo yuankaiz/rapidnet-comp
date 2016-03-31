@@ -22,7 +22,19 @@
 #include "ns3/ref-count-base.h"
 #include "tuple.h"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/export.hpp>
+
+
 using namespace ns3;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -38,10 +50,24 @@ class Trigger : public RefCountBase
 {
 public:
 
+  Trigger(){};
+   
   virtual void Invoke (Ptr<Tuple> tuple) = 0;
 
   virtual ~Trigger () {}
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process ref count base!" << endl;    
+    ar & boost::serialization::base_object<RefCountBase>(*this);
+    std::cout << "ref count base done!" << endl;    
+  }
 };
+
+
 
 /**
  * \ingroup rapidnet_library
@@ -51,6 +77,8 @@ public:
 class TriggerList
 {
 public:
+
+  TriggerList(){};
 
   void operator += (Ptr<Trigger> trig)
   {
@@ -68,10 +96,25 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process triggers!" << endl;    
+    ar & m_list;
+    std::cout << "Triggers done!" << endl;    
+  }
+
   list<Ptr<Trigger> > m_list;
 };
 
+
 } //namespace rapidnet
 } //namepsace ns3
+
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Trigger)
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::TriggerList)
 
 #endif // TRIGGER_H

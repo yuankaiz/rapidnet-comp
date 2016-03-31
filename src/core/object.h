@@ -29,6 +29,15 @@
 #include "object-base.h"
 #include "attribute-list.h"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 
@@ -199,6 +208,15 @@ protected:
   Object (const Object &o);
 private:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & boost::serialization::base_object<ObjectBase>(*this);
+    ar & m_count & m_tid & m_disposed & m_next;
+  }
+
   template <typename T>
   friend Ptr<T> CreateObjectWithAttributes (const AttributeList &attributes);
   template <typename T>
@@ -270,8 +288,10 @@ private:
   Object *m_next;
 };
 
+
+
 /**
- * \param object a pointer to the object to copy.
+ * \Param Object a pointer to the object to copy.
  * \returns a copy of the input object.
  *
  * This method invoke the copy constructor of the input object
@@ -528,6 +548,8 @@ Ptr<T> CreateObject (T1 a1, T2 a2, T3 a3, T4 a4, T5 a5, T6 a6, T7 a7)
 
 
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::Object)
 
 #endif /* OBJECT_H */
 

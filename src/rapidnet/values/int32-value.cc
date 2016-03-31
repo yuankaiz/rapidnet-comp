@@ -25,6 +25,11 @@
 using namespace ns3;
 using namespace ns3::rapidnet;
 
+Int32Value::Int32Value ()
+  : Value (INT32), m_value (0)
+{
+}
+
 Int32Value::Int32Value (int32_t value)
   : Value (INT32), m_value (value)
 {
@@ -365,3 +370,5 @@ Int32Value::New (int32_t value)
   retval->m_value = value;
   return retval;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::Int32Value)

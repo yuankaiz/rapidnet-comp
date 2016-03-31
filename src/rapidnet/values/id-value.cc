@@ -25,6 +25,15 @@
 using namespace ns3;
 using namespace ns3::rapidnet;
 
+IdValue::IdValue ()
+  : Value (ID)
+{
+  string value = "0";
+  uint32_t base = 2;
+  mpz_class temp (value, base);
+  m_value = bitset<ID_LEN> (temp.get_str (2));
+}
+
 IdValue::IdValue (string value, uint32_t base)
   : Value (ID)
 {
@@ -341,3 +350,5 @@ IdValue::New (bitset<ID_LEN> value)
   retval->m_value = value;
   return retval;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::IdValue)

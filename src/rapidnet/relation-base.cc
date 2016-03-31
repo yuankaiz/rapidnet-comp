@@ -32,6 +32,11 @@ RelationBase::GetTypeId (void)
   return tid;
 }
 
+RelationBase::RelationBase ()
+{
+  m_name = "no-name";
+}
+
 RelationBase::RelationBase (string name)
 {
   m_name = name;
@@ -218,3 +223,5 @@ RelationBase::Assign (Ptr<Assignor> assignor)
       assignor->Assign (*it);
     }
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::RelationBase)

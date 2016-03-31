@@ -29,6 +29,16 @@
 #include "high-precision.h"
 #include "cairo-wideint-private.h"
 
+//#include <boost/serialization/export.hpp>
+
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 namespace TimeStepPrecision {
@@ -443,6 +453,14 @@ public:
                                    uint64_t unitFactor);
 
 private:
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_data;
+  }
+
   HighPrecision m_data;
 
   /*
@@ -452,6 +470,8 @@ private:
    */
   int64_t ConvertToUnits (int64_t timeValue, uint64_t unitFactor) const;
 };
+
+  //BOOST_CLASS_EXPORT(TimeUnit<1>)
 
 /**
  * \brief keep track of seconds.

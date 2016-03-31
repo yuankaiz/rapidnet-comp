@@ -68,3 +68,5 @@ def build(bld):
         'pki-authentication-manager.h',
         'blowfish-encryption-manager.h'
         ]
+
+    bld.env.append_value('LINKFLAGS', ['-lboost_serialization'])

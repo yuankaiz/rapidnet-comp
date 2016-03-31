@@ -25,6 +25,11 @@
 using namespace ns3;
 using namespace rapidnet;
 
+StrValue::StrValue ()
+  : Value (STR), m_value ("")
+{
+}
+
 StrValue::StrValue (string value)
   : Value (STR), m_value (value)
 {
@@ -203,3 +208,5 @@ StrValue::New (string value)
   retval->m_value = value;
   return retval;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::StrValue)

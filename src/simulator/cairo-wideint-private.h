@@ -33,8 +33,11 @@
 #define CAIRO_WIDEINT_H
 
 #include "ns3/simulator-config.h"
+
+
 #define cairo_private 
 #define HAVE_UINT64_T 1
+
 
 #if   HAVE_STDINT_H
 # include <stdint.h>
@@ -84,6 +87,7 @@ extern "C" {
 typedef struct _cairo_uint64 {
     uint32_t	lo, hi;
 } cairo_uint64_t, cairo_int64_t;
+
 
 cairo_uint64_t I	_cairo_uint32_to_uint64 (uint32_t i);
 #define			_cairo_uint64_to_uint32(a)  ((a).lo)
@@ -203,6 +207,7 @@ _cairo_int64_divrem (cairo_int64_t num, cairo_int64_t den);
 typedef struct cairo_uint128 {
     cairo_uint64_t	lo, hi;
 } cairo_uint128_t, cairo_int128_t;
+
 
 cairo_uint128_t I	_cairo_uint32_to_uint128 (uint32_t i);
 cairo_uint128_t I	_cairo_uint64_to_uint128 (cairo_uint64_t i);
@@ -325,5 +330,30 @@ _cairo_int_96by64_32x64_divrem (cairo_int128_t num,
 };
 #endif
 
+namespace boost {
+  namespace serialization {
+
+  template<typename Archive>
+  void serialize(Archive& ar, cairo_int128_t& itg, const unsigned int version) {
+  ar & itg.lo & itg.hi;
+  }
+
+} // namespace serialization
+} // namespace boost
+
+#if !HAVE_UINT64_T
+
+namespace boost {
+  namespace serialization {
+
+  template<typename Archive>
+  void serialize(Archive& ar, cairo_uint64_t& itg, const unsigned int version) {
+  ar & itg.lo & itg.hi;
+  }
+
+} // namespace serialization
+} // namespace boost
+
+#endif /* HAVE_UINT64_T*/
 
 #endif /* CAIRO_WIDEINT_H */

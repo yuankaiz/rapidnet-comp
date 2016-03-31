@@ -25,6 +25,18 @@
 
 #include <stdint.h>
 
+#include <boost/serialization/export.hpp>
+
+//#include <boost/serialization/export.hpp>
+
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 /**
@@ -65,10 +77,21 @@ public:
   uint32_t GetReferenceCount (void) const;
 
 private:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_count;
+  }  
+
   // Note we make this mutable so that the const methods can still
   // change it.
   mutable uint32_t m_count;  // Reference count
 };
+
+
 
 } // namespace ns3
 
@@ -92,5 +115,7 @@ RefCountBase::Unref (void) const
 }
 
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::RefCountBase)
 
 #endif /* __REF_COUNT_BASE_H__*/

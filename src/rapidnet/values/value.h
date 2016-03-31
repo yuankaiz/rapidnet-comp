@@ -28,10 +28,21 @@
 #include "ns3/log.h"
 #include "type-ids.h"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
+
 #define V_InstanceOf(ptr, type) \
   (PeekPointer (DynamicCast<type, Value> (ptr)) != NULL)
 
 using namespace std;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -59,6 +70,8 @@ public:
    *         into a buffer.
    */
   static const uint32_t SIZE_TYPEID;
+
+  Value ();
 
   /**
    * \brief Value constructor that initializes the type of the value
@@ -137,12 +150,23 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & boost::serialization::base_object<RefCountBase>(*this);
+    ar & m_type;
+  }
+
   void AssertUnknownExpression (Operator op, Ptr<Value> operand);
 
   void AssertUnhandledOperator (Operator op);
 
   ValueTypeId m_type;
 };
+
+
 
 ostream& operator << (ostream& os, const Ptr<Value>& value);
 
@@ -160,5 +184,7 @@ Value::GetTypeName () const
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Value)
 
 #endif // VALUE_H

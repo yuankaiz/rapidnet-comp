@@ -26,6 +26,18 @@
 #define rn_id(ptr) \
   DynamicCast<IdValue, Value> (ptr)->GetIdValue ()
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/bitset.hpp>
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
+
 namespace ns3 {
 namespace rapidnet {
 
@@ -44,7 +56,9 @@ class IdValue: public Value
 {
 public:
 
-  IdValue (string value = "0", uint32_t base = 2);
+  IdValue ();
+
+  IdValue (string value, uint32_t base);
 
   virtual ~IdValue ();
 
@@ -78,6 +92,15 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & boost::serialization::base_object<Value>(*this);    
+    ar & m_value;
+  }
+
   static Ptr<Value> New (mpz_class value);
 
   static Ptr<Value> New (bitset<ID_LEN> value);
@@ -87,5 +110,7 @@ protected:
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::IdValue)
 
 #endif /* IDVALUE_H_ */

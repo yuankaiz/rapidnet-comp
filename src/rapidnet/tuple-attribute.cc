@@ -23,6 +23,12 @@
 using namespace ns3;
 using namespace ns3::rapidnet;
 
+TupleAttribute::TupleAttribute ()
+  : m_value (NULL)
+{
+  SetName ("unnamed");
+}
+
 TupleAttribute::TupleAttribute (string name, Ptr<Value> value)
   : m_value (value)
 {
@@ -138,3 +144,5 @@ ostream& ns3::rapidnet::operator << (ostream& os, const Ptr<TupleAttribute>&
   os << attr->ToString ();
   return os;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::TupleAttribute)

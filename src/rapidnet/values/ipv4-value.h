@@ -27,6 +27,13 @@
 
 using namespace std;
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 namespace rapidnet {
 
@@ -38,7 +45,9 @@ namespace rapidnet {
 class Ipv4Value: public Value
 {
 public:
-  Ipv4Value (Ipv4Address value = Ipv4Address ());
+  Ipv4Value ();
+
+  Ipv4Value (Ipv4Address value);
 
   virtual ~Ipv4Value ();
 
@@ -72,6 +81,15 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & boost::serialization::base_object<Value>(*this);
+    ar & m_value;
+  }
+
   Ipv4Address m_value;
 };
 
@@ -83,5 +101,7 @@ Ipv4Value::GetIpv4Value () const
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Ipv4Value)
 
 #endif // IPV4VALUE_H

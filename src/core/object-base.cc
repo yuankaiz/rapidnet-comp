@@ -342,5 +342,6 @@ ObjectBase::TraceDisconnect (std::string name, std::string context, const Callba
 }
 
 
-
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::ObjectBase)

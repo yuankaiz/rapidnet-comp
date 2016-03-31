@@ -11,10 +11,6 @@
 #include "ns3/selector.h"
 #include "ns3/rapidnet-functions.h"
 
-// Add-on
-#include <boost/serialization/map.hpp> 
-#include <>
-
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -47,6 +43,7 @@ const string PktfwdSdnProvCompStaticCheck::RECVPACKET = "recvPacket";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETDECOMP = "recvPacketDecomp";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETTEMP = "recvPacketTemp";
 const string PktfwdSdnProvCompStaticCheck::RULEEXEC = "ruleExec";
+
 
 NS_LOG_COMPONENT_DEFINE ("PktfwdSdnProvCompStaticCheck");
 NS_OBJECT_ENSURE_REGISTERED (PktfwdSdnProvCompStaticCheck);
