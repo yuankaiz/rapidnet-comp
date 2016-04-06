@@ -165,6 +165,8 @@ void SerializeProv()
 {
   string relName = "ruleExec";
   app(5) -> SerializeRel(relName);
+  app(6) -> SerializeRel(relName);
+  app(4) -> SerializeRel(relName);
 }
 
 int

@@ -2,8 +2,8 @@
 /* Note: we remove RLoc from RID in this version*/
 
 /*Materialized table*/
-materialize(initPacket,infinity,infinity,keys(2,3)). /*Input packets at hosts*/
-materialize(recvPacket,infinity,infinity,keys(2,3)). /*Received packets at hosts*/
+materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
+materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
 materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
 materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
 materialize(flowEntry,infinity,infinity,keys(2,4:int32)). /*Flow tables of switches*/
@@ -18,6 +18,8 @@ materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule executio
 
 #define SWITCH 0
 #define HOST 1
+
+//STOPHERE
 
 /*Switch program*/
 /* Rules for handling provenance*/
