@@ -26,7 +26,29 @@
 #include "ns3/assert.h"
 #include "ns3/str-value.h"
 
+#include "ns3/bool-value.h"
+#include "ns3/byte-array-value.h"
+#include "ns3/id-value.h"
+#include "ns3/int32-value.h"
+#include "ns3/ipv4-value.h"
+#include "ns3/list-value.h"
+#include "ns3/nil-value.h"
+#include "ns3/real-value.h"
+#include "ns3/sv-value.h"
+
+
+#include <typeinfo>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 using namespace std;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -47,8 +69,9 @@ public:
 
   static TypeId GetTypeId (void);
 
-  TupleAttribute (string name = "unnamed", Ptr<Value> value =
-    Ptr<Value> (NULL));
+  TupleAttribute ();
+
+  TupleAttribute (string name, Ptr<Value> value);
 
   TupleAttribute (TupleAttribute &attr);
 
@@ -132,6 +155,63 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar.template register_type<ListValue>();
+    ar.template register_type<IdValue>();
+    ar.template register_type<Ipv4Value>();
+
+    std::cout << "Reach tuple attribute?";    
+    ar & boost::serialization::base_object<Object>(*this);
+
+    std::cout << "Serialize m_value" << endl;
+    Value* vp = GetPointer(m_value);
+    bool exist = false;
+    BoolValue* bp = dynamic_cast<BoolValue*>(vp);
+    if (bp != NULL){std::cout << "Bool type" << endl; exist = true;}
+    ByteArrayValue* bap = dynamic_cast<ByteArrayValue*>(vp);
+    if (bap != NULL){std::cout << "Byte Array type" << endl; exist = true;}    
+    IdValue* ip = dynamic_cast<IdValue*>(vp);
+    if (ip != NULL){std::cout << "IdValue type" << endl; exist = true;}        
+    Int32Value* itp = dynamic_cast<Int32Value*>(vp);
+    if (itp != NULL){std::cout << "Int32Value type" << endl; exist = true;}
+    Ipv4Value* ivp = dynamic_cast<Ipv4Value*>(vp);
+    if (ivp != NULL){std::cout << "Ipv4Value type" << endl; exist = true;}
+    ListValue* lp = dynamic_cast<ListValue*>(vp);
+    if (lp != NULL)
+      {
+        std::cout << "ListValue type" << endl; 
+        exist = true;
+
+        std::cout << "List size: " << lp->Size() << endl;
+
+        list<Ptr<Value> > vlist = lp->GetListValue();
+        list<Ptr<Value> >::iterator itr;
+        for (itr = vlist.begin();itr != vlist.end();itr++)
+          {
+            Value* vvp = GetPointer(*itr);
+            IdValue* vip = dynamic_cast<IdValue*>(vvp);
+            if (vip != NULL){std::cout << "IdValue type" << endl;}        
+          }
+      }
+    RealValue* rp = dynamic_cast<RealValue*>(vp);
+    if (rp != NULL){std::cout << "RealValue type" << endl; exist = true;}
+    SvValue* svp = dynamic_cast<SvValue*>(vp);
+    if (svp != NULL){std::cout << "SvValue type" << endl; exist = true;}
+    StrValue* sp = dynamic_cast<StrValue*>(vp);
+    if (sp != NULL){std::cout << "StrValue type" << endl; exist = true;}
+    NilValue* np = dynamic_cast<NilValue*>(vp);
+    if (np != NULL){std::cout << "NilValue type" << endl; exist = true;}
+    std:cout << "Type found: " << exist << endl;
+    ar & m_value;
+
+    ar & m_name;
+    std::cout << "Finish tuple-attribute.h" << endl;
+  }
+
   /**
    * \brief Sets name to the the given string.
    */
@@ -141,6 +221,7 @@ protected:
 
   Ptr<Value> m_value;
 };
+
 
 ostream& operator << (ostream& os, const Ptr<TupleAttribute>& attr);
 
@@ -175,5 +256,7 @@ TupleAttribute::GetType () const
 }
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::TupleAttribute)
 
 #endif // TUPLEATTRIBUTE_H

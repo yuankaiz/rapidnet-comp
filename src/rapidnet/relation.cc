@@ -31,6 +31,13 @@ Relation::GetTypeId (void)
   return tid;
 }
 
+Relation::Relation ()
+  : RelationBase ("no-name"), m_tuples (Tuple::Less)
+{
+  m_relaxed = false;
+  m_timeToLive = Seconds (TIME_INFINITY);
+}
+
 Relation::Relation (string name)
   : RelationBase (name), m_tuples (Tuple::Less)
 {
@@ -203,3 +210,5 @@ Relation::SetRelaxed (bool value)
 {
   m_relaxed = value;
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::Relation)

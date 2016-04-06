@@ -44,6 +44,7 @@ const string PktfwdSdnProvCompStaticCheck::RECVPACKETDECOMP = "recvPacketDecomp"
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETTEMP = "recvPacketTemp";
 const string PktfwdSdnProvCompStaticCheck::RULEEXEC = "ruleExec";
 
+
 NS_LOG_COMPONENT_DEFINE ("PktfwdSdnProvCompStaticCheck");
 NS_OBJECT_ENSURE_REGISTERED (PktfwdSdnProvCompStaticCheck);
 
@@ -129,6 +130,7 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
     attrdef ("recvPacket_attr3", IPV4)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
+    attrdef ("ruleExec_attr3", STR),
     attrdef ("ruleExec_attr4", LIST)));
 
 }

@@ -50,3 +50,5 @@ RefCountBase::GetReferenceCount (void) const
 }
 
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::RefCountBase)

@@ -161,6 +161,12 @@ void PacketInsertion()
   insert_packet(2, 2, 3);  
 }
 
+void SerializeProv()
+{
+  string relName = "ruleExec";
+  app(5) -> SerializeRel(relName);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -177,7 +183,9 @@ main (int argc, char *argv[])
   schedule (0.0010, SetupDevices);
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, PacketInsertion);
-  schedule (19.0000, Print);
+  //  schedule (19.0000, Print);
+  //Simulator::Schedule (Seconds (19.9900), SerializeProv, nodeNum);
+  schedule (19.0000, SerializeProv);
 
   Simulator::Run ();
   Simulator::Destroy ();

@@ -45,6 +45,15 @@
 #include "sendlog-authentication-manager.h"
 #include "sendlog-encryption-manager.h"
 
+#include <boost/serialization/base_object.hpp>
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 #define RAPIDNET_LOG(level,msg) \
   NS_LOG(level, '['<< Simulator::Now() << "] " << m_address << ": " << msg)
 
@@ -180,10 +189,20 @@ public:
    */
   void SetMaxJitter (uint32_t maxJitter);
 
+  /**
+   * \brief Serialize the designated relation
+   */
+  virtual void SerializeRel(string relName);
+
   /*
    *  \brief Default maximum jitter in milliseconds.
    */
   static const uint32_t MAX_JITTER = 500;
+
+  /**
+   * \brief Counter for different serialization file names
+   */
+  static int count;
 
   /**
    * \brief Application specific send triggers can be added to this.
@@ -421,6 +440,8 @@ class AppTrigger : public Trigger
 {
 public:
 
+  AppTrigger(){};
+
   virtual void SetApplication (Ptr<RapidNetApplicationBase> app)
   {
     m_app = app;
@@ -432,6 +453,16 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process App trigger" << endl;
+    ar & boost::serialization::base_object<Trigger>(*this);
+    ar & m_app;
+  }
+
   Ptr<RapidNetApplicationBase> m_app;
 };
 
@@ -442,9 +473,20 @@ class InsertTrigger : public AppTrigger
 {
 public:
 
+  InsertTrigger(){};
+
   virtual ~InsertTrigger () {}
 
   virtual void Invoke (Ptr<Tuple> tuple);
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process Insert trigger" << endl;
+    ar & boost::serialization::base_object<AppTrigger>(*this);
+  }
 };
 
 /**
@@ -454,9 +496,20 @@ class DeleteTrigger: public AppTrigger
 {
 public:
 
+  DeleteTrigger(){};
+
   virtual ~DeleteTrigger () {}
 
   virtual void Invoke (Ptr<Tuple> tuple);
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process Delete trigger" << endl;
+    ar & boost::serialization::base_object<AppTrigger>(*this);
+  }
 };
 
 /**
@@ -466,13 +519,29 @@ class RefreshTrigger: public AppTrigger
 {
 public:
 
+  RefreshTrigger(){};
+
   virtual ~RefreshTrigger () {}
 
   virtual void Invoke (Ptr<Tuple> tuple);
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process Refresh trigger" << endl;
+    ar & boost::serialization::base_object<AppTrigger>(*this);
+  }
 };
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::AppTrigger)
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::InsertTrigger)
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::DeleteTrigger)
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::RefreshTrigger)
 
 #endif // RAPIDNET_APPLICATION_BASE_H
 

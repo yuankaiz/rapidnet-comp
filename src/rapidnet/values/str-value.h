@@ -20,10 +20,22 @@
 #ifndef STRVALUE_H_
 #define STRVALUE_H_
 
+#include <iostream>
 #include <string>
 #include "value.h"
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 #define rn_str(ptr) \
   DynamicCast<StrValue, Value> (ptr)->GetStrValue ()
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 using namespace std;
 
@@ -38,7 +50,9 @@ namespace rapidnet {
 class StrValue: public Value
 {
 public:
-  StrValue (string value = "");
+  StrValue ();
+  
+  StrValue (string value);
 
   virtual ~StrValue ();
 
@@ -72,8 +86,21 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Serialize StrValue" << std::endl;
+    ar & boost::serialization::base_object<Value>(*this);    
+    ar & m_value;
+    std::cout << "Serialize StrValue finished" << std::endl;
+  }
+
   string m_value;
 };
+
+
 
 string
 StrValue::GetStrValue () const
@@ -83,5 +110,7 @@ StrValue::GetStrValue () const
 
 } // namespace rapidnet
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::StrValue)
 
 #endif // STRVALUE_H

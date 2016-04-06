@@ -22,6 +22,13 @@
 
 #include <stdint.h>
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 /**
@@ -30,6 +37,7 @@ namespace ns3 {
  * to store the value. It also does not report overflows.
  * So, it is a nice shortcut but in no way a complete solution.
  */
+
 
 class HighPrecision 
 {
@@ -48,6 +56,14 @@ public:
   int Compare (HighPrecision const &o) const;
   static HighPrecision Zero (void);
 private:
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_value;
+  }
+
   static const double MAX_64;
   double m_value;
 };

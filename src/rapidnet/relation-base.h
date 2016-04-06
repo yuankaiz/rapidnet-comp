@@ -30,6 +30,9 @@
 #include "assignor.h"
 #include "rapidnet-utils.h"
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 #define JOIN_NAMES(lname, rname) lname + "-join-" + rname
 #define COUNT_STAR "COUNT_STAR"
 
@@ -70,7 +73,9 @@ public:
     return RelationBase::GetTypeId();
   }
 
-  RelationBase(string name = "no-name");
+  RelationBase();
+
+  RelationBase(string name);
 
   virtual ~RelationBase() {}
 
@@ -222,6 +227,20 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Serialize object... " << endl;
+    ar & boost::serialization::base_object<Object>(*this);
+    std::cout << "Object done!" << endl;
+    //Warning: we do not serialize triggers
+    //ar & OnInsert & OnDelete & OnRefresh;
+    ar & m_name & m_timeToLive;
+    std::cout << "Relation base done!" << endl;
+  }
+
   string m_name;
 
   /**
@@ -243,5 +262,7 @@ private:
 
 } //namespace rapidnet
 } //namepsace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::RelationBase)
 
 #endif // RELATION_BASE_H

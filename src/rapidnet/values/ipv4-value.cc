@@ -25,6 +25,12 @@
 using namespace ns3;
 using namespace rapidnet;
 
+Ipv4Value::Ipv4Value ()
+  : Value (IPV4), m_value (Ipv4Address ())
+{
+}
+
+
 Ipv4Value::Ipv4Value (Ipv4Address value)
   : Value (IPV4), m_value (value)
 {
@@ -179,3 +185,4 @@ Ipv4Value::New (Ipv4Address value)
   return retval;
 }
 
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::Ipv4Value)

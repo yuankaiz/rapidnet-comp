@@ -26,7 +26,18 @@
 #include "relation-base.h"
 #include "rapidnet-utils.h"
 
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
+
 using namespace std;
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
 
 namespace ns3 {
 namespace rapidnet {
@@ -55,7 +66,7 @@ namespace rapidnet {
 class Relation : public RelationBase
 {
 public:
-
+  
   static TypeId GetTypeId (void);
 
   virtual TypeId GetInstanceTypeId ()
@@ -63,7 +74,9 @@ public:
     return Relation::GetTypeId ();
   }
 
-  Relation (string name = "no-name");
+  Relation();
+
+  Relation (string name);
 
   virtual ~Relation () {}
 
@@ -118,6 +131,21 @@ public:
 
 protected:
 
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "RelationBase serialize..." << endl;
+    ar & boost::serialization::base_object<RelationBase>(*this);
+    ar & m_relaxed;
+    std::cout << "m_relaxed done!";
+    ar & m_keyAttributes;
+    std::cout << "m_keyAttributes done!";
+    ar & m_tuples;
+    std::cout << "m_tuples done!";
+  }
+
   /* If set to true, means that type checking be relaxed. */
   bool m_relaxed;
 
@@ -137,5 +165,7 @@ protected:
 
 } //namespace rapidnet
 } //namepsace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Relation)
 
 #endif // RELATION_H

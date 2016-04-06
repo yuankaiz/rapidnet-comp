@@ -11,6 +11,7 @@ materialize(maxPriority,infinity,infinity,keys(2:int32)). /*Determine the maximu
 materialize(device,infinity,infinity,keys(2:int32)). /*Identify the device type of the node*/
 materialize(equiHashTable,infinity,infinity,keys(2)). /*Hash table for equivalence detection*/
 materialize(provHashTable,infinity,infinity,keys(3:list)). /*Hash table for provenance query*/
+materialize(ruleExec,infinity,infinity,keys(3:str, 4:list)). /*Hash table for provenance query*/
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/

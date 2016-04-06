@@ -27,6 +27,13 @@
 #include <string>
 #include <stdint.h>
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 class ObjectBase;
@@ -357,6 +364,15 @@ public:
   inline ~TypeId ();
 
 private:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_tid;
+  }  
+
   friend class AttributeList;
   friend bool operator == (TypeId a, TypeId b);
   friend bool operator != (TypeId a, TypeId b);

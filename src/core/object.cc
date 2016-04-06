@@ -269,6 +269,7 @@ Object::MaybeDelete (void) const
 
 } // namespace ns3
 
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::Object)
 
 #ifdef RUN_SELF_TESTS
 

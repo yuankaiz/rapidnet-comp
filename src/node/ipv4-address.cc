@@ -339,3 +339,5 @@ ATTRIBUTE_HELPER_CPP (Ipv4Address);
 ATTRIBUTE_HELPER_CPP (Ipv4Mask);
 
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::Ipv4Address)

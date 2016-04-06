@@ -246,3 +246,6 @@ def build(bld):
 
     obj = bld.create_ns3_program('pktfwd-sdn-prov-comp-static-check-test')
     obj.source = 'pktfwd-sdn-prov-comp-static-check-test.cc'        
+
+    obj = bld.create_ns3_program('pktfwd-sdn-large-scale-test')
+    obj.source = 'pktfwd-sdn-large-scale-test.cc'        

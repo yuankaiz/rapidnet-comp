@@ -27,6 +27,11 @@ NS_LOG_COMPONENT_DEFINE ("Value");
 
 const uint32_t Value::SIZE_TYPEID = 2;
 
+Value::Value ()
+  : m_type (NIL)
+{
+}
+
 Value::Value (ValueTypeId type)
   : m_type (type)
 {
@@ -82,3 +87,5 @@ ns3::rapidnet::operator << (ostream& os, const Ptr<Value>& value)
   os << value->ToString ();
   return os;
 }
+
+//BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::Value)

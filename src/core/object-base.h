@@ -24,6 +24,14 @@
 #include "callback.h"
 #include <string>
 
+
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 /**
  * This macro should be invoked once for every class which
  * defines a new GetTypeId method.
@@ -54,6 +62,8 @@ class AttributeList;
 class ObjectBase
 {
 public:
+  ObjectBase(){};
+
   static TypeId GetTypeId (void);
 
   virtual ~ObjectBase ();
@@ -153,12 +163,21 @@ protected:
   void ConstructSelf (const AttributeList &attributes);
 
 private:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version){}  
+
   bool DoSet (Ptr<const AttributeAccessor> spec,
               Ptr<const AttributeChecker> checker, 
               const AttributeValue &value);
-
 };
 
+
+
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::ObjectBase)
 
 #endif /* OBJECT_BASE_H */

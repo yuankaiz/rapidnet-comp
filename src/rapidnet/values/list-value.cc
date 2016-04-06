@@ -24,6 +24,12 @@
 using namespace ns3;
 using namespace rapidnet;
 
+ListValue::ListValue ()
+  :Value (LIST), m_value(list<Ptr<Value> > ())
+{
+}
+
+
 ListValue::ListValue (list<Ptr<Value> > value)
   :Value (LIST), m_value (value)
 {
@@ -224,3 +230,7 @@ ListValue::New (list<Ptr<Value> > value)
   listValue->m_value = value;
   return listValue;
 }
+
+
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::ListValue)

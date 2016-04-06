@@ -25,6 +25,13 @@
 #include <stdint.h>
 #include "assert.h"
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 /**
@@ -59,6 +66,15 @@ template <typename T>
 class Ptr 
 {
 private:
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Process smart pointer" << std::endl;
+    ar & m_ptr;
+  }
+
   T *m_ptr;
   class Tester {
   private:

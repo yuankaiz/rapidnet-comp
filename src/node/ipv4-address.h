@@ -26,6 +26,13 @@
 #include "address.h"
 #include "ns3/attribute-helper.h"
 
+//Forward declaration of class boost::serialization::access
+namespace boost{
+  namespace serialization{
+    class access;
+  }
+}
+
 namespace ns3 {
 
 class Ipv4Mask;
@@ -185,6 +192,15 @@ public:
   static Ipv4Address GetLoopback (void);
 
 private:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    ar & m_address;
+  }
+
   Address ConvertTo (void) const;
   static uint8_t GetType (void);
   uint32_t m_address;
@@ -294,5 +310,7 @@ bool operator == (Ipv4Mask const &a, Ipv4Mask const &b);
 bool operator != (Ipv4Mask const &a, Ipv4Mask const &b);
 
 } // namespace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::Ipv4Address)
 
 #endif /* IPV4_ADDRESS_H */

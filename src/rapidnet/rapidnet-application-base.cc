@@ -24,12 +24,20 @@
 #include "pki-authentication-manager.h"
 #include "blowfish-encryption-manager.h"
 
+#include <fstream> // add-on
+#include <sstream> //add-on
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
 
 NS_LOG_COMPONENT_DEFINE ("RapidNetApplicationBase");
 NS_OBJECT_ENSURE_REGISTERED (RapidNetApplicationBase);
+
+int RapidNetApplicationBase::count = 1; //add-on
 
 TypeId
 RapidNetApplicationBase::GetTypeId (void)
@@ -161,6 +169,28 @@ void
 RapidNetApplicationBase::SetMaxJitter (uint32_t maxJitter)
 {
   m_maxJitter = maxJitter;
+}
+
+void
+RapidNetApplicationBase::SerializeRel(string relName)
+{
+  RapidNetApplicationBase::count++;
+  std::cout << endl << endl << "Serialization of ruleExec" << endl << endl;
+  std::ostringstream oss;
+  oss << "/home/chen/research/rapidnet-comp/expr_data/prov_compress/" << RapidNetApplicationBase::count;
+  const char* fileName = oss.str().data();
+  std::ofstream ofs(fileName);
+  boost::archive::text_oarchive ar(ofs);
+  
+  //Serialize the ruleExec table
+  bool exist = m_database->HasRelation(relName);
+  if (exist == true)
+    {
+      Ptr<RelationBase> provRelation = m_database->GetRelation(relName);
+      RelationBase* provRelBasePtr = GetPointer(provRelation);
+      Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);
+      ar & provRelPtr;
+    }
 }
 
 void
@@ -619,3 +649,8 @@ RefreshTrigger::Invoke (Ptr<Tuple> tuple)
     RN_REFRESH)));
   GetApplication ()->SendLocal (tuple);
 }
+
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::AppTrigger)
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::InsertTrigger)
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::DeleteTrigger)
+BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::RefreshTrigger)
