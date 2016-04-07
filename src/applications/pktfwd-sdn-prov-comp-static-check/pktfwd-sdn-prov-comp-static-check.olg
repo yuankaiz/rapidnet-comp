@@ -23,9 +23,9 @@ materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule executio
 
 /*Switch program*/
 /* Rules for handling provenance*/
-rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, Tag) :-
+rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, DataTag) :-
     device(@Switch, Dvtype),
-    packetProv(@Switch, SrcAdd, DstAdd, Tag),
+    packetProv(@Switch, SrcAdd, DstAdd, Data, Tag),
     maxPriority(@Switch, TopPriority),
     Dvtype == SWITCH,
     RLoc := Switch,
@@ -35,15 +35,19 @@ rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, Lis
     List := f_append(PID1),
     List2 := f_append(PID2),
     List := f_concat(List, List2),
-    RID := f_sha1(R + List).
+    RID := f_sha1(R + List),
+    DataList := f_append(Data),
+    DataTag := f_concat(DataList, Tag).
 
-rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, TopPriority, RID, RLoc, Tag) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, Tag).
+rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, Tag) :-
+    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, DataTag),
+    Data := f_first(DataTag),
+    Tag := f_removeFirst(DataTag).
 
 /* TODO: The performance of using aggregation for hash table is not expected to be good */
 /* TODO: Matching on all ruleExec attributes is not necessary*/
 rs12 eMatchingPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, Tag),
+    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, DataTag),
     ruleExec(@RLoc, R, RID, List).
 
 /* If the RID does not exist, store the provenance node*/
@@ -52,22 +56,22 @@ rs13 ruleExec(@RLoc, RID, R, List) :-
     Rcount == 0.
 
 /* Add the RID to the Hashlist*/
-rs14 matchingPacket(@Switch, SrcAdd, DstAdd, TopPriority, NewTag) :-
-    eMatchingPacket(@Switch, SrcAdd, DstAdd, TopPriority, RID, RLoc, Tag),
+rs14 matchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, NewTag) :-
+    eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, Tag),
     Hash := f_append(RID),
     NewTag := f_concat(Tag, Hash).
 
 /* Rules for normal execution without provenance */
-rs1 matchingPacketNonProv(@Switch, SrcAdd, DstAdd, TopPriority, PIDequi, PIDev) :-
+rs1 matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Data, TopPriority, PIDequi, PIDev) :-
         device(@Switch, Dvtype),
-	packetNonProv(@Switch, SrcAdd, DstAdd, PIDequi, PIDev),
+	packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev),
 	maxPriority(@Switch, TopPriority),
         Dvtype == SWITCH.
 
 /*Recursively matching entries in a routing table*/
-rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, NextPriority, RID, R, List, Tag) :-
+rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, NextPriority, RID, R, List, DataTag) :-
     device(@Switch, Dvtype),
-    matchingPacket(@Switch, SrcAdd, DstAdd, Priority, Tag),
+    matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority, Tag),
     flowEntry(@Switch, DstEntry, Next, Priority),
     Priority > 0,
     DstAdd != DstEntry,
@@ -80,14 +84,16 @@ rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, NextPriority, RID, R, Li
     List := f_append(PID1),
     List2 := f_append(PID2),
     List := f_concat(List, List2),
-    RID := f_sha1(R + List).
+    RID := f_sha1(R + List),
+    DataList := f_append(Data),
+    DataTag := f_concat(DataList, Tag).
 
 /* rs21 - rs24 are identical to rs11 - rs14*/
 
 /*Recursively matching entries in a routing table*/
-rs2 matchingPacketNonProv(@Switch, SrcAdd, DstAdd, NextPriority, PIDequi, PIDev) :-
+rs2 matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Data, NextPriority, PIDequi, PIDev) :-
         device(@Switch, Dvtype),
-	matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Priority, PIDequi, PIDev),
+	matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Data, Priority, PIDequi, PIDev),
 	flowEntry(@Switch, DstEntry, Next, Priority),
 	Priority > 0,
 	DstAdd != DstEntry,
@@ -95,9 +101,9 @@ rs2 matchingPacketNonProv(@Switch, SrcAdd, DstAdd, NextPriority, PIDequi, PIDev)
         Dvtype == SWITCH.	
 
 /*A hit in the routing table, forward the packet accordingly*/
-rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag) :-
+rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
         device(@Switch, Dvtype),
-        matchingPacket(@Switch, SrcAdd, DstAdd, Priority, Tag),
+        matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority, Tag),
 	flowEntry(@Switch, DstEntry, Next, Priority),
 	link(@Switch, Next),
 	Priority > 0,
@@ -115,12 +121,12 @@ rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag) :-
 	List := f_concat(List, List3),
 	RID := f_sha1(R + List).
 
-rs31 ePacket(@Next, SrcAdd, DstAdd, RID, RLoc, Tag) :-
-	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag).
+rs31 ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc, Tag) :-
+	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag).
 
 /*TODO: optimization - join on RID is enough*/
 rs32 ePaketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
-	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag),
+	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag),
 	ruleExec(@RLoc, RID, R, List).
 
 rs33 ruleExec(@RLoc, RID, R, List) :-
@@ -129,15 +135,15 @@ rs33 ruleExec(@RLoc, RID, R, List) :-
 
 /* Since Hashlist is the suffix of Tag */
 /* appending Hash to Tag is equal to appending Hash to Hashlist*/
-rs34 packetProv(@Next, SrcAdd, DstAdd, NewTag) :-
-	ePacket(@Next, SrcAdd, DstAdd, RID, RLoc, Tag),
+rs34 packetProv(@Next, SrcAdd, DstAdd, Data, NewTag) :-
+	ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc, Tag),
 	Hash := f_append(RID),
 	NewTag := f_concat(Tag, Hash).
 
 /*A hit in the routing table, forward the packet accordingly*/
-rs3 packetNonProv(@Next, SrcAdd, DstAdd, PIDequi, PIDev) :-
+rs3 packetNonProv(@Next, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Switch, Dvtype),
-        matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Priority, PIDequi, PIDev),
+        matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Data, Priority, PIDequi, PIDev),
 	flowEntry(@Switch, DstEntry, Next, Priority),
 	link(@Switch, Next),
 	Priority > 0,
@@ -146,9 +152,9 @@ rs3 packetNonProv(@Next, SrcAdd, DstAdd, PIDequi, PIDev) :-
 
 
 /*No hit in the routing table, follow the default routing*/
-rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag) :-
+rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
         device(@Switch, Dvtype),
-        matchingPacket(@Switch, SrcAdd, DstAdd, Priority, Tag),
+        matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority, Tag),
 	flowEntry(@Switch, DstAdd, Next, Priority),
 	link(@Switch, Next),
 	Priority == 0,
@@ -168,9 +174,9 @@ rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, RID, R, List, Tag) :-
 /* rs41 - rs44 are identical to rs31 - rs34*/
 
 /*No hit in the routing table, follow the default routing*/
-rs4 packetNonProv(@Next, SrcAdd, DstAdd, PIDequi, PIDev) :-
+rs4 packetNonProv(@Next, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Switch, Dvtype),
-        matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Priority, PIDequi, PIDev),
+        matchingPacketNonProv(@Switch, SrcAdd, DstAdd, Data, Priority, PIDequi, PIDev),
 	flowEntry(@Switch, DstAdd, Next, Priority),
 	link(@Switch, Next),
 	Priority == 0,
@@ -178,35 +184,35 @@ rs4 packetNonProv(@Next, SrcAdd, DstAdd, PIDequi, PIDev) :-
 
 /*Host program*/
 /* Hash on equivalence attributes*/
-rh100 initPacketHash(@Host, SrcAdd, DstAdd, PIDequi) :-
-    initPacket(@Host, SrcAdd, DstAdd),
+rh100 initPacketHash(@Host, SrcAdd, DstAdd, Data, PIDequi) :-
+    initPacket(@Host, SrcAdd, DstAdd, Data),
     PIDequi := f_sha1("" + Host + DstAdd).
 
-rh101 initPacketCount(@Host, SrcAdd, DstAdd, PIDequi, a_COUNT<*>) :-
-    initPacketHash(@Host, SrcAdd, DstAdd, PIDequi),
+rh101 initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, a_COUNT<*>) :-
+    initPacketHash(@Host, SrcAdd, DstAdd, Data, PIDequi),
     equiHashTable(@Host, DstAdd, PIDequi).
 
-rh102 equiHashTable(@Host, DstAdd, PIDequi) :-
-    initPacketCount(@Host, SrcAdd, DstAdd, PIDequi, PIDcount),
+rh102 equiHashTable(@Host, DstAdd, Data, PIDequi) :-
+    initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     PIDcount == 0.
 
-rh103 packetNonProv(@Switch, SrcAdd, DstAdd, PIDequi, PIDev) :-
+rh103 packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
     device(@Host, Dvtype),
-    initPacketCount(@Host, SrcAdd, DstAdd, PIDequi, PIDcount),
+    initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     linkhr(@Host, Switch),
     Dvtype == HOST,
-    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd), /*Generate event hash*/            
+    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data), /*Generate event hash*/            
     PIDcount != 0.
 
-rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, RID, R, List, Tag) :-
+rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
         device(@Host, Dvtype),
-        initPacketCount(@Host, SrcAdd, DstAdd, PIDequi, PIDcount),
+        initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
 	linkhr(@Host, Switch),
         Dvtype == HOST,
 	PIDcount == 0,
 	RLoc := Host,
 	R := "rh1",
-	PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd), /*Generate event hash*/
+	PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data), /*Generate event hash*/
 	Equilist := f_append(PIDequi),
 	Evlist := f_append(PIDev),
 	Eventlist := f_concat(Equilist, Evlist),
@@ -223,9 +229,9 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, RID, R, List, Tag) :-
 
 /*Receive a packet*/
 /* Process a packet that is the first of the equivalence class*/
-rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, RID, R, List, Tag) :-
+rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	device(@Host, Dvtype),
-	packetProv(@Host, SrcAdd, DstAdd, Tag),
+	packetProv(@Host, SrcAdd, DstAdd, Data, Tag),
         Dvtype == HOST,
 	RLoc := Host,
 	R := "rh2",
@@ -233,38 +239,38 @@ rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, RID, R, List, Tag) :-
 	List := f_append(PID1),
 	RID := f_sha1(R + List).
 
-rh21 eRecvPacket(@Host, SrcAdd, DstAdd, RID, RLoc, Tag) :-
-    eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, RID, R, List, Tag).
+rh21 eRecvPacket(@Host, SrcAdd, DstAdd, Data, Data, RID, RLoc, Tag) :-
+    eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag).
 
 rh22 eRecvPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
-	eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, RID, R, List, Tag),
+	eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag),
 	ruleExec(@RLoc, RID, R, List).
 
 rs23 ruleExec(@RLoc, RID, R, List) :-
 	eRecvPacketCount(@RLoc, RID, R, List, Rcount),
 	Rcount == 0.
 
-rh24 recvPacketTemp(@Host, SrcAdd, DstAdd, Tag) :-
-	eRecvPacket(@Host, SrcAdd, DstAdd, RID, RLoc, Tag),
+rh24 recvPacketTemp(@Host, SrcAdd, DstAdd, Data, Tag) :-
+	eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc, Tag),
 	Hash := f_append(RID),
 	NewTag := f_concat(Tag, Hash).
 
-rh25 recvPacketDecomp(@Host, SrcAdd, DstAdd, PIDequi, PIDev, Hashlist) :-
-    recvPacketTemp(@Host, SrcAdd, DstAdd, Tag),
+rh25 recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist) :-
+    recvPacketTemp(@Host, SrcAdd, DstAdd, Data, Tag),
     PIDequi := f_first(Tag),
     Remainlist := f_removeFirst(Tag),
     PIDev := f_first(Remainlist),
     Hashlist := f_removeFirst(Remainlist).
 
 rh26 provHashTable(@Host, PIDequi, Hashlist) :-
-    recvPacketDecomp(@Host, SrcAdd, DstAdd, PIDequi, PIDev, Hashlist).
+    recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist).
 
-rh27 recvPacket(@Host, SrcAdd, DstAdd, PIDequi, PIDev) :-
-    recvPacketDecomp(@Host, SrcAdd, DstAdd, PIDequi, PIDev, Hashlist).
+rh27 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
+    recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist).
 
 /* Process a packet that is NOT the first of the equivalence class*/
-rh2 recvPacket(@Host, SrcAdd, DstAdd, PIDequi, PIDev) :-
+rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Host, Dvtype),
-	packetNonProv(@Host, SrcAdd, DstAdd, PIDequi, PIDev),
+	packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
         Dvtype == HOST.
 
