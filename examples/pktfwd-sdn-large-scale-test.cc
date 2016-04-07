@@ -16,6 +16,7 @@
 
 #include "stdlib.h"
 #include "fstream"
+#include <sstream>
 #include <list>
 #include <map>
 #include <cstring>
@@ -57,14 +58,15 @@
   app(sw) -> Insert(link(addr(sw), addr(nei)));
 
 /* Input packets */
-#define initpacket(host, srcadd, dstadd)         \
+#define initpacket(host, srcadd, dstadd, data)               \
   tuple(PktfwdSdnProvCompStaticCheck::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
-  attr("initPacket_attr3", Ipv4Value, dstadd))
+  attr("initPacket_attr3", Ipv4Value, dstadd),    \
+  attr("initPacket_attr4", StrValue, data))
 
-#define insert_packet(host, srcadd, dstadd)                            \
-  app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd)));
+#define insert_packet(host, srcadd, dstadd, data)                            \
+  app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd), data));
 
 /* Max priority */
 #define maxPriority(sw, priority)\
@@ -89,7 +91,8 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 1000
+#define DEFAULT_PKTNUM 100
+#define DEFAULT_HOST_PAIR 2
 
 using namespace std;
 using namespace ns3;
@@ -465,14 +468,66 @@ void SetupFlowTable(map<int, int> rtables[MAX_NODE_NUM], int switchNum)
 }
 
 /* Insert packets for experiments*/
-void PacketInsertion(int src, int dst)
+void PacketInsertion(int src, int dst, string data)
 {
   /* Send DEFAULT_PKTNUM of packets to from src to dst*/
   int deviceSrc = src + 1;
   int deviceDst = dst + 1;
-  for (int i = 0; i < DEFAULT_PKTNUM; i++)
+
+  insert_packet(deviceSrc, deviceSrc, deviceDst, data);
+  
+  // ostringstream ss;
+  // int dataCount = 0;
+  // for (int i = 0; i < DEFAULT_PKTNUM; i++, dataCount++)
+  //   {
+  //     ss.str("");
+  //     ss << dataCount;
+  //     string data = ss.str();
+  //     insert_packet(deviceSrc, deviceSrc, deviceDst, data);
+  //   }
+}
+
+/* Schedule packet transmission*/
+void SchedulePacketTrans(int totalNum, int totalSwcNum)
+{
+  /* DEFAULT_PKTNUM of packet transmissions between a single pair of nodes */
+  // double insert_time = 4.0000;
+  // ostringstream ss;
+  // int dataCount = 0;
+  // for (int i = 0;i < DEFAULT_PKTNUM;i++, insert_time += 0.0010, dataCount++)
+  //   {
+  //     ss.str("");
+  //     ss << dataCount;
+  //     string data = ss.str();
+  //     Simulator::Schedule (Seconds (insert_time), PacketInsertion, 131, 190, data);
+  //   }
+
+  /* Setup: each host randomly picks another host and 
+     send a series of packets to it*/
+  double trigger_time = 4.0000;
+  ostringstream ss;
+  int dataCount = 0;
+  srand(1); 
+  for (int i = DEFAULT_HOST_PAIR; i < DEFAULT_HOST_PAIR; i++, trigger_time += 0.1)
     {
-      insert_packet(deviceSrc, deviceSrc, deviceDst);
+      int src = (rand() % (totalNum - totalSwcNum)) + totalSwcNum;
+      int dst;
+      do
+        {
+          dst = (rand() % (totalNum - totalSwcNum)) + totalSwcNum;
+        }
+      while (dst == src);
+
+      double insert_time = trigger_time;
+      ostringstream ss;
+      int dataCount = 0;
+      for (int i = 0;i < DEFAULT_PKTNUM;i++, insert_time += 0.0010, dataCount++)
+        {
+          ss.str("");
+          ss << dataCount;
+          string data = ss.str();
+          Simulator::Schedule (Seconds (trigger_time), PacketInsertion, src, dst, data);
+        }
     }
 }
 
@@ -526,22 +581,7 @@ main (int argc, char *argv[])
   Simulator::Schedule (Seconds(3.0000), SetupFlowTable, rtables, totalSwcNum);  
 
   // Schedule traffic
-  /* Setup: each host randomly picks another host and 
-     send a series of packets to it*/
-  /*double trigger_time = 4.0000;
-  srand(1); 
-  for (int host = totalSwcNum; host < totalNum; host++, trigger_time += 0.1)
-    {
-      int dst;
-      do
-        {
-          dst = (rand() % (totalNum - totalSwcNum)) + totalSwcNum;
-        }
-      while (dst == host);
-      Simulator::Schedule (Seconds (trigger_time), PacketInsertion, host, dst);
-      }*/
-
-  Simulator::Schedule (Seconds (4.0000), PacketInsertion, 131, 190);
+  SchedulePacketTrans(totalNum, totalSwcNum);
 
   apps = InitRapidNetApps (totalNum, Create<PktfwdSdnProvCompStaticCheckHelper> ());
 

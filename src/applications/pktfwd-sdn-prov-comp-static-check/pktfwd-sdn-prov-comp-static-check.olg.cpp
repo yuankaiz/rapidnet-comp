@@ -190,7 +190,7 @@ rh101 initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, a_COUNT<*>) :-
     initPacketHash(@Host, SrcAdd, DstAdd, Data, PIDequi),
     equiHashTable(@Host, DstAdd, PIDequi).
 
-rh102 equiHashTable(@Host, DstAdd, Data, PIDequi) :-
+rh102 equiHashTable(@Host, DstAdd, PIDequi) :-
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     PIDcount == 0.
 
@@ -237,7 +237,7 @@ rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
  List := f_append(PID1),
  RID := f_sha1(R + List).
 
-rh21 eRecvPacket(@Host, SrcAdd, DstAdd, Data, Data, RID, RLoc, Tag) :-
+rh21 eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc, Tag) :-
     eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag).
 
 rh22 eRecvPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-

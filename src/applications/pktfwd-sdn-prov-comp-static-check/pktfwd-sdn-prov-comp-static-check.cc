@@ -1256,12 +1256,10 @@ PktfwdSdnProvCompStaticCheck::Rh102_eca (Ptr<Tuple> initPacketCount)
     EQUIHASHTABLE,
     strlist ("initPacketCount_attr1",
       "initPacketCount_attr3",
-      "initPacketCount_attr4",
       "initPacketCount_attr5"),
     strlist ("equiHashTable_attr1",
       "equiHashTable_attr2",
-      "equiHashTable_attr3",
-      "equiHashTable_attr4"));
+      "equiHashTable_attr3"));
 
   Insert (result);
 }
@@ -1527,16 +1525,12 @@ PktfwdSdnProvCompStaticCheck::Rh21_eca (Ptr<Tuple> eRecvPacketTemp)
 
   Ptr<Tuple> result = eRecvPacketTemp;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("eRecvPacketTemp_attr5")));
-
   result = result->Project (
     ERECVPACKET,
     strlist ("eRecvPacketTemp_attr2",
       "eRecvPacketTemp_attr3",
       "eRecvPacketTemp_attr4",
       "eRecvPacketTemp_attr5",
-      "$1",
       "eRecvPacketTemp_attr6",
       "eRecvPacketTemp_attr1",
       "eRecvPacketTemp_attr9",
@@ -1548,7 +1542,6 @@ PktfwdSdnProvCompStaticCheck::Rh21_eca (Ptr<Tuple> eRecvPacketTemp)
       "eRecvPacket_attr5",
       "eRecvPacket_attr6",
       "eRecvPacket_attr7",
-      "eRecvPacket_attr8",
       RN_DEST));
 
   Send (result);
