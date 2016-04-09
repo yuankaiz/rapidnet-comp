@@ -91,7 +91,7 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 100
+#define DEFAULT_PKTNUM 10
 #define DEFAULT_HOST_PAIR 2
 
 using namespace std;
@@ -505,10 +505,8 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum)
   /* Setup: each host randomly picks another host and 
      send a series of packets to it*/
   double trigger_time = 4.0000;
-  ostringstream ss;
-  int dataCount = 0;
   srand(1); 
-  for (int i = DEFAULT_HOST_PAIR; i < DEFAULT_HOST_PAIR; i++, trigger_time += 0.1)
+  for (int i = 0; i < DEFAULT_HOST_PAIR; i++, trigger_time += 0.1)
     {
       int src = (rand() % (totalNum - totalSwcNum)) + totalSwcNum;
       int dst;
@@ -518,15 +516,16 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum)
         }
       while (dst == src);
 
+      std::cout << "Communicating pair: (" << src << "," << dst << ")";
       double insert_time = trigger_time;
       ostringstream ss;
       int dataCount = 0;
-      for (int i = 0;i < DEFAULT_PKTNUM;i++, insert_time += 0.0010, dataCount++)
+      for (int j = 0;j < DEFAULT_PKTNUM;j++, insert_time += 0.0010, dataCount++)
         {
           ss.str("");
           ss << dataCount;
           string data = ss.str();
-          Simulator::Schedule (Seconds (trigger_time), PacketInsertion, src, dst, data);
+          Simulator::Schedule (Seconds (insert_time), PacketInsertion, src, dst, data);
         }
     }
 }

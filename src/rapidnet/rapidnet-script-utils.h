@@ -35,6 +35,7 @@
 #include "ns3/yans-wifi-helper.h"
 #include "ns3/nqos-wifi-mac-helper.h"
 #include "ns3/csma-helper.h"
+#include "ns3/point-to-point-helper.h"
 #include "ns3/internet-stack-helper.h"
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-address.h"

@@ -38,25 +38,43 @@ ApplicationContainer
 InitRapidNetApps (int numNodes, Ptr<RapidNetApplicationHelper> appHelper,
   Ipv4Address base, string pcapLogFileName)
 {
-  NodeContainer csmaNodes;
-  csmaNodes.Create (numNodes);
+  /* CSMA device model*/
+  // NodeContainer csmaNodes;
+  // csmaNodes.Create (numNodes);
 
-  CsmaHelper csma;
+  // CsmaHelper csma;
 
-  NetDeviceContainer csmaDevices;
-  csmaDevices = csma.Install (csmaNodes);
+  // NetDeviceContainer csmaDevices;
+  // csmaDevices = csma.Install (csmaNodes);
+
+  // InternetStackHelper stack;
+  // stack.Install (csmaNodes);
+
+  // Ipv4AddressHelper address;
+
+  // address.SetBase (base, DEFAULT_MASK);
+  // address.Assign (csmaDevices);
+
+  // CsmaHelper::EnablePcapAll (pcapLogFileName, true);
+
+  // return appHelper->Install (csmaNodes);
+
+  /* Point-to-point device model*/
+  NodeContainer ptpNodes;
+  ptpNodes.Create (numNodes);
+
+  PointToPointHelper ptpHelper;
+  NetDeviceContainer devices;
+  devices = ptpHelper.Install (ptpNodes);
 
   InternetStackHelper stack;
-  stack.Install (csmaNodes);
+  stack.Install (ptpNodes);
 
   Ipv4AddressHelper address;
-
   address.SetBase (base, DEFAULT_MASK);
-  address.Assign (csmaDevices);
+  address.Assign (devices);
 
-  CsmaHelper::EnablePcapAll (pcapLogFileName, true);
-
-  return appHelper->Install (csmaNodes);
+  return appHelper->Install (ptpNodes);
 }
 
 void
