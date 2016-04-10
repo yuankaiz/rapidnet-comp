@@ -21,6 +21,7 @@
 #include <map>
 #include <cstring>
 
+#include "ns3/uinteger.h"
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
@@ -28,6 +29,10 @@
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
+
+#include "ns3/csma-helper.h"
+#include "ns3/ipv4-address-helper.h"
+#include "ns3/ipv4-address.h"
 
 /* Device identification*/
 #define device(host, dvtype)\
@@ -91,9 +96,8 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 10
-#define DEFAULT_HOST_PAIR 2
-
+#define DEFAULT_PKTNUM 3
+#define DEFAULT_HOST_PAIR 1
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -516,7 +520,7 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum)
         }
       while (dst == src);
 
-      std::cout << "Communicating pair: (" << src << "," << dst << ")";
+      std::cout << "Communicating pair: (" << src << "," << dst << ")" << endl;
       double insert_time = trigger_time;
       ostringstream ss;
       int dataCount = 0;
@@ -582,10 +586,32 @@ main (int argc, char *argv[])
   // Schedule traffic
   SchedulePacketTrans(totalNum, totalSwcNum);
 
-  apps = InitRapidNetApps (totalNum, Create<PktfwdSdnProvCompStaticCheckHelper> ());
+  /* Create RapidNet apps*/
+  //apps = InitRapidNetApps (totalNum, Create<PktfwdSdnProvCompStaticCheckHelper> ());
+  /* CSMA device model*/
+  NodeContainer csmaNodes;
+  csmaNodes.Create (totalNum);
+
+  CsmaHelper csma;
+  csma.SetDeviceAttribute ("EncapsulationMode", StringValue ("Dix"));
+  csma.SetDeviceAttribute ("FrameSize", UintegerValue (64000));
+
+  NetDeviceContainer csmaDevices;
+  csmaDevices = csma.Install (csmaNodes);
+
+  InternetStackHelper stack;
+  stack.Install (csmaNodes);
+
+  Ipv4AddressHelper address;
+
+  address.SetBase ("10.1.1.0", "255.255.255.0");
+  address.Assign (csmaDevices);
+
+  Ptr<RapidNetApplicationHelper> appHelper = Create<PktfwdSdnProvCompStaticCheckHelper> ();
+  apps = appHelper->Install (csmaNodes);
 
   apps.Start (Seconds (0.0));
-  apps.Stop (Seconds (50.0));
+  apps.Stop (Seconds (500.0));
 
   Simulator::Run ();
   Simulator::Destroy ();
