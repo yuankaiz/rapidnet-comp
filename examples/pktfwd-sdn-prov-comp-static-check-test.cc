@@ -165,9 +165,11 @@ void PacketInsertion()
 void SerializeProv()
 {
   string relName = "ruleExec";
-  app(5) -> SerializeRel(relName);
-  app(6) -> SerializeRel(relName);
-  app(4) -> SerializeRel(relName);
+  vector<string> relNames;
+  relNames.push_back(relName);
+  app(5) -> SerializeRel(relNames, 5);
+  app(6) -> SerializeRel(relNames, 6);
+  app(4) -> SerializeRel(relNames, 4);
 }
 
 int

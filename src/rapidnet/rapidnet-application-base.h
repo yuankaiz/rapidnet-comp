@@ -192,17 +192,12 @@ public:
   /**
    * \brief Serialize the designated relation
    */
-  virtual void SerializeRel(string relName);
+  virtual void SerializeRel(vector<string>& relNames, int nodeID);
 
   /*
    *  \brief Default maximum jitter in milliseconds.
    */
   static const uint32_t MAX_JITTER = 500;
-
-  /**
-   * \brief Counter for different serialization file names
-   */
-  static int count;
 
   /**
    * \brief Application specific send triggers can be added to this.

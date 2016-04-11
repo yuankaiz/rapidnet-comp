@@ -549,6 +549,15 @@ void DeleteLinks(AdjList* nodeArray, int totalSwcNum)
     }
 }
 
+// void SerializeProv()
+// {
+//   string relName = "ruleExec";
+
+//   app(5) -> SerializeRel(relName);
+//   app(6) -> SerializeRel(relName);
+//   app(4) -> SerializeRel(relName);
+// }
+
 int
 main (int argc, char *argv[])
 {
@@ -612,6 +621,8 @@ main (int argc, char *argv[])
 
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (500.0));
+
+  //  schedule (499.0000, SerializeProv);
 
   Simulator::Run ();
   Simulator::Destroy ();
