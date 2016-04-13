@@ -192,7 +192,7 @@ public:
   /**
    * \brief Serialize the designated relation
    */
-  virtual void SerializeRel(vector<string>& relNames, int nodeID);
+  virtual void SerializeRel(vector<string>& relNames, int nodeID, string storePath);
 
   /*
    *  \brief Default maximum jitter in milliseconds.

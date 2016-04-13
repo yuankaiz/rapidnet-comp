@@ -114,6 +114,10 @@ PktfwdSdnProv::InitDatabase ()
     attrdef ("recvPacket_attr3", IPV4),
     attrdef ("recvPacket_attr4", STR)));
 
+  AddRelationWithKeys (RULEEXEC, attrdeflist (
+    attrdef ("ruleExec_attr3", STR),
+    attrdef ("ruleExec_attr4", LIST)));
+
 }
 
 void
@@ -524,7 +528,7 @@ PktfwdSdnProv::Rs12_eca (Ptr<Tuple> eMatchingPacketTemp)
       "ruleExec_attr3",
       "ruleExec_attr4"));
 
-  SendLocal (result);
+  Insert (result);
 }
 
 void
@@ -911,7 +915,7 @@ PktfwdSdnProv::Fs32_eca (Ptr<Tuple> ePacketTemp)
       "ruleExec_attr3",
       "ruleExec_attr4"));
 
-  SendLocal (result);
+  Insert (result);
 }
 
 void
@@ -1574,7 +1578,7 @@ PktfwdSdnProv::Rh22_eca (Ptr<Tuple> eRecvPacketTemp)
       "ruleExec_attr3",
       "ruleExec_attr4"));
 
-  SendLocal (result);
+  Insert (result);
 }
 
 void

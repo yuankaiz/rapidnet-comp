@@ -170,11 +170,11 @@ RapidNetApplicationBase::SetMaxJitter (uint32_t maxJitter)
 }
 
 void
-RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID)
+RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, string storePath)
 {
   std::cout << endl << endl << "Serialization of provenance tables" << endl << endl;
   std::ostringstream oss;
-  oss << "/home/chen/research/rapidnet-comp/expr_data/prov_compress/" << nodeID;
+  oss << storePath << nodeID;
   const char* fileName = oss.str().data();
   //  std::cout << "Reach here?" << endl;
   std::ofstream ofs(fileName);

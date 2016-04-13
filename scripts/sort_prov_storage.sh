@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DIRECTORY="/home/chen/research/rapidnet-comp/examples/*"
+DIRECTORY="/localdrive1/chen/prov_storage/*"
 count=0
 
 # Collect sizes of all files
@@ -17,9 +17,12 @@ sortRes=( $(printf "%s\n" "${fileSizes[@]}" | sort -g))
 
 # Create the cumulative result
 outputFile="storage_cdf.dat"
+rm -f $outputFile
 for ((i=0;i<fileNum;i++))
 do
     fileIdx=$((i+1))
     percentage=$(($fileIdx*100/$fileNum))
     printf "%s %s \n" "${sortRes[$i]}" "$percentage" >> "$outputFile"
 done
+
+rm -f $DIRECTORY

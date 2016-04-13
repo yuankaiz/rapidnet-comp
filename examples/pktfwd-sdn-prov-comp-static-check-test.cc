@@ -162,15 +162,15 @@ void PacketInsertion()
   insert_packet(2, 2, 3, "4");  
 }
 
-void SerializeProv()
-{
-  string relName = "ruleExec";
-  vector<string> relNames;
-  relNames.push_back(relName);
-  app(5) -> SerializeRel(relNames, 5);
-  app(6) -> SerializeRel(relNames, 6);
-  app(4) -> SerializeRel(relNames, 4);
-}
+// void SerializeProv()
+// {
+//   string relName = "ruleExec";
+//   vector<string> relNames;
+//   relNames.push_back(relName);
+//   app(5) -> SerializeRel(relNames, 5);
+//   app(6) -> SerializeRel(relNames, 6);
+//   app(4) -> SerializeRel(relNames, 4);
+// }
 
 int
 main (int argc, char *argv[])
@@ -190,7 +190,7 @@ main (int argc, char *argv[])
   schedule (4.0000, PacketInsertion);
   //  schedule (19.0000, Print);
   //Simulator::Schedule (Seconds (19.9900), SerializeProv, nodeNum);
-  schedule (19.0000, SerializeProv);
+  //  schedule (19.0000, SerializeProv);
 
   Simulator::Run ();
   Simulator::Destroy ();
