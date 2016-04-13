@@ -8,8 +8,8 @@ materialize(maxPriority,infinity,infinity,keys(2:int32)). /*Determine the maximu
 materialize(device,infinity,infinity,keys(2:int32)). /*Identify the device type of the node*/
 
 /* Provenance tables*/
-//materialize(ruleExec,infinity,infinity,keys(2:str)). /*Record the rule execution*/
-//materialize(prov,infinity,infinity,keys(2:str,3:str)). /*Record the tuple generation*/
+materialize(ruleExec,infinity,infinity,keys(3:str,4:list)). /*Record the rule execution*/
+//materialize(prov,infinity,infinity,keys(2:id,3:id)). /*Record the tuple generation*/
 
 
 

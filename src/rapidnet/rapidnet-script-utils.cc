@@ -38,6 +38,7 @@ ApplicationContainer
 InitRapidNetApps (int numNodes, Ptr<RapidNetApplicationHelper> appHelper,
   Ipv4Address base, string pcapLogFileName)
 {
+  /* CSMA device model*/
   NodeContainer csmaNodes;
   csmaNodes.Create (numNodes);
 
@@ -57,6 +58,48 @@ InitRapidNetApps (int numNodes, Ptr<RapidNetApplicationHelper> appHelper,
   CsmaHelper::EnablePcapAll (pcapLogFileName, true);
 
   return appHelper->Install (csmaNodes);
+
+  /* Point-to-point device model*/
+  /*  assert (numNodes % 2 == 0); // For ease of IP address allocation
+  NodeContainer ptpNodes;
+  ptpNodes.Create (numNodes);
+
+  PointToPointHelper ptpHelper;
+  std::vector<NetDeviceContainer> devices;
+  //Create a full mesh for all the nodes
+  //The real connection is determined by the link table
+  for (int i = 0;i < numNodes;i++)
+  {
+    if (i % 2 == 0 && (i + 1) < numNodes)
+    {
+      NodeContainer src = ptpNodes.Get(i);
+      NodeContainer dst = ptpNodes.Get(i+1);
+      NodeContainer pair = NodeContainer(src, dst);
+      NetDeviceContainer ptpDevice = ptpHelper.Install (pair);
+      devices.push_back(ptpDevice);
+    }
+    
+    for (int j = i+2;j < numNodes;j++)
+    {
+      NodeContainer src = ptpNodes.Get(i);
+      NodeContainer dst = ptpNodes.Get(j);
+      NodeContainer pair = NodeContainer(src, dst);
+      NetDeviceContainer ptpDevice = ptpHelper.Install (pair);
+    }
+  }
+  
+  InternetStackHelper stack;
+  stack.Install (ptpNodes);
+
+  Ipv4AddressHelper address;
+  address.SetBase (base, DEFAULT_MASK);
+  std::vector<NetDeviceContainer>::iterator itr;
+  for (itr = devices.begin(); itr != devices.end(); itr++)
+  {
+    address.Assign (*itr);    
+  }
+
+  return appHelper->Install (ptpNodes);*/
 }
 
 void

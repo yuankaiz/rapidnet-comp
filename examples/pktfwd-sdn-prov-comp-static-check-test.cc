@@ -51,14 +51,15 @@
   app(sw) -> Insert(link(addr(sw), addr(nei)));
 
 /* Input packets */
-#define initpacket(host, srcadd, dstadd)         \
+#define initpacket(host, srcadd, dstadd, data)               \
   tuple(PktfwdSdnProvCompStaticCheck::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
-  attr("initPacket_attr3", Ipv4Value, dstadd))
+  attr("initPacket_attr3", Ipv4Value, dstadd),    \
+  attr("initPacket_attr4", StrValue, data))
 
-#define insert_packet(host, srcadd, dstadd)                            \
-  app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd)));
+#define insert_packet(host, srcadd, dstadd, data)                            \
+  app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd), data));
 
 /* Max priority */
 #define maxPriority(sw, priority)\
@@ -152,20 +153,24 @@ void SetupFlowTable()
 void PacketInsertion()
 {
   /* Packets sent from 1 to 4 by 1*/
-  insert_packet(1, 1, 4);
-  insert_packet(1, 1, 4);
+  insert_packet(1, 1, 4, "1");
+  insert_packet(1, 1, 4, "2");
   /* Packet sent from 2 to 4 by 1. A spoof*/
-  insert_packet(1, 2, 4);
+  insert_packet(1, 2, 4, "3");
 
   /* Packets sent from 2 to 3 by 2.*/
-  insert_packet(2, 2, 3);  
+  insert_packet(2, 2, 3, "4");  
 }
 
-void SerializeProv()
-{
-  string relName = "ruleExec";
-  app(5) -> SerializeRel(relName);
-}
+// void SerializeProv()
+// {
+//   string relName = "ruleExec";
+//   vector<string> relNames;
+//   relNames.push_back(relName);
+//   app(5) -> SerializeRel(relNames, 5);
+//   app(6) -> SerializeRel(relNames, 6);
+//   app(4) -> SerializeRel(relNames, 4);
+// }
 
 int
 main (int argc, char *argv[])
@@ -185,7 +190,7 @@ main (int argc, char *argv[])
   schedule (4.0000, PacketInsertion);
   //  schedule (19.0000, Print);
   //Simulator::Schedule (Seconds (19.9900), SerializeProv, nodeNum);
-  schedule (19.0000, SerializeProv);
+  //  schedule (19.0000, SerializeProv);
 
   Simulator::Run ();
   Simulator::Destroy ();

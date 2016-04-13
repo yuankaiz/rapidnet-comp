@@ -37,8 +37,6 @@ using namespace ns3::rapidnet;
 NS_LOG_COMPONENT_DEFINE ("RapidNetApplicationBase");
 NS_OBJECT_ENSURE_REGISTERED (RapidNetApplicationBase);
 
-int RapidNetApplicationBase::count = 1; //add-on
-
 TypeId
 RapidNetApplicationBase::GetTypeId (void)
 {
@@ -172,24 +170,29 @@ RapidNetApplicationBase::SetMaxJitter (uint32_t maxJitter)
 }
 
 void
-RapidNetApplicationBase::SerializeRel(string relName)
+RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, string storePath)
 {
-  RapidNetApplicationBase::count++;
-  std::cout << endl << endl << "Serialization of ruleExec" << endl << endl;
+  std::cout << endl << endl << "Serialization of provenance tables" << endl << endl;
   std::ostringstream oss;
-  oss << "/home/chen/research/rapidnet-comp/expr_data/prov_compress/" << RapidNetApplicationBase::count;
+  oss << storePath << nodeID;
   const char* fileName = oss.str().data();
+  //  std::cout << "Reach here?" << endl;
   std::ofstream ofs(fileName);
   boost::archive::text_oarchive ar(ofs);
-  
-  //Serialize the ruleExec table
-  bool exist = m_database->HasRelation(relName);
-  if (exist == true)
+
+  //Serialize the provenance tables
+  //For example: ruleExec, equiHashTable, provHashTable
+  vector<string>::iterator itr;
+  for (itr = relNames.begin();itr != relNames.end();itr++)
     {
-      Ptr<RelationBase> provRelation = m_database->GetRelation(relName);
-      RelationBase* provRelBasePtr = GetPointer(provRelation);
-      Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);
-      ar & provRelPtr;
+      bool exist = m_database->HasRelation(*itr);
+      if (exist == true)
+        {
+          Ptr<RelationBase> provRelation = m_database->GetRelation(*itr);
+          RelationBase* provRelBasePtr = GetPointer(provRelation);
+          Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);
+          ar & provRelPtr;
+        }
     }
 }
 

@@ -44,7 +44,6 @@ const string PktfwdSdnProvCompStaticCheck::RECVPACKETDECOMP = "recvPacketDecomp"
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETTEMP = "recvPacketTemp";
 const string PktfwdSdnProvCompStaticCheck::RULEEXEC = "ruleExec";
 
-
 NS_LOG_COMPONENT_DEFINE ("PktfwdSdnProvCompStaticCheck");
 NS_OBJECT_ENSURE_REGISTERED (PktfwdSdnProvCompStaticCheck);
 
@@ -111,7 +110,8 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
 
   AddRelationWithKeys (INITPACKET, attrdeflist (
     attrdef ("initPacket_attr2", IPV4),
-    attrdef ("initPacket_attr3", IPV4)));
+    attrdef ("initPacket_attr3", IPV4),
+    attrdef ("initPacket_attr4", STR)));
 
   AddRelationWithKeys (LINK, attrdeflist (
     attrdef ("link_attr2", IPV4)));
@@ -127,7 +127,8 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
-    attrdef ("recvPacket_attr3", IPV4)));
+    attrdef ("recvPacket_attr3", IPV4),
+    attrdef ("recvPacket_attr4", STR)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
     attrdef ("ruleExec_attr3", STR),
@@ -320,6 +321,15 @@ PktfwdSdnProvCompStaticCheck::Rs10_eca (Ptr<Tuple> packetProv)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
+  result->Assign (Assignor::New ("DataList",
+    FAppend::New (
+      VarExpr::New ("packetProv_attr4"))));
+
+  result->Assign (Assignor::New ("DataTag",
+    FConcat::New (
+      VarExpr::New ("DataList"),
+      VarExpr::New ("packetProv_attr5"))));
+
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
@@ -335,7 +345,7 @@ PktfwdSdnProvCompStaticCheck::Rs10_eca (Ptr<Tuple> packetProv)
       "RID",
       "R",
       "List",
-      "packetProv_attr4",
+      "DataTag",
       "RLoc"),
     strlist ("eMatchingPacketTemp_attr1",
       "eMatchingPacketTemp_attr2",
@@ -358,15 +368,24 @@ PktfwdSdnProvCompStaticCheck::Rs11_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   Ptr<Tuple> result = eMatchingPacketTemp;
 
+  result->Assign (Assignor::New ("Data",
+    FFirst::New (
+      VarExpr::New ("eMatchingPacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("Tag",
+    FRemoveFirst::New (
+      VarExpr::New ("eMatchingPacketTemp_attr9"))));
+
   result = result->Project (
     EMATCHINGPACKET,
     strlist ("eMatchingPacketTemp_attr2",
       "eMatchingPacketTemp_attr3",
       "eMatchingPacketTemp_attr4",
+      "Data",
       "eMatchingPacketTemp_attr5",
       "eMatchingPacketTemp_attr6",
       "eMatchingPacketTemp_attr1",
-      "eMatchingPacketTemp_attr9",
+      "Tag",
       "eMatchingPacketTemp_attr2"),
     strlist ("eMatchingPacket_attr1",
       "eMatchingPacket_attr2",
@@ -375,6 +394,7 @@ PktfwdSdnProvCompStaticCheck::Rs11_eca (Ptr<Tuple> eMatchingPacketTemp)
       "eMatchingPacket_attr5",
       "eMatchingPacket_attr6",
       "eMatchingPacket_attr7",
+      "eMatchingPacket_attr8",
       RN_DEST));
 
   Send (result);
@@ -445,11 +465,11 @@ PktfwdSdnProvCompStaticCheck::Rs14_eca (Ptr<Tuple> eMatchingPacket)
 
   result->Assign (Assignor::New ("Hash",
     FAppend::New (
-      VarExpr::New ("eMatchingPacket_attr5"))));
+      VarExpr::New ("eMatchingPacket_attr6"))));
 
   result->Assign (Assignor::New ("NewTag",
     FConcat::New (
-      VarExpr::New ("eMatchingPacket_attr7"),
+      VarExpr::New ("eMatchingPacket_attr8"),
       VarExpr::New ("Hash"))));
 
   result = result->Project (
@@ -458,12 +478,14 @@ PktfwdSdnProvCompStaticCheck::Rs14_eca (Ptr<Tuple> eMatchingPacket)
       "eMatchingPacket_attr2",
       "eMatchingPacket_attr3",
       "eMatchingPacket_attr4",
+      "eMatchingPacket_attr5",
       "NewTag"),
     strlist ("matchingPacket_attr1",
       "matchingPacket_attr2",
       "matchingPacket_attr3",
       "matchingPacket_attr4",
-      "matchingPacket_attr5"));
+      "matchingPacket_attr5",
+      "matchingPacket_attr6"));
 
   SendLocal (result);
 }
@@ -495,15 +517,17 @@ PktfwdSdnProvCompStaticCheck::Rs1_eca (Ptr<Tuple> packetNonProv)
     strlist ("packetNonProv_attr1",
       "packetNonProv_attr2",
       "packetNonProv_attr3",
-      "maxPriority_attr2",
       "packetNonProv_attr4",
-      "packetNonProv_attr5"),
+      "maxPriority_attr2",
+      "packetNonProv_attr5",
+      "packetNonProv_attr6"),
     strlist ("matchingPacketNonProv_attr1",
       "matchingPacketNonProv_attr2",
       "matchingPacketNonProv_attr3",
       "matchingPacketNonProv_attr4",
       "matchingPacketNonProv_attr5",
-      "matchingPacketNonProv_attr6"));
+      "matchingPacketNonProv_attr6",
+      "matchingPacketNonProv_attr7"));
 
   SendLocal (result);
 }
@@ -523,11 +547,11 @@ PktfwdSdnProvCompStaticCheck::Rs20_eca (Ptr<Tuple> matchingPacket)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacket_attr4", "matchingPacket_attr1"));
+    strlist ("matchingPacket_attr5", "matchingPacket_attr1"));
 
   result->Assign (Assignor::New ("NextPriority",
     Operation::New (RN_MINUS,
-      VarExpr::New ("matchingPacket_attr4"),
+      VarExpr::New ("matchingPacket_attr5"),
       ValueExpr::New (Int32Value::New (1)))));
 
   result->Assign (Assignor::New ("RLoc",
@@ -554,7 +578,7 @@ PktfwdSdnProvCompStaticCheck::Rs20_eca (Ptr<Tuple> matchingPacket)
               VarExpr::New ("matchingPacket_attr1")),
             VarExpr::New ("flowEntry_attr2")),
           VarExpr::New ("flowEntry_attr3")),
-        VarExpr::New ("matchingPacket_attr4")))));
+        VarExpr::New ("matchingPacket_attr5")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -575,9 +599,18 @@ PktfwdSdnProvCompStaticCheck::Rs20_eca (Ptr<Tuple> matchingPacket)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
+  result->Assign (Assignor::New ("DataList",
+    FAppend::New (
+      VarExpr::New ("matchingPacket_attr4"))));
+
+  result->Assign (Assignor::New ("DataTag",
+    FConcat::New (
+      VarExpr::New ("DataList"),
+      VarExpr::New ("matchingPacket_attr6"))));
+
   result = result->Select (Selector::New (
     Operation::New (RN_GT,
-      VarExpr::New ("matchingPacket_attr4"),
+      VarExpr::New ("matchingPacket_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -600,7 +633,7 @@ PktfwdSdnProvCompStaticCheck::Rs20_eca (Ptr<Tuple> matchingPacket)
       "RID",
       "R",
       "List",
-      "matchingPacket_attr5",
+      "DataTag",
       "RLoc"),
     strlist ("eMatchingPacketTemp_attr1",
       "eMatchingPacketTemp_attr2",
@@ -631,16 +664,16 @@ PktfwdSdnProvCompStaticCheck::Rs2_eca (Ptr<Tuple> matchingPacketNonProv)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacketNonProv_attr4", "matchingPacketNonProv_attr1"));
+    strlist ("matchingPacketNonProv_attr5", "matchingPacketNonProv_attr1"));
 
   result->Assign (Assignor::New ("NextPriority",
     Operation::New (RN_MINUS,
-      VarExpr::New ("matchingPacketNonProv_attr4"),
+      VarExpr::New ("matchingPacketNonProv_attr5"),
       ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_GT,
-      VarExpr::New ("matchingPacketNonProv_attr4"),
+      VarExpr::New ("matchingPacketNonProv_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -658,15 +691,17 @@ PktfwdSdnProvCompStaticCheck::Rs2_eca (Ptr<Tuple> matchingPacketNonProv)
     strlist ("matchingPacketNonProv_attr1",
       "matchingPacketNonProv_attr2",
       "matchingPacketNonProv_attr3",
+      "matchingPacketNonProv_attr4",
       "NextPriority",
-      "matchingPacketNonProv_attr5",
-      "matchingPacketNonProv_attr6"),
+      "matchingPacketNonProv_attr6",
+      "matchingPacketNonProv_attr7"),
     strlist ("matchingPacketNonProv_attr1",
       "matchingPacketNonProv_attr2",
       "matchingPacketNonProv_attr3",
       "matchingPacketNonProv_attr4",
       "matchingPacketNonProv_attr5",
-      "matchingPacketNonProv_attr6"));
+      "matchingPacketNonProv_attr6",
+      "matchingPacketNonProv_attr7"));
 
   SendLocal (result);
 }
@@ -686,7 +721,7 @@ PktfwdSdnProvCompStaticCheck::Rs30_eca (Ptr<Tuple> matchingPacket)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacket_attr4", "matchingPacket_attr1"));
+    strlist ("matchingPacket_attr5", "matchingPacket_attr1"));
 
   result = GetRelation (LINK)->Join (
     result,
@@ -717,7 +752,7 @@ PktfwdSdnProvCompStaticCheck::Rs30_eca (Ptr<Tuple> matchingPacket)
               VarExpr::New ("matchingPacket_attr1")),
             VarExpr::New ("flowEntry_attr2")),
           VarExpr::New ("flowEntry_attr3")),
-        VarExpr::New ("matchingPacket_attr4")))));
+        VarExpr::New ("matchingPacket_attr5")))));
 
   result->Assign (Assignor::New ("PID3",
     FSha1::New (
@@ -757,7 +792,7 @@ PktfwdSdnProvCompStaticCheck::Rs30_eca (Ptr<Tuple> matchingPacket)
 
   result = result->Select (Selector::New (
     Operation::New (RN_GT,
-      VarExpr::New ("matchingPacket_attr4"),
+      VarExpr::New ("matchingPacket_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -776,10 +811,11 @@ PktfwdSdnProvCompStaticCheck::Rs30_eca (Ptr<Tuple> matchingPacket)
       "flowEntry_attr3",
       "matchingPacket_attr2",
       "matchingPacket_attr3",
+      "matchingPacket_attr4",
       "RID",
       "R",
       "List",
-      "matchingPacket_attr5",
+      "matchingPacket_attr6",
       "RLoc"),
     strlist ("ePacketTemp_attr1",
       "ePacketTemp_attr2",
@@ -789,6 +825,7 @@ PktfwdSdnProvCompStaticCheck::Rs30_eca (Ptr<Tuple> matchingPacket)
       "ePacketTemp_attr6",
       "ePacketTemp_attr7",
       "ePacketTemp_attr8",
+      "ePacketTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -807,8 +844,9 @@ PktfwdSdnProvCompStaticCheck::Rs31_eca (Ptr<Tuple> ePacketTemp)
       "ePacketTemp_attr3",
       "ePacketTemp_attr4",
       "ePacketTemp_attr5",
+      "ePacketTemp_attr6",
       "ePacketTemp_attr1",
-      "ePacketTemp_attr8",
+      "ePacketTemp_attr9",
       "ePacketTemp_attr2"),
     strlist ("ePacket_attr1",
       "ePacket_attr2",
@@ -816,6 +854,7 @@ PktfwdSdnProvCompStaticCheck::Rs31_eca (Ptr<Tuple> ePacketTemp)
       "ePacket_attr4",
       "ePacket_attr5",
       "ePacket_attr6",
+      "ePacket_attr7",
       RN_DEST));
 
   Send (result);
@@ -831,16 +870,16 @@ PktfwdSdnProvCompStaticCheck::Rs32_eca (Ptr<Tuple> ePacketTemp)
   result = GetRelation (RULEEXEC)->Join (
     ePacketTemp,
     strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
-    strlist ("ePacketTemp_attr7", "ePacketTemp_attr6", "ePacketTemp_attr5", "ePacketTemp_attr1"));
+    strlist ("ePacketTemp_attr8", "ePacketTemp_attr7", "ePacketTemp_attr6", "ePacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, ePacketTemp);
 
   result = result->Project (
     EPAKETCOUNT,
     strlist ("ePacketTemp_attr1",
-      "ePacketTemp_attr5",
       "ePacketTemp_attr6",
       "ePacketTemp_attr7",
+      "ePacketTemp_attr8",
       "count"),
     strlist ("ePaketCount_attr1",
       "ePaketCount_attr2",
@@ -886,11 +925,11 @@ PktfwdSdnProvCompStaticCheck::Rs34_eca (Ptr<Tuple> ePacket)
 
   result->Assign (Assignor::New ("Hash",
     FAppend::New (
-      VarExpr::New ("ePacket_attr4"))));
+      VarExpr::New ("ePacket_attr5"))));
 
   result->Assign (Assignor::New ("NewTag",
     FConcat::New (
-      VarExpr::New ("ePacket_attr6"),
+      VarExpr::New ("ePacket_attr7"),
       VarExpr::New ("Hash"))));
 
   result = result->Project (
@@ -898,11 +937,13 @@ PktfwdSdnProvCompStaticCheck::Rs34_eca (Ptr<Tuple> ePacket)
     strlist ("ePacket_attr1",
       "ePacket_attr2",
       "ePacket_attr3",
+      "ePacket_attr4",
       "NewTag"),
     strlist ("packetProv_attr1",
       "packetProv_attr2",
       "packetProv_attr3",
-      "packetProv_attr4"));
+      "packetProv_attr4",
+      "packetProv_attr5"));
 
   SendLocal (result);
 }
@@ -922,7 +963,7 @@ PktfwdSdnProvCompStaticCheck::Rs3_eca (Ptr<Tuple> matchingPacketNonProv)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacketNonProv_attr4", "matchingPacketNonProv_attr1"));
+    strlist ("matchingPacketNonProv_attr5", "matchingPacketNonProv_attr1"));
 
   result = GetRelation (LINK)->Join (
     result,
@@ -931,7 +972,7 @@ PktfwdSdnProvCompStaticCheck::Rs3_eca (Ptr<Tuple> matchingPacketNonProv)
 
   result = result->Select (Selector::New (
     Operation::New (RN_GT,
-      VarExpr::New ("matchingPacketNonProv_attr4"),
+      VarExpr::New ("matchingPacketNonProv_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -949,14 +990,16 @@ PktfwdSdnProvCompStaticCheck::Rs3_eca (Ptr<Tuple> matchingPacketNonProv)
     strlist ("flowEntry_attr3",
       "matchingPacketNonProv_attr2",
       "matchingPacketNonProv_attr3",
-      "matchingPacketNonProv_attr5",
+      "matchingPacketNonProv_attr4",
       "matchingPacketNonProv_attr6",
+      "matchingPacketNonProv_attr7",
       "flowEntry_attr3"),
     strlist ("packetNonProv_attr1",
       "packetNonProv_attr2",
       "packetNonProv_attr3",
       "packetNonProv_attr4",
       "packetNonProv_attr5",
+      "packetNonProv_attr6",
       RN_DEST));
 
   Send (result);
@@ -977,7 +1020,7 @@ PktfwdSdnProvCompStaticCheck::Rs40_eca (Ptr<Tuple> matchingPacket)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr2", "flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacket_attr3", "matchingPacket_attr4", "matchingPacket_attr1"));
+    strlist ("matchingPacket_attr3", "matchingPacket_attr5", "matchingPacket_attr1"));
 
   result = GetRelation (LINK)->Join (
     result,
@@ -1008,7 +1051,7 @@ PktfwdSdnProvCompStaticCheck::Rs40_eca (Ptr<Tuple> matchingPacket)
               VarExpr::New ("matchingPacket_attr1")),
             VarExpr::New ("matchingPacket_attr3")),
           VarExpr::New ("flowEntry_attr3")),
-        VarExpr::New ("matchingPacket_attr4")))));
+        VarExpr::New ("matchingPacket_attr5")))));
 
   result->Assign (Assignor::New ("PID3",
     FSha1::New (
@@ -1048,7 +1091,7 @@ PktfwdSdnProvCompStaticCheck::Rs40_eca (Ptr<Tuple> matchingPacket)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("matchingPacket_attr4"),
+      VarExpr::New ("matchingPacket_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -1062,10 +1105,11 @@ PktfwdSdnProvCompStaticCheck::Rs40_eca (Ptr<Tuple> matchingPacket)
       "flowEntry_attr3",
       "matchingPacket_attr2",
       "matchingPacket_attr3",
+      "matchingPacket_attr4",
       "RID",
       "R",
       "List",
-      "matchingPacket_attr5",
+      "matchingPacket_attr6",
       "RLoc"),
     strlist ("ePacketTemp_attr1",
       "ePacketTemp_attr2",
@@ -1075,6 +1119,7 @@ PktfwdSdnProvCompStaticCheck::Rs40_eca (Ptr<Tuple> matchingPacket)
       "ePacketTemp_attr6",
       "ePacketTemp_attr7",
       "ePacketTemp_attr8",
+      "ePacketTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -1095,7 +1140,7 @@ PktfwdSdnProvCompStaticCheck::Rs4_eca (Ptr<Tuple> matchingPacketNonProv)
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr2", "flowEntry_attr4", "flowEntry_attr1"),
-    strlist ("matchingPacketNonProv_attr3", "matchingPacketNonProv_attr4", "matchingPacketNonProv_attr1"));
+    strlist ("matchingPacketNonProv_attr3", "matchingPacketNonProv_attr5", "matchingPacketNonProv_attr1"));
 
   result = GetRelation (LINK)->Join (
     result,
@@ -1104,7 +1149,7 @@ PktfwdSdnProvCompStaticCheck::Rs4_eca (Ptr<Tuple> matchingPacketNonProv)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("matchingPacketNonProv_attr4"),
+      VarExpr::New ("matchingPacketNonProv_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
@@ -1117,14 +1162,16 @@ PktfwdSdnProvCompStaticCheck::Rs4_eca (Ptr<Tuple> matchingPacketNonProv)
     strlist ("flowEntry_attr3",
       "matchingPacketNonProv_attr2",
       "matchingPacketNonProv_attr3",
-      "matchingPacketNonProv_attr5",
+      "matchingPacketNonProv_attr4",
       "matchingPacketNonProv_attr6",
+      "matchingPacketNonProv_attr7",
       "flowEntry_attr3"),
     strlist ("packetNonProv_attr1",
       "packetNonProv_attr2",
       "packetNonProv_attr3",
       "packetNonProv_attr4",
       "packetNonProv_attr5",
+      "packetNonProv_attr6",
       RN_DEST));
 
   Send (result);
@@ -1150,11 +1197,13 @@ PktfwdSdnProvCompStaticCheck::Rh100Eca0Ins (Ptr<Tuple> initPacket)
     strlist ("initPacket_attr1",
       "initPacket_attr2",
       "initPacket_attr3",
+      "initPacket_attr4",
       "PIDequi"),
     strlist ("initPacketHash_attr1",
       "initPacketHash_attr2",
       "initPacketHash_attr3",
-      "initPacketHash_attr4"));
+      "initPacketHash_attr4",
+      "initPacketHash_attr5"));
 
   SendLocal (result);
 }
@@ -1169,7 +1218,7 @@ PktfwdSdnProvCompStaticCheck::Rh101_eca (Ptr<Tuple> initPacketHash)
   result = GetRelation (EQUIHASHTABLE)->Join (
     initPacketHash,
     strlist ("equiHashTable_attr2", "equiHashTable_attr1", "equiHashTable_attr3"),
-    strlist ("initPacketHash_attr3", "initPacketHash_attr1", "initPacketHash_attr4"));
+    strlist ("initPacketHash_attr3", "initPacketHash_attr1", "initPacketHash_attr5"));
 
   result = AggWrapCount::New ()->Compute (result, initPacketHash);
 
@@ -1179,12 +1228,14 @@ PktfwdSdnProvCompStaticCheck::Rh101_eca (Ptr<Tuple> initPacketHash)
       "initPacketHash_attr2",
       "initPacketHash_attr3",
       "initPacketHash_attr4",
+      "initPacketHash_attr5",
       "count"),
     strlist ("initPacketCount_attr1",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",
-      "initPacketCount_attr5"));
+      "initPacketCount_attr5",
+      "initPacketCount_attr6"));
 
   SendLocal (result);
 }
@@ -1198,14 +1249,14 @@ PktfwdSdnProvCompStaticCheck::Rh102_eca (Ptr<Tuple> initPacketCount)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("initPacketCount_attr5"),
+      VarExpr::New ("initPacketCount_attr6"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
     EQUIHASHTABLE,
     strlist ("initPacketCount_attr1",
       "initPacketCount_attr3",
-      "initPacketCount_attr4"),
+      "initPacketCount_attr5"),
     strlist ("equiHashTable_attr1",
       "equiHashTable_attr2",
       "equiHashTable_attr3"));
@@ -1235,10 +1286,12 @@ PktfwdSdnProvCompStaticCheck::Rh103_eca (Ptr<Tuple> initPacketCount)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("initPacket")),
-            VarExpr::New ("initPacketCount_attr1")),
-          VarExpr::New ("initPacketCount_attr2")),
-        VarExpr::New ("initPacketCount_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("initPacket")),
+              VarExpr::New ("initPacketCount_attr1")),
+            VarExpr::New ("initPacketCount_attr2")),
+          VarExpr::New ("initPacketCount_attr3")),
+        VarExpr::New ("initPacketCount_attr4")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1247,7 +1300,7 @@ PktfwdSdnProvCompStaticCheck::Rh103_eca (Ptr<Tuple> initPacketCount)
 
   result = result->Select (Selector::New (
     Operation::New (RN_NEQ,
-      VarExpr::New ("initPacketCount_attr5"),
+      VarExpr::New ("initPacketCount_attr6"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
@@ -1256,6 +1309,7 @@ PktfwdSdnProvCompStaticCheck::Rh103_eca (Ptr<Tuple> initPacketCount)
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",
+      "initPacketCount_attr5",
       "PIDev",
       "linkhr_attr2"),
     strlist ("packetNonProv_attr1",
@@ -1263,6 +1317,7 @@ PktfwdSdnProvCompStaticCheck::Rh103_eca (Ptr<Tuple> initPacketCount)
       "packetNonProv_attr3",
       "packetNonProv_attr4",
       "packetNonProv_attr5",
+      "packetNonProv_attr6",
       RN_DEST));
 
   Send (result);
@@ -1296,14 +1351,16 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("initPacket")),
-            VarExpr::New ("initPacketCount_attr1")),
-          VarExpr::New ("initPacketCount_attr2")),
-        VarExpr::New ("initPacketCount_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("initPacket")),
+              VarExpr::New ("initPacketCount_attr1")),
+            VarExpr::New ("initPacketCount_attr2")),
+          VarExpr::New ("initPacketCount_attr3")),
+        VarExpr::New ("initPacketCount_attr4")))));
 
   result->Assign (Assignor::New ("Equilist",
     FAppend::New (
-      VarExpr::New ("initPacketCount_attr4"))));
+      VarExpr::New ("initPacketCount_attr5"))));
 
   result->Assign (Assignor::New ("Evlist",
     FAppend::New (
@@ -1365,7 +1422,7 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("initPacketCount_attr5"),
+      VarExpr::New ("initPacketCount_attr6"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
@@ -1374,6 +1431,7 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
       "linkhr_attr2",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
+      "initPacketCount_attr4",
       "RID",
       "R",
       "List",
@@ -1387,6 +1445,7 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
       "ePacketTemp_attr6",
       "ePacketTemp_attr7",
       "ePacketTemp_attr8",
+      "ePacketTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -1439,10 +1498,11 @@ PktfwdSdnProvCompStaticCheck::Rh20_eca (Ptr<Tuple> packetProv)
       "packetProv_attr1",
       "packetProv_attr2",
       "packetProv_attr3",
+      "packetProv_attr4",
       "RID",
       "R",
       "List",
-      "packetProv_attr4",
+      "packetProv_attr5",
       "RLoc"),
     strlist ("eRecvPacketTemp_attr1",
       "eRecvPacketTemp_attr2",
@@ -1452,6 +1512,7 @@ PktfwdSdnProvCompStaticCheck::Rh20_eca (Ptr<Tuple> packetProv)
       "eRecvPacketTemp_attr6",
       "eRecvPacketTemp_attr7",
       "eRecvPacketTemp_attr8",
+      "eRecvPacketTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -1470,8 +1531,9 @@ PktfwdSdnProvCompStaticCheck::Rh21_eca (Ptr<Tuple> eRecvPacketTemp)
       "eRecvPacketTemp_attr3",
       "eRecvPacketTemp_attr4",
       "eRecvPacketTemp_attr5",
+      "eRecvPacketTemp_attr6",
       "eRecvPacketTemp_attr1",
-      "eRecvPacketTemp_attr8",
+      "eRecvPacketTemp_attr9",
       "eRecvPacketTemp_attr2"),
     strlist ("eRecvPacket_attr1",
       "eRecvPacket_attr2",
@@ -1479,6 +1541,7 @@ PktfwdSdnProvCompStaticCheck::Rh21_eca (Ptr<Tuple> eRecvPacketTemp)
       "eRecvPacket_attr4",
       "eRecvPacket_attr5",
       "eRecvPacket_attr6",
+      "eRecvPacket_attr7",
       RN_DEST));
 
   Send (result);
@@ -1494,16 +1557,16 @@ PktfwdSdnProvCompStaticCheck::Rh22_eca (Ptr<Tuple> eRecvPacketTemp)
   result = GetRelation (RULEEXEC)->Join (
     eRecvPacketTemp,
     strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
-    strlist ("eRecvPacketTemp_attr7", "eRecvPacketTemp_attr6", "eRecvPacketTemp_attr5", "eRecvPacketTemp_attr1"));
+    strlist ("eRecvPacketTemp_attr8", "eRecvPacketTemp_attr7", "eRecvPacketTemp_attr6", "eRecvPacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eRecvPacketTemp);
 
   result = result->Project (
     ERECVPACKETCOUNT,
     strlist ("eRecvPacketTemp_attr1",
-      "eRecvPacketTemp_attr5",
       "eRecvPacketTemp_attr6",
       "eRecvPacketTemp_attr7",
+      "eRecvPacketTemp_attr8",
       "count"),
     strlist ("eRecvPacketCount_attr1",
       "eRecvPacketCount_attr2",
@@ -1549,11 +1612,11 @@ PktfwdSdnProvCompStaticCheck::Rh24_eca (Ptr<Tuple> eRecvPacket)
 
   result->Assign (Assignor::New ("Hash",
     FAppend::New (
-      VarExpr::New ("eRecvPacket_attr4"))));
+      VarExpr::New ("eRecvPacket_attr5"))));
 
   result->Assign (Assignor::New ("NewTag",
     FConcat::New (
-      VarExpr::New ("eRecvPacket_attr6"),
+      VarExpr::New ("eRecvPacket_attr7"),
       VarExpr::New ("Hash"))));
 
   result = result->Project (
@@ -1561,11 +1624,13 @@ PktfwdSdnProvCompStaticCheck::Rh24_eca (Ptr<Tuple> eRecvPacket)
     strlist ("eRecvPacket_attr1",
       "eRecvPacket_attr2",
       "eRecvPacket_attr3",
-      "eRecvPacket_attr6"),
+      "eRecvPacket_attr4",
+      "eRecvPacket_attr7"),
     strlist ("recvPacketTemp_attr1",
       "recvPacketTemp_attr2",
       "recvPacketTemp_attr3",
-      "recvPacketTemp_attr4"));
+      "recvPacketTemp_attr4",
+      "recvPacketTemp_attr5"));
 
   SendLocal (result);
 }
@@ -1579,11 +1644,11 @@ PktfwdSdnProvCompStaticCheck::Rh25_eca (Ptr<Tuple> recvPacketTemp)
 
   result->Assign (Assignor::New ("PIDequi",
     FFirst::New (
-      VarExpr::New ("recvPacketTemp_attr4"))));
+      VarExpr::New ("recvPacketTemp_attr5"))));
 
   result->Assign (Assignor::New ("Remainlist",
     FRemoveFirst::New (
-      VarExpr::New ("recvPacketTemp_attr4"))));
+      VarExpr::New ("recvPacketTemp_attr5"))));
 
   result->Assign (Assignor::New ("PIDev",
     FFirst::New (
@@ -1598,6 +1663,7 @@ PktfwdSdnProvCompStaticCheck::Rh25_eca (Ptr<Tuple> recvPacketTemp)
     strlist ("recvPacketTemp_attr1",
       "recvPacketTemp_attr2",
       "recvPacketTemp_attr3",
+      "recvPacketTemp_attr4",
       "PIDequi",
       "PIDev",
       "Hashlist"),
@@ -1606,7 +1672,8 @@ PktfwdSdnProvCompStaticCheck::Rh25_eca (Ptr<Tuple> recvPacketTemp)
       "recvPacketDecomp_attr3",
       "recvPacketDecomp_attr4",
       "recvPacketDecomp_attr5",
-      "recvPacketDecomp_attr6"));
+      "recvPacketDecomp_attr6",
+      "recvPacketDecomp_attr7"));
 
   SendLocal (result);
 }
@@ -1621,8 +1688,8 @@ PktfwdSdnProvCompStaticCheck::Rh26_eca (Ptr<Tuple> recvPacketDecomp)
   result = result->Project (
     PROVHASHTABLE,
     strlist ("recvPacketDecomp_attr1",
-      "recvPacketDecomp_attr4",
-      "recvPacketDecomp_attr6"),
+      "recvPacketDecomp_attr5",
+      "recvPacketDecomp_attr7"),
     strlist ("provHashTable_attr1",
       "provHashTable_attr2",
       "provHashTable_attr3"));
@@ -1643,12 +1710,14 @@ PktfwdSdnProvCompStaticCheck::Rh27_eca (Ptr<Tuple> recvPacketDecomp)
       "recvPacketDecomp_attr2",
       "recvPacketDecomp_attr3",
       "recvPacketDecomp_attr4",
-      "recvPacketDecomp_attr5"),
+      "recvPacketDecomp_attr5",
+      "recvPacketDecomp_attr6"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
       "recvPacket_attr3",
       "recvPacket_attr4",
-      "recvPacket_attr5"));
+      "recvPacket_attr5",
+      "recvPacket_attr6"));
 
   Insert (result);
 }
@@ -1676,12 +1745,14 @@ PktfwdSdnProvCompStaticCheck::Rh2_eca (Ptr<Tuple> packetNonProv)
       "packetNonProv_attr2",
       "packetNonProv_attr3",
       "packetNonProv_attr4",
-      "packetNonProv_attr5"),
+      "packetNonProv_attr5",
+      "packetNonProv_attr6"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
       "recvPacket_attr3",
       "recvPacket_attr4",
-      "recvPacket_attr5"));
+      "recvPacket_attr5",
+      "recvPacket_attr6"));
 
   Insert (result);
 }
