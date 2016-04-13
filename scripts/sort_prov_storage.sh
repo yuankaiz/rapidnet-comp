@@ -1,6 +1,8 @@
 #!/bin/bash
 
 DIRECTORY="/localdrive1/chen/prov_storage/*"
+storeDir="/localdrive1/chen/prov_storage"
+mkdir -p $storeDir
 count=0
 
 # Collect sizes of all files
