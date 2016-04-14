@@ -3,16 +3,21 @@
 DIRECTORY="/localdrive1/chen/prov_storage/*"
 storeDir="/localdrive1/chen/prov_storage"
 mkdir -p $storeDir
-count=0
 
+count=0
+sum=0
 # Collect sizes of all files
 for file in $DIRECTORY
 do
     fsize=$(stat --printf="%s" "$file")
     fileSizes[$count]=$fsize
+    ((sum+=fsize))
     ((count+=1))
 done
 fileNum=$count
+avg=$((sum/fileNum))
+avgFile="storage_avg.dat"
+echo $avg >> "$avgFile"
 
 # Sort the size array
 sortRes=( $(printf "%s\n" "${fileSizes[@]}" | sort -g))
