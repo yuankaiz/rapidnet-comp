@@ -47,6 +47,7 @@ public:
   static const string MATCHINGPACKET;
   static const string MAXPRIORITY;
   static const string PACKET;
+  static const string RECVAUXPKT;
   static const string RECVPACKET;
   static const string RULEEXEC;
 
@@ -107,6 +108,10 @@ protected:
   virtual void Rs23_eca (Ptr<Tuple> eRecvPacketCount);
 
   virtual void Rh24_eca (Ptr<Tuple> eRecvPacket);
+
+  virtual void Rh25Eca0Ins (Ptr<Tuple> recvPacket);
+
+  virtual void Rh25Eca0Del (Ptr<Tuple> recvPacket);
 
 };
 

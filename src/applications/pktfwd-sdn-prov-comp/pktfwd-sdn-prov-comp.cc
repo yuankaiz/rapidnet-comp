@@ -34,6 +34,7 @@ const string PktfwdSdnProvComp::LINKHR = "linkhr";
 const string PktfwdSdnProvComp::MATCHINGPACKET = "matchingPacket";
 const string PktfwdSdnProvComp::MAXPRIORITY = "maxPriority";
 const string PktfwdSdnProvComp::PACKET = "packet";
+const string PktfwdSdnProvComp::RECVAUXPKT = "recvAuxPkt";
 const string PktfwdSdnProvComp::RECVPACKET = "recvPacket";
 const string PktfwdSdnProvComp::RULEEXEC = "ruleExec";
 
@@ -113,6 +114,9 @@ PktfwdSdnProvComp::InitDatabase ()
 
   AddRelationWithKeys (MAXPRIORITY, attrdeflist (
     attrdef ("maxPriority_attr2", INT32)));
+
+  AddRelationWithKeys (RECVAUXPKT, attrdeflist (
+    attrdef ("recvAuxPkt_attr2", STR)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -207,6 +211,14 @@ PktfwdSdnProvComp::DemuxRecv (Ptr<Tuple> tuple)
   if (IsRecvEvent (tuple, ERECVPACKET))
     {
       Rh24_eca (tuple);
+    }
+  if (IsInsertEvent (tuple, RECVPACKET))
+    {
+      Rh25Eca0Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, RECVPACKET))
+    {
+      Rh25Eca0Del (tuple);
     }
 }
 
@@ -1452,5 +1464,43 @@ PktfwdSdnProvComp::Rh24_eca (Ptr<Tuple> eRecvPacket)
       "recvPacket_attr5"));
 
   Insert (result);
+}
+
+void
+PktfwdSdnProvComp::Rh25Eca0Ins (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh25Eca0Ins triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr4",
+      "recvPacket_attr5"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3"));
+
+  Insert (result);
+}
+
+void
+PktfwdSdnProvComp::Rh25Eca0Del (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh25Eca0Del triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr4",
+      "recvPacket_attr5"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3"));
+
+  Delete (result);
 }
 

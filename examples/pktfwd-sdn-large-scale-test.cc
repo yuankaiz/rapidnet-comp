@@ -96,7 +96,7 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 10
+#define DEFAULT_PKTNUM 5
 
 using namespace std;
 using namespace ns3;
@@ -509,6 +509,7 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs)
   /* Setup: each host randomly picks another host and 
      send a series of packets to it*/
   double trigger_time = 4.0000;
+  int dataCount = 0;
   srand(1); 
   for (int i = 0; i < hostPairs; i++, trigger_time += 0.1)
     {
@@ -523,7 +524,6 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs)
       std::cout << "Communicating pair: (" << src << "," << dst << ")" << endl;
       double insert_time = trigger_time;
       ostringstream ss;
-      int dataCount = 0;
       for (int j = 0;j < DEFAULT_PKTNUM;j++, insert_time += 0.0010, dataCount++)
         {
           ss.str("");
@@ -555,6 +555,7 @@ void SerializeProv(int totalNum, string storePath)
   relNames.push_back("ruleExec");
   relNames.push_back("provHashTable");
   relNames.push_back("equiHashTable");
+  relNames.push_back("recvAuxPkt");
 
   for (int i = 0; i < totalNum; i++)
     {

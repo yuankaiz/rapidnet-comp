@@ -39,6 +39,7 @@ const string PktfwdSdnProvCompStaticCheck::MAXPRIORITY = "maxPriority";
 const string PktfwdSdnProvCompStaticCheck::PACKETNONPROV = "packetNonProv";
 const string PktfwdSdnProvCompStaticCheck::PACKETPROV = "packetProv";
 const string PktfwdSdnProvCompStaticCheck::PROVHASHTABLE = "provHashTable";
+const string PktfwdSdnProvCompStaticCheck::RECVAUXPKT = "recvAuxPkt";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKET = "recvPacket";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETDECOMP = "recvPacketDecomp";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETTEMP = "recvPacketTemp";
@@ -124,6 +125,9 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
 
   AddRelationWithKeys (PROVHASHTABLE, attrdeflist (
     attrdef ("provHashTable_attr3", LIST)));
+
+  AddRelationWithKeys (RECVAUXPKT, attrdeflist (
+    attrdef ("recvAuxPkt_attr2", STR)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -260,6 +264,14 @@ PktfwdSdnProvCompStaticCheck::DemuxRecv (Ptr<Tuple> tuple)
   if (IsRecvEvent (tuple, PACKETNONPROV))
     {
       Rh2_eca (tuple);
+    }
+  if (IsInsertEvent (tuple, RECVPACKET))
+    {
+      Rh28Eca0Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, RECVPACKET))
+    {
+      Rh28Eca0Del (tuple);
     }
 }
 
@@ -1755,5 +1767,47 @@ PktfwdSdnProvCompStaticCheck::Rh2_eca (Ptr<Tuple> packetNonProv)
       "recvPacket_attr6"));
 
   Insert (result);
+}
+
+void
+PktfwdSdnProvCompStaticCheck::Rh28Eca0Ins (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh28Eca0Ins triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr4",
+      "recvPacket_attr5",
+      "recvPacket_attr6"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
+
+  Insert (result);
+}
+
+void
+PktfwdSdnProvCompStaticCheck::Rh28Eca0Del (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh28Eca0Del triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr4",
+      "recvPacket_attr5",
+      "recvPacket_attr6"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
+
+  Delete (result);
 }
 

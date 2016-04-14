@@ -28,3 +28,5 @@ ECA Rule rh25_eca ACTION_LOCAL_SEND<recvPacketDecomp(@Host, SrcAdd, DstAdd, Data
 ECA Rule rh26_eca ACTION_ADD<provHashTable(@Host, PIDequi, Hashlist)> :- EVENT_RECV<recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist)>.
 ECA Rule rh27_eca ACTION_ADD<recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev)> :- EVENT_RECV<recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist)>.
 ECA Rule rh2_eca ACTION_ADD<recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev)> :- EVENT_RECV<packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev)>, device(@Host, Dvtype), Dvtype == 1.
+ECA Rule rh28Eca0Ins ACTION_ADD<recvAuxPkt(@Host, Data, PIDequi, PIDev)> :- EVENT_INSERT<recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev)>.
+ECA Rule rh28Eca0Del ACTION_DELETE<recvAuxPkt(@Host, Data, PIDequi, PIDev)> :- EVENT_DELETE<recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev)>.

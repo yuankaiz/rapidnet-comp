@@ -18,3 +18,5 @@ ECA Rule rh21_eca ACTION_REMOTE_SEND<eRecvPacket(@Host, SrcAdd, DstAdd, Data, RI
 ECA Rule rh22_eca ACTION_LOCAL_SEND<eRecvPacketCount(@RLoc, RID, R, List, COUNT< * >)> :- EVENT_RECV<eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList)>, ruleExec(@RLoc, RID, R, List).
 ECA Rule rs23_eca ACTION_ADD<ruleExec(@RLoc, RID, R, List)> :- EVENT_RECV<eRecvPacketCount(@RLoc, RID, R, List, Rcount)>, Rcount == 0.
 ECA Rule rh24_eca ACTION_ADD<recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList)> :- EVENT_RECV<eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc, HashList)>, Hash := f_append(RID), NewHashList := f_concat(HashList, Hash).
+ECA Rule rh25Eca0Ins ACTION_ADD<recvAuxPkt(@Host, Data, NewHashList)> :- EVENT_INSERT<recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList)>.
+ECA Rule rh25Eca0Del ACTION_DELETE<recvAuxPkt(@Host, Data, NewHashList)> :- EVENT_DELETE<recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList)>.

@@ -52,6 +52,7 @@ public:
   static const string PACKETNONPROV;
   static const string PACKETPROV;
   static const string PROVHASHTABLE;
+  static const string RECVAUXPKT;
   static const string RECVPACKET;
   static const string RECVPACKETDECOMP;
   static const string RECVPACKETTEMP;
@@ -134,6 +135,10 @@ protected:
   virtual void Rh27_eca (Ptr<Tuple> recvPacketDecomp);
 
   virtual void Rh2_eca (Ptr<Tuple> packetNonProv);
+
+  virtual void Rh28Eca0Ins (Ptr<Tuple> recvPacket);
+
+  virtual void Rh28Eca0Del (Ptr<Tuple> recvPacket);
 
 };
 

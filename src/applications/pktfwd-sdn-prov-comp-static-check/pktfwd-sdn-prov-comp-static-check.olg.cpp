@@ -15,6 +15,7 @@ materialize(ruleExec,infinity,infinity,keys(3:str, 4:list)). /*Hash table for pr
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
+materialize(recvAuxPkt,infinity,infinity,keys(2:str)). /*Record the extra hash values*/
 
 
 
@@ -271,3 +272,6 @@ rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Host, Dvtype),
  packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
         Dvtype == 1 .
+
+rh28 recvAuxPkt(@Host, Data, PIDequi, PIDev) :-
+        recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev).

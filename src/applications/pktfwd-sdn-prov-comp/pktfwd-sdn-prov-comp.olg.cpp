@@ -13,7 +13,7 @@ materialize(hashTable,infinity,infinity,keys(2:int32)). /*Hash table for compres
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
-
+materialize(recvAuxPkt,infinity,infinity,keys(2:str)). /*Record the hash list*/
 
 
 
@@ -192,3 +192,6 @@ rh24 recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList) :-
  eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc, HashList),
  Hash := f_append(RID),
  NewHashList := f_concat(HashList, Hash).
+
+rh25 recvAuxPkt(@Host, Data, NewHashList) :-
+        recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList).
