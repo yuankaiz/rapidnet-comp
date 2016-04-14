@@ -17,6 +17,7 @@ done
 fileNum=$count
 avg=$((sum/fileNum))
 avgFile="storage_avg.dat"
+rm -f $avgFile
 echo $avg >> "$avgFile"
 
 # Sort the size array
