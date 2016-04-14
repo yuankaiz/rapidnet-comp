@@ -21,7 +21,7 @@ materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule executio
 /* Rewritten provenance-enabled rules*/
 /*Switch program*/
 /*Query the controller when receiving unknown packets */
-rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList) :-
+rs10 eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
     packet(@Switch, SrcAdd, DstAdd, Data, HashList),
     maxPriority(@Switch, TopPriority),
@@ -34,17 +34,19 @@ rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, 
     List2 := f_append(PID2),
     List := f_concat(List, List2),
     RID := f_sha1(R + List),
-    Rlist := f_append(R),
-    RTempList := f_concat(Rlist, List).
+    SwitchList := f_append(Switch),
+    SrcAddList := f_append(SrcAdd),
+    SwcSrcList := f_concat(SwitchList, SrcAddList).
 
 rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, HashList) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList).
+    eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList),
+    Switch := f_first(SwcSrcList),
+    SrcList := f_removeFirst(SwcSrcList),
+    SrcAdd := f_first(SrcList).
 
 /* TODO: the performance of using aggregation for hash table is not expected to be good */
 rs12 eMatchingPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList),
-    R == f_first(RTempList),
-    List == f_removeFirst(RTempList),
+    eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList),
     ruleExec(@RLoc, R, RID, List).
 
 /* If the RID does not exist, store the provenance node*/
@@ -59,7 +61,7 @@ rs15 matchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, NewHashList) :-
 	NewHashList := f_concat(HashList, Hash).
 
 /*Recursively matching entries in a routing table*/
-rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID, RTempList, HashList) :-
+rs20 eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, NextPriority, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
     matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority, HashList),
     flowEntry(@Switch, DstEntry, Next, Priority),
@@ -75,11 +77,12 @@ rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID,
     List2 := f_append(PID2),
     List := f_concat(List, List2),
     RID := f_sha1(R + List),
-    Rlist := f_append(R),
-    RTempList := f_concat(Rlist, List).
+    SwitchList := f_append(Switch),
+    SrcAddList := f_append(SrcAdd),
+    SwcSrcList := f_concat(SwitchList, SrcAddList).
 
 /* rs21 - rs24 are identical to rs11 - rs14*/
- 
+
 
 /*A hit in the routing table, forward the packet accordingly*/
 rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-

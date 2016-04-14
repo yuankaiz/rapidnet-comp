@@ -268,14 +268,18 @@ PktfwdSdnProvComp::Rs10_eca (Ptr<Tuple> packet)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
-  result->Assign (Assignor::New ("Rlist",
+  result->Assign (Assignor::New ("SwitchList",
     FAppend::New (
-      VarExpr::New ("R"))));
+      VarExpr::New ("packet_attr1"))));
 
-  result->Assign (Assignor::New ("RTempList",
+  result->Assign (Assignor::New ("SrcAddList",
+    FAppend::New (
+      VarExpr::New ("packet_attr2"))));
+
+  result->Assign (Assignor::New ("SwcSrcList",
     FConcat::New (
-      VarExpr::New ("Rlist"),
-      VarExpr::New ("List"))));
+      VarExpr::New ("SwitchList"),
+      VarExpr::New ("SrcAddList"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -285,13 +289,13 @@ PktfwdSdnProvComp::Rs10_eca (Ptr<Tuple> packet)
   result = result->Project (
     EMATCHINGPACKETTEMP,
     strlist ("RLoc",
-      "packet_attr1",
-      "packet_attr2",
+      "SwcSrcList",
       "packet_attr3",
       "packet_attr4",
       "maxPriority_attr2",
       "RID",
-      "RTempList",
+      "R",
+      "List",
       "packet_attr5",
       "RLoc"),
     strlist ("eMatchingPacketTemp_attr1",
@@ -315,17 +319,29 @@ PktfwdSdnProvComp::Rs11_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   Ptr<Tuple> result = eMatchingPacketTemp;
 
+  result->Assign (Assignor::New ("Switch",
+    FFirst::New (
+      VarExpr::New ("eMatchingPacketTemp_attr2"))));
+
+  result->Assign (Assignor::New ("SrcList",
+    FRemoveFirst::New (
+      VarExpr::New ("eMatchingPacketTemp_attr2"))));
+
+  result->Assign (Assignor::New ("SrcAdd",
+    FFirst::New (
+      VarExpr::New ("SrcList"))));
+
   result = result->Project (
     EMATCHINGPACKET,
-    strlist ("eMatchingPacketTemp_attr2",
+    strlist ("Switch",
+      "SrcAdd",
       "eMatchingPacketTemp_attr3",
       "eMatchingPacketTemp_attr4",
       "eMatchingPacketTemp_attr5",
       "eMatchingPacketTemp_attr6",
-      "eMatchingPacketTemp_attr7",
       "eMatchingPacketTemp_attr1",
       "eMatchingPacketTemp_attr9",
-      "eMatchingPacketTemp_attr2"),
+      "Switch"),
     strlist ("eMatchingPacket_attr1",
       "eMatchingPacket_attr2",
       "eMatchingPacket_attr3",
@@ -348,29 +364,17 @@ PktfwdSdnProvComp::Rs12_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   result = GetRelation (RULEEXEC)->Join (
     eMatchingPacketTemp,
-    strlist ("ruleExec_attr3", "ruleExec_attr1"),
-    strlist ("eMatchingPacketTemp_attr7", "eMatchingPacketTemp_attr1"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("ruleExec_attr2"),
-      FFirst::New (
-        VarExpr::New ("eMatchingPacketTemp_attr8")))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("ruleExec_attr4"),
-      FRemoveFirst::New (
-        VarExpr::New ("eMatchingPacketTemp_attr8")))));
+    strlist ("ruleExec_attr4", "ruleExec_attr2", "ruleExec_attr3", "ruleExec_attr1"),
+    strlist ("eMatchingPacketTemp_attr8", "eMatchingPacketTemp_attr7", "eMatchingPacketTemp_attr6", "eMatchingPacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eMatchingPacketTemp);
 
   result = result->Project (
     EMATCHINGPACKETCOUNT,
     strlist ("eMatchingPacketTemp_attr1",
+      "eMatchingPacketTemp_attr6",
       "eMatchingPacketTemp_attr7",
-      "ruleExec_attr2",
-      "ruleExec_attr4",
+      "eMatchingPacketTemp_attr8",
       "count"),
     strlist ("eMatchingPacketCount_attr1",
       "eMatchingPacketCount_attr2",
@@ -508,14 +512,18 @@ PktfwdSdnProvComp::Rs20_eca (Ptr<Tuple> matchingPacket)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
-  result->Assign (Assignor::New ("Rlist",
+  result->Assign (Assignor::New ("SwitchList",
     FAppend::New (
-      VarExpr::New ("R"))));
+      VarExpr::New ("matchingPacket_attr1"))));
 
-  result->Assign (Assignor::New ("RTempList",
+  result->Assign (Assignor::New ("SrcAddList",
+    FAppend::New (
+      VarExpr::New ("matchingPacket_attr2"))));
+
+  result->Assign (Assignor::New ("SwcSrcList",
     FConcat::New (
-      VarExpr::New ("Rlist"),
-      VarExpr::New ("List"))));
+      VarExpr::New ("SwitchList"),
+      VarExpr::New ("SrcAddList"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_GT,
@@ -535,13 +543,13 @@ PktfwdSdnProvComp::Rs20_eca (Ptr<Tuple> matchingPacket)
   result = result->Project (
     EMATCHINGPACKETTEMP,
     strlist ("RLoc",
-      "matchingPacket_attr1",
-      "matchingPacket_attr2",
+      "SwcSrcList",
       "matchingPacket_attr3",
       "matchingPacket_attr4",
       "NextPriority",
       "RID",
-      "RTempList",
+      "R",
+      "List",
       "matchingPacket_attr6",
       "RLoc"),
     strlist ("eMatchingPacketTemp_attr1",
