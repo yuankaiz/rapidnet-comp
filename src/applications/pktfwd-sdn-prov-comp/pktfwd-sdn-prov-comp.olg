@@ -109,12 +109,12 @@ rs31 ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc, HashList) :-
 	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList).
 
 /*TODO: optimization - join on RID is enough*/
-rs32 ePaketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
+rs32 ePacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
 	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
 	ruleExec(@RLoc, RID, R, List).
 
 rs33 ruleExec(@RLoc, RID, R, List) :-
-	ePaketCount(@RLoc, RID, R, List, Rcount),
+	ePacketCount(@RLoc, RID, R, List, Rcount),
 	Rcount == 0.
 
 rs34 packet(@Next, SrcAdd, DstAdd, Data, NewHashList) :-

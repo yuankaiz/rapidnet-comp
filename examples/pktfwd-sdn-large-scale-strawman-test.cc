@@ -96,7 +96,7 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 200
+#define DEFAULT_PKTNUM 2
 
 using namespace std;
 using namespace ns3;
@@ -588,11 +588,11 @@ main (int argc, char *argv[])
 
   int totalSwcNum = ParseTopology(TOPO_FILE, nodeArray);
   int totalNum = AddHostNodes(nodeArray, totalSwcNum, HOSTPERSWC, swcToHost);
-  //  PrintTopology(nodeArray, totalNum);
+  PrintTopology(nodeArray, totalNum);
 
   // Set up flow entry table
   Routing(nodeArray, totalSwcNum, swcToHost, rtables);
-  //  PrintRoutingTable(rtables, totalSwcNum);
+  PrintRoutingTable(rtables, totalSwcNum);
 
   // Insert linking information to the database
   Simulator::Schedule (Seconds(0.0001), InsertLinkTables, nodeArray, totalNum);  
