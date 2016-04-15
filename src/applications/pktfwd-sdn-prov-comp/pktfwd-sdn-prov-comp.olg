@@ -170,6 +170,7 @@ rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 	device(@Host, Dvtype),
 	packet(@Host, SrcAdd, DstAdd, Data, HashList),
+	DstAdd == Host,
         Dvtype == HOST,
 	RLoc := Host,
 	R := "rh2",

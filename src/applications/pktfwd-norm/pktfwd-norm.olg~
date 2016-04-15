@@ -58,6 +58,5 @@ rh1 packet(@Switch, SrcAdd, DstAdd, Data) :-
 rh2 recvPacket(@Host, SrcAdd, DstAdd, Data) :-
         device(@Host, Dvtype),
 	packet(@Host, SrcAdd, DstAdd, Data),
-	DstAdd == Host,
         Dvtype == HOST.
 

@@ -231,6 +231,7 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	device(@Host, Dvtype),
 	packetProv(@Host, SrcAdd, DstAdd, Data, Tag),
+	DstAdd == Host,
         Dvtype == HOST,
 	RLoc := Host,
 	R := "rh2",

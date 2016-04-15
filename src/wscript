@@ -77,6 +77,8 @@ all_modules = (
     'applications/pktfwd-sdn-prov',
     'applications/pktfwd-sdn-prov-comp',
     'applications/pktfwd-sdn-prov-comp-static-check',            
+    'applications/pktfwd-norm',
+    'applications/pktfwd-norm-prov',
     )
 
 def set_options(opt):

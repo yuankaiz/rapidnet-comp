@@ -62,8 +62,3 @@ rv8 eRReturn(@X,QID) :- rResultTmp(@X,QID,Ret,RID,Buf),
 rv9 rReturn(@Ret,QID,RID,Prov) :- eRReturn(@X,QID),
       rResultTmp(@X,QID,Ret,RID,Buf),
       ruleExec(@X,RID,R,List), Prov:=f_pRULE(Buf,X,R).
-
-
-
-
-

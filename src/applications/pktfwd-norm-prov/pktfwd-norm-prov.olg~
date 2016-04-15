@@ -1,0 +1,104 @@
+/*Materialized table*/
+materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
+materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
+materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
+materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
+materialize(flowEntry,infinity,infinity,keys(2)). /*Links between routers and other devices*/
+materialize(device,infinity,infinity,keys(2:int32)). /*Identify the device type of the node*/
+
+/* Provenance tables*/
+materialize(prov, -1, 0, keys(1, 2, 3)
+materialize(ruleExec, -1, 0, keys(1, 2)
+
+#define SWITCH 0
+#define HOST 1
+
+/*Switch program*/
+/*A hit in the routing table, forward the packet accordingly*/
+rs1 packet(@Next, SrcAdd, DstAdd, Data) :-
+        device(@Switch, Dvtype),
+        packet(@Switch, SrcAdd, DstAdd, Data),
+	flowEntry(@Switch, DstAdd, Next),
+	link(@Switch, Next),
+        Dvtype == SWITCH.
+
+prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :- 
+	   device(@Switch, Dvtype), 
+	   packet(@Switch, SrcAdd, DstAdd, Data), 
+	   flowEntry(@Switch, DstAdd, Next), 
+	   link(@Switch, Next), 
+	   PID1 := f_sha1((device+ Switch)+ Dvtype), 
+	   List := f_append(PID1), 
+	   PID2 := f_sha1((((packet+ Switch)+ SrcAdd)+ DstAdd)+ Data), 
+	   List2 := f_append(PID2), 
+	   List := f_concat(List, List2), 
+	   PID3 := f_sha1(((flowEntry+ Switch)+ DstAdd)+ Next), 
+	   List3 := f_append(PID3), 
+	   List := f_concat(List, List3), 
+	   PID4 := f_sha1((link+ Switch)+ Next), 
+	   List4 := f_append(PID4), 
+	   List := f_concat(List, List4), 
+	   Dvtype == HOST, 
+	   RLOC := Switch, 
+	   R := rs1, 
+	   RID := f_sha1((R+ RLOC)+ List).
+
+prov_rs1_2 ruleExec(@RLOC, RID, R, List) :- 
+	   epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List).
+
+prov_rs1_3 epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC) :- 
+	   epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List).
+
+prov_rs1_4 packet(@Next, SrcAdd, DstAdd, Data) :- 
+	   epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC).
+
+prov_rs1_5 prov(@Next, VID, RID, RLOC) :- 
+	   epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC), 
+	   VID := f_sha1((((packet+ Next)+ SrcAdd)+ DstAdd)+ Data).
+
+/*Host program*/
+prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List) :- 
+	   device(@Host, Dvtype), 
+	   initPacket(@Host, SrcAdd, DstAdd, Data), 
+	   linkhr(@Host, Switch), 
+	   PID1 := f_sha1((device+ Host)+ Dvtype), 
+	   List := f_append(PID1), 
+	   PID2 := f_sha1((((initPacket+ Host)+ SrcAdd)+ DstAdd)+ Data), 
+	   List2 := f_append(PID2), 
+	   List := f_concat(List, List2), 
+	   PID3 := f_sha1((linkhr+ Host)+ Switch), 
+	   List3 := f_append(PID3), 
+	   List := f_concat(List, List3), 
+	   Dvtype == HOST, 
+	   RLOC := Host, 
+	   R := rh1, 
+	   RID := f_sha1((R+ RLOC)+ List).
+
+
+/*Receive a packet*/
+prov_rh2_1 erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List) :- 
+	   device(@Host, Dvtype), 
+	   packet(@Host, SrcAdd, DstAdd, Data), 
+	   DstAdd == Host, 
+	   Dvtype == HOST, 
+	   PID1 := f_sha1((device+ Host)+ Dvtype), 
+	   List := f_append(PID1), 
+	   PID2 := f_sha1((((packet+ Host)+ SrcAdd)+ DstAdd)+ Data), 
+	   List2 := f_append(PID2), 
+	   List := f_concat(List, List2), 
+	   RLOC := Host, 
+	   R := rh2, 
+	   RID := f_sha1((R+ RLOC)+ List).
+
+prov_rh2_2 ruleExec(@RLOC, RID, R, List) :- 
+	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List).
+
+prov_rh2_3 erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC) :- 
+	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List).
+
+prov_rh2_4 recvPacket(@Host, SrcAdd, DstAdd, Data) :- 
+	   erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC).
+
+prov_rh2_5 prov(@Host, VID, RID, RLOC) :- 
+	   erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC), 
+	   VID := f_sha1((((recvPacket+ Host)+ SrcAdd)+ DstAdd)+ Data).
