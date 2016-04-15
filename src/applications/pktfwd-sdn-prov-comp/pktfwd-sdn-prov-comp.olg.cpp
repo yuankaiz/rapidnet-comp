@@ -2,8 +2,8 @@
 /* Note: we remove RLoc from RID in this version*/
 
 /*Materialized table*/
-materialize(initPacket,infinity,infinity,keys(2,3)). /*Input packets at hosts*/
-materialize(recvPacket,infinity,infinity,keys(2,3)). /*Received packets at hosts*/
+materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
+materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
 materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
 materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
 materialize(flowEntry,infinity,infinity,keys(2,4:int32)). /*Flow tables of switches*/
@@ -146,6 +146,7 @@ rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 /* rs41 - rs44 are identical to rs31 - rs34*/
 
 /*Host program*/
+/* TODO: Seperate the generation of PIDev and HashList, because RID could be conpressed*/
 rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
         device(@Host, Dvtype),
         initPacket(@Host, SrcAdd, DstAdd, Data),

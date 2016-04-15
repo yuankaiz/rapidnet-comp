@@ -104,7 +104,8 @@ PktfwdSdnProvComp::InitDatabase ()
 
   AddRelationWithKeys (INITPACKET, attrdeflist (
     attrdef ("initPacket_attr2", IPV4),
-    attrdef ("initPacket_attr3", IPV4)));
+    attrdef ("initPacket_attr3", IPV4),
+    attrdef ("initPacket_attr4", STR)));
 
   AddRelationWithKeys (LINK, attrdeflist (
     attrdef ("link_attr2", IPV4)));
@@ -121,7 +122,8 @@ PktfwdSdnProvComp::InitDatabase ()
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
-    attrdef ("recvPacket_attr3", IPV4)));
+    attrdef ("recvPacket_attr3", IPV4),
+    attrdef ("recvPacket_attr4", STR)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
     attrdef ("ruleExec_attr4", LIST)));
