@@ -13,7 +13,7 @@ materialize(hashTable,infinity,infinity,keys(2:int32)). /*Hash table for compres
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
-materialize(recvAuxPkt,infinity,infinity,keys(2:str)). /*Record the hash list*/
+materialize(recvAuxPkt,infinity,infinity,keys(2,3:str)). /*Record the hash list*/
 
 #define SWITCH 0
 #define HOST 1
@@ -146,6 +146,7 @@ rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 /* rs41 - rs44 are identical to rs31 - rs34*/
 
 /*Host program*/
+/* TODO: Seperate the generation of PIDev and HashList, because RID could be conpressed*/
 rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
         device(@Host, Dvtype),
         initPacket(@Host, SrcAdd, DstAdd, Data),
@@ -194,7 +195,7 @@ rh24 recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList) :-
 	Hash := f_append(RID),
 	NewHashList := f_concat(HashList, Hash).
 
-rh25 recvAuxPkt(@Host, Data, NewHashList) :-
+rh25 recvAuxPkt(@Host, SrcAdd, Data, NewHashList) :-
         recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList).
     
 

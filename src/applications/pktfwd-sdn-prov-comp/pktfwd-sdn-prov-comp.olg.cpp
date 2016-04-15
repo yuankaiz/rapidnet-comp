@@ -13,7 +13,7 @@ materialize(hashTable,infinity,infinity,keys(2:int32)). /*Hash table for compres
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
-materialize(recvAuxPkt,infinity,infinity,keys(2:str)). /*Record the hash list*/
+materialize(recvAuxPkt,infinity,infinity,keys(2,3:str)). /*Record the hash list*/
 
 
 
@@ -109,12 +109,12 @@ rs31 ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc, HashList) :-
  ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList).
 
 /*TODO: optimization - join on RID is enough*/
-rs32 ePaketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
+rs32 ePacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
  ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
  ruleExec(@RLoc, RID, R, List).
 
 rs33 ruleExec(@RLoc, RID, R, List) :-
- ePaketCount(@RLoc, RID, R, List, Rcount),
+ ePacketCount(@RLoc, RID, R, List, Rcount),
  Rcount == 0.
 
 rs34 packet(@Next, SrcAdd, DstAdd, Data, NewHashList) :-
@@ -170,6 +170,7 @@ rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
  device(@Host, Dvtype),
  packet(@Host, SrcAdd, DstAdd, Data, HashList),
+ DstAdd == Host,
         Dvtype == 1,
  RLoc := Host,
  R := "rh2",
@@ -193,5 +194,5 @@ rh24 recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList) :-
  Hash := f_append(RID),
  NewHashList := f_concat(HashList, Hash).
 
-rh25 recvAuxPkt(@Host, Data, NewHashList) :-
+rh25 recvAuxPkt(@Host, SrcAdd, Data, NewHashList) :-
         recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList).

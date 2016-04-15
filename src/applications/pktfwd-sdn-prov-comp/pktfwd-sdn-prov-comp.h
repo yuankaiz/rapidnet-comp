@@ -34,8 +34,8 @@ public:
   static const string EMATCHINGPACKETCOUNT;
   static const string EMATCHINGPACKETTEMP;
   static const string EPACKET;
+  static const string EPACKETCOUNT;
   static const string EPACKETTEMP;
-  static const string EPAKETCOUNT;
   static const string ERECVPACKET;
   static const string ERECVPACKETCOUNT;
   static const string ERECVPACKETTEMP;
@@ -87,7 +87,7 @@ protected:
 
   virtual void Rs32_eca (Ptr<Tuple> ePacketTemp);
 
-  virtual void Rs33_eca (Ptr<Tuple> ePaketCount);
+  virtual void Rs33_eca (Ptr<Tuple> ePacketCount);
 
   virtual void Rs34_eca (Ptr<Tuple> ePacket);
 

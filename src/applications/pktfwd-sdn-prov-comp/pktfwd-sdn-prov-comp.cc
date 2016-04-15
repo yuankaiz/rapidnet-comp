@@ -21,8 +21,8 @@ const string PktfwdSdnProvComp::EMATCHINGPACKET = "eMatchingPacket";
 const string PktfwdSdnProvComp::EMATCHINGPACKETCOUNT = "eMatchingPacketCount";
 const string PktfwdSdnProvComp::EMATCHINGPACKETTEMP = "eMatchingPacketTemp";
 const string PktfwdSdnProvComp::EPACKET = "ePacket";
+const string PktfwdSdnProvComp::EPACKETCOUNT = "ePacketCount";
 const string PktfwdSdnProvComp::EPACKETTEMP = "ePacketTemp";
-const string PktfwdSdnProvComp::EPAKETCOUNT = "ePaketCount";
 const string PktfwdSdnProvComp::ERECVPACKET = "eRecvPacket";
 const string PktfwdSdnProvComp::ERECVPACKETCOUNT = "eRecvPacketCount";
 const string PktfwdSdnProvComp::ERECVPACKETTEMP = "eRecvPacketTemp";
@@ -116,7 +116,8 @@ PktfwdSdnProvComp::InitDatabase ()
     attrdef ("maxPriority_attr2", INT32)));
 
   AddRelationWithKeys (RECVAUXPKT, attrdeflist (
-    attrdef ("recvAuxPkt_attr2", STR)));
+    attrdef ("recvAuxPkt_attr2", IPV4),
+    attrdef ("recvAuxPkt_attr3", STR)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -168,7 +169,7 @@ PktfwdSdnProvComp::DemuxRecv (Ptr<Tuple> tuple)
     {
       Rs32_eca (tuple);
     }
-  if (IsRecvEvent (tuple, EPAKETCOUNT))
+  if (IsRecvEvent (tuple, EPACKETCOUNT))
     {
       Rs33_eca (tuple);
     }
@@ -747,39 +748,39 @@ PktfwdSdnProvComp::Rs32_eca (Ptr<Tuple> ePacketTemp)
   result = AggWrapCount::New ()->Compute (result, ePacketTemp);
 
   result = result->Project (
-    EPAKETCOUNT,
+    EPACKETCOUNT,
     strlist ("ePacketTemp_attr1",
       "ePacketTemp_attr6",
       "ePacketTemp_attr7",
       "ePacketTemp_attr8",
       "count"),
-    strlist ("ePaketCount_attr1",
-      "ePaketCount_attr2",
-      "ePaketCount_attr3",
-      "ePaketCount_attr4",
-      "ePaketCount_attr5"));
+    strlist ("ePacketCount_attr1",
+      "ePacketCount_attr2",
+      "ePacketCount_attr3",
+      "ePacketCount_attr4",
+      "ePacketCount_attr5"));
 
   SendLocal (result);
 }
 
 void
-PktfwdSdnProvComp::Rs33_eca (Ptr<Tuple> ePaketCount)
+PktfwdSdnProvComp::Rs33_eca (Ptr<Tuple> ePacketCount)
 {
   RAPIDNET_LOG_INFO ("Rs33_eca triggered");
 
-  Ptr<Tuple> result = ePaketCount;
+  Ptr<Tuple> result = ePacketCount;
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("ePaketCount_attr5"),
+      VarExpr::New ("ePacketCount_attr5"),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
     RULEEXEC,
-    strlist ("ePaketCount_attr1",
-      "ePaketCount_attr2",
-      "ePaketCount_attr3",
-      "ePaketCount_attr4"),
+    strlist ("ePacketCount_attr1",
+      "ePacketCount_attr2",
+      "ePacketCount_attr3",
+      "ePacketCount_attr4"),
     strlist ("ruleExec_attr1",
       "ruleExec_attr2",
       "ruleExec_attr3",
@@ -1320,6 +1321,11 @@ PktfwdSdnProvComp::Rh20_eca (Ptr<Tuple> packet)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("packet_attr1"))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
       ValueExpr::New (Int32Value::New (1)))));
 
@@ -1476,11 +1482,13 @@ PktfwdSdnProvComp::Rh25Eca0Ins (Ptr<Tuple> recvPacket)
   result = result->Project (
     RECVAUXPKT,
     strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
       "recvPacket_attr4",
       "recvPacket_attr5"),
     strlist ("recvAuxPkt_attr1",
       "recvAuxPkt_attr2",
-      "recvAuxPkt_attr3"));
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
 
   Insert (result);
 }
@@ -1495,11 +1503,13 @@ PktfwdSdnProvComp::Rh25Eca0Del (Ptr<Tuple> recvPacket)
   result = result->Project (
     RECVAUXPKT,
     strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
       "recvPacket_attr4",
       "recvPacket_attr5"),
     strlist ("recvAuxPkt_attr1",
       "recvAuxPkt_attr2",
-      "recvAuxPkt_attr3"));
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
 
   Delete (result);
 }
