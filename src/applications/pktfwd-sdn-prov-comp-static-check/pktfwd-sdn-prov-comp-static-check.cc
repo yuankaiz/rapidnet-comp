@@ -127,7 +127,8 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
     attrdef ("provHashTable_attr3", LIST)));
 
   AddRelationWithKeys (RECVAUXPKT, attrdeflist (
-    attrdef ("recvAuxPkt_attr2", STR)));
+    attrdef ("recvAuxPkt_attr2", IPV4),
+    attrdef ("recvAuxPkt_attr3", STR)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -421,7 +422,7 @@ PktfwdSdnProvCompStaticCheck::Rs12_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   result = GetRelation (RULEEXEC)->Join (
     eMatchingPacketTemp,
-    strlist ("ruleExec_attr4", "ruleExec_attr2", "ruleExec_attr3", "ruleExec_attr1"),
+    strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
     strlist ("eMatchingPacketTemp_attr8", "eMatchingPacketTemp_attr7", "eMatchingPacketTemp_attr6", "eMatchingPacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eMatchingPacketTemp);
@@ -1501,6 +1502,11 @@ PktfwdSdnProvCompStaticCheck::Rh20_eca (Ptr<Tuple> packetProv)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
+      VarExpr::New ("packetProv_attr3"),
+      VarExpr::New ("packetProv_attr1"))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
       ValueExpr::New (Int32Value::New (1)))));
 
@@ -1779,13 +1785,15 @@ PktfwdSdnProvCompStaticCheck::Rh28Eca0Ins (Ptr<Tuple> recvPacket)
   result = result->Project (
     RECVAUXPKT,
     strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
       "recvPacket_attr4",
       "recvPacket_attr5",
       "recvPacket_attr6"),
     strlist ("recvAuxPkt_attr1",
       "recvAuxPkt_attr2",
       "recvAuxPkt_attr3",
-      "recvAuxPkt_attr4"));
+      "recvAuxPkt_attr4",
+      "recvAuxPkt_attr5"));
 
   Insert (result);
 }
@@ -1800,13 +1808,15 @@ PktfwdSdnProvCompStaticCheck::Rh28Eca0Del (Ptr<Tuple> recvPacket)
   result = result->Project (
     RECVAUXPKT,
     strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
       "recvPacket_attr4",
       "recvPacket_attr5",
       "recvPacket_attr6"),
     strlist ("recvAuxPkt_attr1",
       "recvAuxPkt_attr2",
       "recvAuxPkt_attr3",
-      "recvAuxPkt_attr4"));
+      "recvAuxPkt_attr4",
+      "recvAuxPkt_attr5"));
 
   Delete (result);
 }

@@ -1506,6 +1506,11 @@ PktfwdSdnProv::Rh20_eca (Ptr<Tuple> packet)
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("packet_attr1"))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
       ValueExpr::New (Int32Value::New (1)))));
 

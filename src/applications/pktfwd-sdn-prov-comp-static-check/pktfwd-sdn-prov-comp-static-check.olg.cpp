@@ -15,7 +15,7 @@ materialize(ruleExec,infinity,infinity,keys(3:str, 4:list)). /*Hash table for pr
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
-materialize(recvAuxPkt,infinity,infinity,keys(2:str)). /*Record the extra hash values*/
+materialize(recvAuxPkt,infinity,infinity,keys(2,3:str)). /*Record the extra hash values*/
 
 
 
@@ -47,7 +47,7 @@ rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, Tag)
 /* TODO: Matching on all ruleExec attributes is not necessary*/
 rs12 eMatchingPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
     eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, DataTag),
-    ruleExec(@RLoc, R, RID, List).
+    ruleExec(@RLoc, RID, R, List).
 
 /* If the RID does not exist, store the provenance node*/
 rs13 ruleExec(@RLoc, RID, R, List) :-
@@ -231,6 +231,7 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
  device(@Host, Dvtype),
  packetProv(@Host, SrcAdd, DstAdd, Data, Tag),
+ DstAdd == Host,
         Dvtype == 1,
  RLoc := Host,
  R := "rh2",
@@ -273,5 +274,5 @@ rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
  packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
         Dvtype == 1 .
 
-rh28 recvAuxPkt(@Host, Data, PIDequi, PIDev) :-
+rh28 recvAuxPkt(@Host, SrcAdd, Data, PIDequi, PIDev) :-
         recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev).

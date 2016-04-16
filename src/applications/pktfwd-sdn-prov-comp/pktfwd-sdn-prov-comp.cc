@@ -379,7 +379,7 @@ PktfwdSdnProvComp::Rs12_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   result = GetRelation (RULEEXEC)->Join (
     eMatchingPacketTemp,
-    strlist ("ruleExec_attr4", "ruleExec_attr2", "ruleExec_attr3", "ruleExec_attr1"),
+    strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
     strlist ("eMatchingPacketTemp_attr8", "eMatchingPacketTemp_attr7", "eMatchingPacketTemp_attr6", "eMatchingPacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eMatchingPacketTemp);
@@ -978,10 +978,6 @@ PktfwdSdnProvComp::Rh10Eca0Ins (Ptr<Tuple> device)
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
 
-  result->Assign (Assignor::New ("Eventlist",
-    FAppend::New (
-      VarExpr::New ("PIDev"))));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -1017,14 +1013,9 @@ PktfwdSdnProvComp::Rh10Eca0Ins (Ptr<Tuple> device)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
-  result->Assign (Assignor::New ("RIDlist",
-    FAppend::New (
-      VarExpr::New ("RID"))));
-
   result->Assign (Assignor::New ("HashList",
-    FConcat::New (
-      VarExpr::New ("Eventlist"),
-      VarExpr::New ("RIDlist"))));
+    FAppend::New (
+      VarExpr::New ("PIDev"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1092,10 +1083,6 @@ PktfwdSdnProvComp::Rh10Eca1Ins (Ptr<Tuple> initPacket)
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
 
-  result->Assign (Assignor::New ("Eventlist",
-    FAppend::New (
-      VarExpr::New ("PIDev"))));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -1131,14 +1118,9 @@ PktfwdSdnProvComp::Rh10Eca1Ins (Ptr<Tuple> initPacket)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
-  result->Assign (Assignor::New ("RIDlist",
-    FAppend::New (
-      VarExpr::New ("RID"))));
-
   result->Assign (Assignor::New ("HashList",
-    FConcat::New (
-      VarExpr::New ("Eventlist"),
-      VarExpr::New ("RIDlist"))));
+    FAppend::New (
+      VarExpr::New ("PIDev"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1206,10 +1188,6 @@ PktfwdSdnProvComp::Rh10Eca2Ins (Ptr<Tuple> linkhr)
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
 
-  result->Assign (Assignor::New ("Eventlist",
-    FAppend::New (
-      VarExpr::New ("PIDev"))));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -1245,14 +1223,9 @@ PktfwdSdnProvComp::Rh10Eca2Ins (Ptr<Tuple> linkhr)
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
 
-  result->Assign (Assignor::New ("RIDlist",
-    FAppend::New (
-      VarExpr::New ("RID"))));
-
   result->Assign (Assignor::New ("HashList",
-    FConcat::New (
-      VarExpr::New ("Eventlist"),
-      VarExpr::New ("RIDlist"))));
+    FAppend::New (
+      VarExpr::New ("PIDev"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
