@@ -96,7 +96,7 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 200
+#define DEFAULT_PKTNUM 20
 
 using namespace std;
 using namespace ns3;
@@ -132,6 +132,7 @@ void Print ()
 {
   PrintRelation (apps, PktfwdSdnProvComp::RECVPACKET);
   PrintRelation (apps, PktfwdSdnProvComp::RULEEXEC);
+  PrintRelation (apps, PktfwdSdnProvComp::RECVAUXPKT);
 }
 
 void AddLink(AdjList* nodeArray, int i, int j)

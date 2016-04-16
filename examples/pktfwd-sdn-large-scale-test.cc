@@ -96,7 +96,7 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 200
+#define DEFAULT_PKTNUM 20
 
 using namespace std;
 using namespace ns3;
