@@ -12,6 +12,23 @@ materialize(ruleExec, infinity, infinity, keys(4:list)).
 #define SWITCH 0
 #define HOST 1
 
+/* Edb provenance rules*/
+r00 prov(@Host, VID, RID, Host) :-
+    initPacket(@Host, SrcAdd, DstAdd, Data),
+    VID := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
+    RID := VID.
+
+r01 prov(@Device, VID, RID, Device) :-
+    device(@Device, Dvtype),
+    VID := f_sha1("device" + Device + Dvtype),
+    RID := VID.
+
+r03 prov(@Switch, VID, RID, Switch) :-
+    flowEntry(@Switch, DstEntry, Next),
+    VID := f_sha1("Switch" + DstEntry + Next),
+    RID := VID.
+
+
 /*Switch program*/
 /*A hit in the routing table, forward the packet accordingly*/
 prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :- 
@@ -65,7 +82,6 @@ prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List) :-
 	   RLOC := Host, 
 	   R := "rh1", 
 	   RID := f_sha1((R+ RLOC)+ List).
-
 
 /*Receive a packet*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List) :- 

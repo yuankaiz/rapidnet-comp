@@ -12,35 +12,15 @@ materialize(ruleExec, infinity, infinity, keys(4:list)).
 
 
 
-/* Edb provenance rules*/
-r00 prov(@Host, VID, RID, Host) :-
-    initPacket(@Host, SrcAdd, DstAdd, Data),
-    VID := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
-    RID := VID.
-
-r01 prov(@Device, VID, RID, Device) :-
-    device(@Device, Dvtype),
-    VID := f_sha1("device" + Device + Dvtype),
-    RID := VID.
-
-r03 prov(@Switch, VID, RID, Switch) :-
-    flowEntry(@Switch, DstEntry, Next),
-    VID := f_sha1("Switch" + DstEntry + Next),
-    RID := VID.
-
-
 /*Switch program*/
 /*A hit in the routing table, forward the packet accordingly*/
-prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
+prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
-    packet(@Switch, SrcAdd, DstAdd, Data),
+    packet(@Switch, SrcAdd, DstAdd, Data, HashList),
     flowEntry(@Switch, DstAdd, Next),
     link(@Switch, Next),
     PID1 := f_sha1(("device"+ Switch)+ Dvtype),
     List := f_append(PID1),
-    PID2 := f_sha1(((("packet"+ Switch)+ SrcAdd)+ DstAdd)+ Data),
-    List2 := f_append(PID2),
-    List := f_concat(List, List2),
     PID3 := f_sha1((("flowEntry"+ Switch)+ DstAdd)+ Next),
     List3 := f_append(PID3),
     List := f_concat(List, List3),
@@ -52,32 +32,31 @@ prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
     R := "rs1",
     RID := f_sha1((R+ RLOC)+ List).
 
-prov_rs1_2 ruleExec(@RLOC, RID, R, List) :-
-    epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List).
+prov_rs1_2 epacketCount(@RLOC, RID, R, List, a_COUNT<*>) :-
+    epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
+    ruleExec(@RLOC, RID, R, List).
 
-prov_rs1_3 epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC) :-
-    epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List).
+prov_rs1_3 ruleExec(@RLOC, RID, R, List) :-
+    epacketCount(@RLOC, RID, R, List, Rcount),
+    Rcount == 0.
 
-prov_rs1_4 packet(@Next, SrcAdd, DstAdd, Data) :-
-    epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC).
-
-prov_rs1_5 prov(@Next, VID, RID, RLOC) :-
-    epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC),
-    VID := f_sha1(((("packet"+ Next)+ SrcAdd)+ DstAdd)+ Data).
+prov_rs1_4 packet(@Next, SrcAdd, DstAdd, Data, NewHashList) :-
+    epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
+    Hash := f_append(RID),
+    NewHashList := f_concat(HashList, Hash).
 
 /*Host program*/
-prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List) :-
+prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
     device(@Host, Dvtype),
     initPacket(@Host, SrcAdd, DstAdd, Data),
     linkhr(@Host, Switch),
+    PIDev := f_sha1(((("initPacket"+ Host)+ SrcAdd)+ DstAdd)+ Data),
+    HashList := f_append(PIDev),
     PID1 := f_sha1(("device"+ Host)+ Dvtype),
     List := f_append(PID1),
-    PID2 := f_sha1(((("initPacket"+ Host)+ SrcAdd)+ DstAdd)+ Data),
+    PID2 := f_sha1(("linkhr"+ Host)+ Switch),
     List2 := f_append(PID2),
     List := f_concat(List, List2),
-    PID3 := f_sha1(("linkhr"+ Host)+ Switch),
-    List3 := f_append(PID3),
-    List := f_concat(List, List3),
     Dvtype == 1,
     RLOC := Host,
     R := "rh1",
