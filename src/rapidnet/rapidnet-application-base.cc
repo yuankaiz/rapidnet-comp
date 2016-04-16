@@ -188,10 +188,15 @@ RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, stri
       bool exist = m_database->HasRelation(*itr);
       if (exist == true)
         {
+          std::cout << "Serialize table: " << *itr << endl;
           Ptr<RelationBase> provRelation = m_database->GetRelation(*itr);
           RelationBase* provRelBasePtr = GetPointer(provRelation);
           Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);
           ar & provRelPtr;
+        }
+      else
+        {
+          std::cout << "Table not found: " << *itr << endl;
         }
     }
 }
