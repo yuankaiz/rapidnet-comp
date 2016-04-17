@@ -214,15 +214,13 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
  PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data), /*Generate event hash*/
  Equilist := f_append(PIDequi),
  Evlist := f_append(PIDev),
- Eventlist := f_concat(Equilist, Evlist),
+ Tag := f_concat(Equilist, Evlist),
  PID1 := f_sha1("device" + Host + Dvtype), /*Generate rule ID*/
  PID2 := f_sha1("linkhr" + Host + Switch),
  List := f_append(PID1),
  List2 := f_append(PID2),
  List := f_concat(List, List2),
- RID := f_sha1(R + List),
- Hashlist := f_append(RID),
- Tag := f_concat(Eventlist, Hashlist).
+ RID := f_sha1(R + List).
 
 /* rh11 - rh14 are identical to rs31 - rs34*/
 

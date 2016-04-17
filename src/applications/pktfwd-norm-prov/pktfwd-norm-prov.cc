@@ -399,7 +399,7 @@ PktfwdNormProv::Prov_rs1_1_eca (Ptr<Tuple> packet)
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
-      ValueExpr::New (Int32Value::New (1)))));
+      ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
     EPACKETTEMP,

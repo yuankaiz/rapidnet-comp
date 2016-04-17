@@ -26,7 +26,7 @@ const string PktfwdNormProvCompStrawman::INITPACKET = "initPacket";
 const string PktfwdNormProvCompStrawman::LINK = "link";
 const string PktfwdNormProvCompStrawman::LINKHR = "linkhr";
 const string PktfwdNormProvCompStrawman::PACKET = "packet";
-const string PktfwdNormProvCompStrawman::PROV = "prov";
+const string PktfwdNormProvCompStrawman::RECVAUXPKT = "recvAuxPkt";
 const string PktfwdNormProvCompStrawman::RECVPACKET = "recvPacket";
 const string PktfwdNormProvCompStrawman::RULEEXEC = "ruleExec";
 
@@ -101,6 +101,10 @@ PktfwdNormProvCompStrawman::InitDatabase ()
   AddRelationWithKeys (LINKHR, attrdeflist (
     attrdef ("linkhr_attr2", IPV4)));
 
+  AddRelationWithKeys (RECVAUXPKT, attrdeflist (
+    attrdef ("recvAuxPkt_attr2", IPV4),
+    attrdef ("recvAuxPkt_attr3", STR)));
+
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
     attrdef ("recvPacket_attr3", IPV4),
@@ -160,9 +164,13 @@ PktfwdNormProvCompStrawman::DemuxRecv (Ptr<Tuple> tuple)
     {
       Prov_rh2_4_eca (tuple);
     }
-  if (IsRecvEvent (tuple, ERECVPACKET))
+  if (IsInsertEvent (tuple, RECVPACKET))
     {
-      Prov_rh2_5_eca (tuple);
+      Prov_rh2_5Eca0Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, RECVPACKET))
+    {
+      Prov_rh2_5Eca0Del (tuple);
     }
 }
 
@@ -253,7 +261,7 @@ PktfwdNormProvCompStrawman::Prov_rs1_1_eca (Ptr<Tuple> packet)
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
-      ValueExpr::New (Int32Value::New (1)))));
+      ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
     EPACKETTEMP,
@@ -771,6 +779,7 @@ PktfwdNormProvCompStrawman::Prov_rh2_1_eca (Ptr<Tuple> packet)
       "RID",
       "R",
       "List",
+      "packet_attr5",
       "RLOC"),
     strlist ("erecvPacketTemp_attr1",
       "erecvPacketTemp_attr2",
@@ -780,6 +789,7 @@ PktfwdNormProvCompStrawman::Prov_rh2_1_eca (Ptr<Tuple> packet)
       "erecvPacketTemp_attr6",
       "erecvPacketTemp_attr7",
       "erecvPacketTemp_attr8",
+      "erecvPacketTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -821,6 +831,7 @@ PktfwdNormProvCompStrawman::Prov_rh2_3_eca (Ptr<Tuple> erecvPacketTemp)
       "erecvPacketTemp_attr5",
       "erecvPacketTemp_attr6",
       "erecvPacketTemp_attr1",
+      "erecvPacketTemp_attr9",
       "erecvPacketTemp_attr2"),
     strlist ("erecvPacket_attr1",
       "erecvPacket_attr2",
@@ -828,6 +839,7 @@ PktfwdNormProvCompStrawman::Prov_rh2_3_eca (Ptr<Tuple> erecvPacketTemp)
       "erecvPacket_attr4",
       "erecvPacket_attr5",
       "erecvPacket_attr6",
+      "erecvPacket_attr7",
       RN_DEST));
 
   Send (result);
@@ -845,45 +857,56 @@ PktfwdNormProvCompStrawman::Prov_rh2_4_eca (Ptr<Tuple> erecvPacket)
     strlist ("erecvPacket_attr1",
       "erecvPacket_attr2",
       "erecvPacket_attr3",
-      "erecvPacket_attr4"),
+      "erecvPacket_attr4",
+      "erecvPacket_attr7"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
       "recvPacket_attr3",
-      "recvPacket_attr4"));
+      "recvPacket_attr4",
+      "recvPacket_attr5"));
 
   Insert (result);
 }
 
 void
-PktfwdNormProvCompStrawman::Prov_rh2_5_eca (Ptr<Tuple> erecvPacket)
+PktfwdNormProvCompStrawman::Prov_rh2_5Eca0Ins (Ptr<Tuple> recvPacket)
 {
-  RAPIDNET_LOG_INFO ("Prov_rh2_5_eca triggered");
+  RAPIDNET_LOG_INFO ("Prov_rh2_5Eca0Ins triggered");
 
-  Ptr<Tuple> result = erecvPacket;
-
-  result->Assign (Assignor::New ("VID",
-    FSha1::New (
-      Operation::New (RN_PLUS,
-        Operation::New (RN_PLUS,
-          Operation::New (RN_PLUS,
-            Operation::New (RN_PLUS,
-              ValueExpr::New (StrValue::New ("recvPacket")),
-              VarExpr::New ("erecvPacket_attr1")),
-            VarExpr::New ("erecvPacket_attr2")),
-          VarExpr::New ("erecvPacket_attr3")),
-        VarExpr::New ("erecvPacket_attr4")))));
+  Ptr<Tuple> result = recvPacket;
 
   result = result->Project (
-    PROV,
-    strlist ("erecvPacket_attr1",
-      "VID",
-      "erecvPacket_attr5",
-      "erecvPacket_attr6"),
-    strlist ("prov_attr1",
-      "prov_attr2",
-      "prov_attr3",
-      "prov_attr4"));
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
+      "recvPacket_attr4",
+      "recvPacket_attr5"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
 
-  SendLocal (result);
+  Insert (result);
+}
+
+void
+PktfwdNormProvCompStrawman::Prov_rh2_5Eca0Del (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Prov_rh2_5Eca0Del triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
+      "recvPacket_attr4",
+      "recvPacket_attr5"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4"));
+
+  Delete (result);
 }
 

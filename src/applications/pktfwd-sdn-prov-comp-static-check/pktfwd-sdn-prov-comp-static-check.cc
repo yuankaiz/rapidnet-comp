@@ -1379,7 +1379,7 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
     FAppend::New (
       VarExpr::New ("PIDev"))));
 
-  result->Assign (Assignor::New ("Eventlist",
+  result->Assign (Assignor::New ("Tag",
     FConcat::New (
       VarExpr::New ("Equilist"),
       VarExpr::New ("Evlist"))));
@@ -1418,15 +1418,6 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
       Operation::New (RN_PLUS,
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
-
-  result->Assign (Assignor::New ("Hashlist",
-    FAppend::New (
-      VarExpr::New ("RID"))));
-
-  result->Assign (Assignor::New ("Tag",
-    FConcat::New (
-      VarExpr::New ("Eventlist"),
-      VarExpr::New ("Hashlist"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,

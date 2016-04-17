@@ -17,23 +17,24 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-module.h"
+#include "ns3/pktfwd-norm-prov-comp-online-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
 
 /* Device identification*/
 #define device(host, dvtype)\
-  tuple(PktfwdNorm::DEVICE,\
+  tuple(PktfwdNormProvCompOnline::DEVICE,\
   attr("device_attr1", Ipv4Value, host),  \
   attr("device_attr2", Int32Value, dvtype))
 
 #define insert_device(host, dvtype)                                            \
   app(host) -> Insert(device(addr(host), dvtype));
 
+
 /* Links connecting hosts to switches*/
 #define linkhr(host, sw)\
-  tuple(PktfwdNorm::LINKHR,\
+  tuple(PktfwdNormProvCompOnline::LINKHR,\
   attr("linkhr_attr1", Ipv4Value, host),  \
   attr("linkhr_attr2", Ipv4Value, sw))
 
@@ -42,7 +43,7 @@
 
 /* Links connecting switches to other devices*/
 #define link(sw, nei)\
-  tuple(PktfwdNorm::LINK,\
+  tuple(PktfwdNormProvCompOnline::LINK,\
   attr("link_attr1", Ipv4Value, sw),  \
   attr("link_attr2", Ipv4Value, nei))
 
@@ -50,11 +51,11 @@
   app(sw) -> Insert(link(addr(sw), addr(nei)));
 
 /* Input packets */
-#define initpacket(host, srcadd, dstadd, data)         \
-  tuple(PktfwdNorm::INITPACKET,\
+#define initpacket(host, srcadd, dstadd, data)               \
+  tuple(PktfwdNormProvCompOnline::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
-  attr("initPacket_attr3", Ipv4Value, dstadd), \
+  attr("initPacket_attr3", Ipv4Value, dstadd),    \
   attr("initPacket_attr4", StrValue, data))
 
 #define insert_packet(host, srcadd, dstadd, data)                            \
@@ -62,7 +63,7 @@
 
 /* flow entry */
 #define flowentry(sw, dst, next)		\
-  tuple(PktfwdNorm::FLOWENTRY,\
+  tuple(PktfwdNormProvCompOnline::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", Ipv4Value, dst),         \
 	attr("flowEntry_attr3", Ipv4Value, next))
@@ -76,13 +77,15 @@
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
-using namespace ns3::rapidnet::pktfwdnorm;
+using namespace ns3::rapidnet::pktfwdnormprovcomponline;
 
 ApplicationContainer apps;
 
 void Print ()
 {
-  PrintRelation (apps, PktfwdNorm::RECVPACKET);
+  PrintRelation (apps, PktfwdNormProvCompOnline::RECVPACKET);
+  PrintRelation (apps, PktfwdNormProvCompOnline::RULEEXEC);
+  PrintRelation (apps, PktfwdNormProvCompOnline::PROVHASHTABLE);  
 }
 
 void SetupDevices()
@@ -123,36 +126,59 @@ void SetupFlowTable()
   /* Set up the flow entry for switch 5*/
   insert_flowentry(5, 4, 6);
   insert_flowentry(5, 3, 6);
+  insert_flowentry(5, 1, 1);
+  insert_flowentry(5, 2, 2);    
   insert_flowentry(5, 1, 6);
 
   /* Set up the flow entry for switch 6*/
   insert_flowentry(6, 3, 3);
   insert_flowentry(6, 4, 4);
+  insert_flowentry(6, 2, 5);
+  insert_flowentry(6, 1, 5);    
   insert_flowentry(6, 1, 5);
 }
 
 void PacketInsertion()
 {
-  insert_packet(1, 1, 4, "data");
+  /* Packets sent from 1 to 4 by 1*/
+  insert_packet(1, 1, 4, "1");
+  insert_packet(1, 1, 4, "2");
+  /* Packet sent from 2 to 4 by 1. A spoof*/
+  insert_packet(1, 2, 4, "3");
+
+  /* Packets sent from 2 to 3 by 2.*/
+  insert_packet(2, 2, 3, "4");  
 }
+
+// void SerializeProv()
+// {
+//   string relName = "ruleExec";
+//   vector<string> relNames;
+//   relNames.push_back(relName);
+//   app(5) -> SerializeRel(relNames, 5);
+//   app(6) -> SerializeRel(relNames, 6);
+//   app(4) -> SerializeRel(relNames, 4);
+// }
 
 int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("PktfwdNorm", LOG_LEVEL_INFO);
+  LogComponentEnable("PktfwdNormProvCompOnline", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
   int nodeNum = 6;
-  apps = InitRapidNetApps (nodeNum, Create<PktfwdNormHelper> ());
+  apps = InitRapidNetApps (nodeNum, Create<PktfwdNormProvCompOnlineHelper> ());
 
   apps.Start (Seconds (0.0));
-  apps.Stop (Seconds (500.0));
+  apps.Stop (Seconds (20.0));
 
   schedule (0.0001, BuildTopology);
   schedule (0.0010, SetupDevices);
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, PacketInsertion);
-  schedule (499.0000, Print);
+  schedule (19.0000, Print);
+  //Simulator::Schedule (Seconds (19.9900), SerializeProv, nodeNum);
+  //  schedule (19.0000, SerializeProv);
 
   Simulator::Run ();
   Simulator::Destroy ();

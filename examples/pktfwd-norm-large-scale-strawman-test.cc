@@ -25,7 +25,7 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-sdn-prov-comp-static-check-module.h"
+#include "ns3/pktfwd-norm-prov-comp-strawman-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
@@ -36,7 +36,7 @@
 
 /* Device identification*/
 #define device(host, dvtype)\
-  tuple(PktfwdSdnProvCompStaticCheck::DEVICE,\
+  tuple(PktfwdNormProvCompStrawman::DEVICE,\
   attr("device_attr1", Ipv4Value, host),  \
   attr("device_attr2", Int32Value, dvtype))
 
@@ -46,7 +46,7 @@
 
 /* Links Connecting Hosts To switches*/
 #define linkhr(host, sw)\
-  tuple(PktfwdSdnProvCompStaticCheck::LINKHR,\
+  tuple(PktfwdNormProvCompStrawman::LINKHR,\
   attr("linkhr_attr1", Ipv4Value, host),  \
   attr("linkhr_attr2", Ipv4Value, sw))
 
@@ -55,7 +55,7 @@
 
 /* Links connecting switches to other devices*/
 #define link(sw, nei)\
-  tuple(PktfwdSdnProvCompStaticCheck::LINK,\
+  tuple(PktfwdNormProvCompStrawman::LINK,\
   attr("link_attr1", Ipv4Value, sw),  \
   attr("link_attr2", Ipv4Value, nei))
 
@@ -64,7 +64,7 @@
 
 /* Input packets */
 #define initpacket(host, srcadd, dstadd, data)               \
-  tuple(PktfwdSdnProvCompStaticCheck::INITPACKET,\
+  tuple(PktfwdNormProvCompStrawman::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
   attr("initPacket_attr3", Ipv4Value, dstadd),    \
@@ -73,25 +73,15 @@
 #define insert_packet(host, srcadd, dstadd, data)                            \
   app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd), data));
 
-/* Max priority */
-#define maxPriority(sw, priority)\
-  tuple(PktfwdSdnProvCompStaticCheck::MAXPRIORITY,\
-	attr("maxPriority_attr1", Ipv4Value, sw),\
-	attr("maxPriority_attr2", Int32Value, priority))
-
-#define insert_priority(sw, priority)\
-  app(sw) -> Insert(maxPriority(addr(sw), priority));
-
 /* flow entry */
-#define flowentry(sw, dst, next, priority)		\
-  tuple(PktfwdSdnProvCompStaticCheck::FLOWENTRY,\
+#define flowentry(sw, dst, next)		\
+  tuple(PktfwdNormProvCompStrawman::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", Ipv4Value, dst),         \
-	attr("flowEntry_attr3", Ipv4Value, next),	\
-	attr("flowEntry_attr4", Int32Value, priority))
+	attr("flowEntry_attr3", Ipv4Value, next))
 
-#define insert_flowentry(sw, dst, next, priority)				\
-  app(sw) -> Insert(flowentry(addr(sw), addr(dst), addr(next), priority))
+#define insert_flowentry(sw, dst, next)				\
+  app(sw) -> Insert(flowentry(addr(sw), addr(dst), addr(next)))
 
 #define SWITCH 0
 #define HOST 1
@@ -100,7 +90,7 @@
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
-using namespace ns3::rapidnet::pktfwdsdnprovcompstaticcheck;
+using namespace ns3::rapidnet::pktfwdnormprovcompstrawman;
 
 ApplicationContainer apps;
 
@@ -129,9 +119,9 @@ struct AdjList
 
 void Print ()
 {
-  PrintRelation (apps, PktfwdSdnProvCompStaticCheck::RECVPACKET);
-  PrintRelation (apps, PktfwdSdnProvCompStaticCheck::RULEEXEC);
-  PrintRelation (apps, PktfwdSdnProvCompStaticCheck::PROVHASHTABLE);  
+  PrintRelation (apps, PktfwdNormProvCompStrawman::RECVPACKET);
+  PrintRelation (apps, PktfwdNormProvCompStrawman::RULEEXEC);
+  PrintRelation (apps, PktfwdNormProvCompStrawman::RECVAUXPKT);
 }
 
 void AddLink(AdjList* nodeArray, int i, int j)
@@ -455,17 +445,15 @@ void SetupFlowTable(map<int, int> rtables[MAX_NODE_NUM], int switchNum)
     {
       int deviceSwc = swc + 1; //Rapidnet's node ID starts from 1
       int tablesize = rtables[swc].size();
-      insert_priority(deviceSwc, tablesize);
 
       map<int, int>::iterator itr;
-      int priority = 1;
-      for (itr = rtables[swc].begin();itr != rtables[swc].end();itr++, priority++)
+      for (itr = rtables[swc].begin();itr != rtables[swc].end();itr++)
         {
           int dst = itr->first;
           int deviceDst = dst + 1;
           int next = itr->second;
           int deviceNext = next + 1;
-          insert_flowentry(deviceSwc, deviceDst, deviceNext, priority);
+          insert_flowentry(deviceSwc, deviceDst, deviceNext);
         }
     }
 }
@@ -552,10 +540,8 @@ void SerializeProv(int totalNum, string storePath)
 {
   vector<string> relNames;
   relNames.push_back("ruleExec");
-  relNames.push_back("provHashTable");
-  relNames.push_back("equiHashTable");
   relNames.push_back("recvAuxPkt");
-
+  
   for (int i = 0; i < totalNum; i++)
     {
       int node = i + 1;
@@ -566,7 +552,7 @@ void SerializeProv(int totalNum, string storePath)
 int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("PktfwdSdnProvCompStaticCheck", LOG_LEVEL_INFO);
+  LogComponentEnable("PktfwdNormProvCompStrawman", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
   uint32_t hostPairs = 1;
@@ -576,7 +562,7 @@ main (int argc, char *argv[])
   CommandLine cmd;
   cmd.AddValue("hostPairs", "Number of pairs of communicating hosts", hostPairs);
   cmd.AddValue("storePath", "The path to the directory for provenance storage", storePath);
-  cmd.AddValue("packetNum", "Number of packets sent between each pair of hosts", packetNum);  
+  cmd.AddValue("packetNum", "Number of packets sent between each pair of hosts", packetNum);
   cmd.Parse(argc, argv);
 
   AdjList* nodeArray = new AdjList[MAX_NODE_NUM];
@@ -592,11 +578,11 @@ main (int argc, char *argv[])
 
   int totalSwcNum = ParseTopology(TOPO_FILE, nodeArray);
   int totalNum = AddHostNodes(nodeArray, totalSwcNum, HOSTPERSWC, swcToHost);
-  //  PrintTopology(nodeArray, totalNum);
+  PrintTopology(nodeArray, totalNum);
 
   // Set up flow entry table
   Routing(nodeArray, totalSwcNum, swcToHost, rtables);
-  //  PrintRoutingTable(rtables, totalSwcNum);
+  PrintRoutingTable(rtables, totalSwcNum);
 
   // Insert linking information to the database
   Simulator::Schedule (Seconds(0.0001), InsertLinkTables, nodeArray, totalNum);  
@@ -611,7 +597,7 @@ main (int argc, char *argv[])
   SchedulePacketTrans(totalNum, totalSwcNum, hostPairs, packetNum);
 
   /* Create RapidNet apps*/
-  //apps = InitRapidNetApps (totalNum, Create<PktfwdSdnProvCompStaticCheckHelper> ());
+  //apps = InitRapidNetApps (totalNum, Create<PktfwdNormProvCompStrawmanHelper> ());
   /* CSMA device model*/
   NodeContainer csmaNodes;
   csmaNodes.Create (totalNum);
@@ -631,7 +617,7 @@ main (int argc, char *argv[])
   address.SetBase ("10.1.1.0", "255.255.255.0");
   address.Assign (csmaDevices);
 
-  Ptr<RapidNetApplicationHelper> appHelper = Create<PktfwdSdnProvCompStaticCheckHelper> ();
+  Ptr<RapidNetApplicationHelper> appHelper = Create<PktfwdNormProvCompStrawmanHelper> ();
   apps = appHelper->Install (csmaNodes);
 
   apps.Start (Seconds (0.0));

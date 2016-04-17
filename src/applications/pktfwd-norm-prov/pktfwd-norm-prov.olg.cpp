@@ -47,7 +47,7 @@ prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
     PID4 := f_sha1(("link"+ Switch)+ Next),
     List4 := f_append(PID4),
     List := f_concat(List, List4),
-    Dvtype == 1,
+    Dvtype == 0,
     RLOC := Switch,
     R := "rs1",
     RID := f_sha1((R+ RLOC)+ List).

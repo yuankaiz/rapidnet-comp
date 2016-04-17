@@ -39,7 +39,7 @@ public:
   static const string LINK;
   static const string LINKHR;
   static const string PACKET;
-  static const string PROV;
+  static const string RECVAUXPKT;
   static const string RECVPACKET;
   static const string RULEEXEC;
 
@@ -83,7 +83,9 @@ protected:
 
   virtual void Prov_rh2_4_eca (Ptr<Tuple> erecvPacket);
 
-  virtual void Prov_rh2_5_eca (Ptr<Tuple> erecvPacket);
+  virtual void Prov_rh2_5Eca0Ins (Ptr<Tuple> recvPacket);
+
+  virtual void Prov_rh2_5Eca0Del (Ptr<Tuple> recvPacket);
 
 };
 

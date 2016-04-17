@@ -80,6 +80,7 @@ all_modules = (
     'applications/pktfwd-norm',
     'applications/pktfwd-norm-prov',
     'applications/pktfwd-norm-prov-comp-strawman',
+    'applications/pktfwd-norm-prov-comp-online',
     )
 
 def set_options(opt):
