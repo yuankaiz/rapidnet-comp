@@ -276,3 +276,6 @@ def build(bld):
 
     obj = bld.create_ns3_program('pktfwd-norm-large-scale-online-test')
     obj.source = 'pktfwd-norm-large-scale-online-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-bandwidth-test')
+    obj.source = 'pktfwd-norm-bandwidth-test.cc'
