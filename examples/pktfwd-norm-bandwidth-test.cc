@@ -21,7 +21,7 @@
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
-#include "gnuplot-helper.h"
+#include "ns3/gnuplot.h"
 
 /* Device identification*/
 #define device(host, dvtype)\
@@ -77,6 +77,10 @@
 #define BASE_ADDR "10.0."
 #define ADDR_SUFFIX ".0"
 #define SIMULATION_LENGTH 10
+
+const string plotFileName = "bandwidth_100n.plt";
+const string plotTitle = "bandwidth usage";
+const string dataTitle = "bandwidth_data";
 
 using namespace std;
 using namespace ns3;
@@ -138,6 +142,22 @@ void SetupFlowTable()
   insert_flowentry(6, 1, 5);
 }
 
+void ShowAppAddr(ApplicationContainer& apps, int totalNum)
+{
+  std::ofstream ofile("addr_mapping.txt");
+  ofile << "\n" << "Mapping: (Node ID -> Application address) " << "\n";
+  for (int i = 0;i < totalNum;i++)
+    {
+      int nodeID = i + 1;
+      ofile << "Node ID: " << nodeID;
+      ofile << " -> ";
+      ofile << "App Ipv4ddress: " << app(nodeID)->GetAddress ();
+      ofile << "\n";
+    }
+  ofile << "\n";
+  ofile.close ();
+}
+
 void PacketInsertion()
 {
   insert_packet(1, 1, 4, "data");
@@ -148,15 +168,18 @@ void MeasureBandwidth(std::string context, Ptr< const Packet > packet)
   m_bytesTotal += packet->GetSize ();
 }
 
-void Throughput(Gnuplot2dDataset& plotData)
+void Throughput(Gnuplot2dDataset& dataset)
 {
   if (Simulator::Now () > Seconds (SIMULATION_LENGTH))
     {
       return;
     }
+  
+  double seconds = Simulator::Now().GetSeconds ();
+  dataset.Add (seconds, m_bytesTotal/2);
   std::cout << std::endl << "Throughput: " << m_bytesTotal/2 << std::endl;
   m_bytesTotal = 0;
-  Simulator::Schedule (Seconds (2), Throughput);
+  Simulator::Schedule (Seconds (2), Throughput, dataset);
 }
 
 int
@@ -213,6 +236,8 @@ main (int argc, char *argv[])
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   apps = appHelper->Install (ptpNodes);
+  
+  ShowAppAddr(apps, nodeNum);
 
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (SIMULATION_LENGTH));
@@ -229,10 +254,26 @@ main (int argc, char *argv[])
   // string config_path2 = "/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/PhyTxEnd";
   // Config::Connect (config_path2, MakeCallback (&MeasureSize));
 
-  Simulator::Schedule (Seconds (2), Throughput);
+  //Draw the graph
+  Gnuplot plot (plotFileName);
+  plot.SetTitle (plotTitle);
+  plot.SetLegend ("Time (s)", "Kbps");
+
+  //Create dataset
+  Gnuplot2dDataset dataset;
+  dataset.SetTitle (dataTitle);
+  dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
+
+  Simulator::Schedule (Seconds (2), Throughput, dataset);  
 
   Simulator::Run ();
   Simulator::Destroy ();
+
+  //Plot the graph
+  plot.AddDataset (dataset);
+  std:ofstream plotFile (plotFileName.c_str());
+  plot.GenerateOutput (plotFile);
+  plotFile.close ();
 
   return 0;
 }
