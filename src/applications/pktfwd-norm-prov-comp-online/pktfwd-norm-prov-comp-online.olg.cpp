@@ -49,9 +49,17 @@ prov_rs1_4 packetProv(@Next, SrcAdd, DstAdd, Data, NewTag) :-
     NewTag := f_concat(Tag, Hash).
 
 /* Rules for normal execution without provenance */
+/*
 rs1 packetNonProv(@Next, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Switch, Dvtype),
         packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev),
+	flowEntry(@Switch, DstAdd, Next),
+	link(@Switch, Next),
+        Dvtype == SWITCH.
+*/
+rs1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
+        device(@Switch, Dvtype),
+        packet(@Switch, SrcAdd, DstAdd, Data, PIDHash),
  flowEntry(@Switch, DstAdd, Next),
  link(@Switch, Next),
         Dvtype == 0 .
@@ -70,18 +78,31 @@ rh102 equiHashTable(@Host, DstAdd, PIDequi) :-
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     PIDcount == 0.
 
+/*
 rh103 packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
     device(@Host, Dvtype),
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     linkhr(@Host, Switch),
-    Dvtype == 1,
-    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data), /*Generate event hash*/
+    Dvtype == HOST,
+    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
     PIDcount != 0.
+*/
+rh103 packet(@Switch, SrcAdd, DstAdd, Data, PIDHash) :-
+    device(@Host, Dvtype),
+    initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
+    linkhr(@Host, Switch),
+    Dvtype == 1,
+    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
+    PIDcount != 0,
+    PIDequiHash := f_append(PIDequi),
+    PIDevHash := f_append(PIDev),
+    PIDHash := f_concat(PIDequiHash, PIDevHash).
 
 prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
     device(@Host, Dvtype),
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     linkhr(@Host, Switch),
+    PIDcount == 0,
     PIDev := f_sha1(((("initPacket"+ Host)+ SrcAdd)+ DstAdd)+ Data),
     Equilist := f_append(PIDequi),
            Evlist := f_append(PIDev),
@@ -140,9 +161,19 @@ prov_rh2_7 provHashTable(@Host, PIDequi, Hashlist) :-
 prov_rh2_8 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
     recvPacketDecomp(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist).
 
+/*
 rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Host, Dvtype),
- packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
+	packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
+	DstAdd == Host,
+        Dvtype == HOST.
+*/
+rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
+        device(@Host, Dvtype),
+ packet(@Host, SrcAdd, DstAdd, Data, PIDHash),
+ PIDequi := f_first(PIDHash),
+ PIDevHash := f_removeFirst(PIDHash),
+ PIDev := f_first(PIDevHash),
  DstAdd == Host,
         Dvtype == 1 .
 

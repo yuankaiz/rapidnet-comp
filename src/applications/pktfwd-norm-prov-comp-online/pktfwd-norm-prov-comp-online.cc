@@ -28,7 +28,7 @@ const string PktfwdNormProvCompOnline::INITPACKETCOUNT = "initPacketCount";
 const string PktfwdNormProvCompOnline::INITPACKETHASH = "initPacketHash";
 const string PktfwdNormProvCompOnline::LINK = "link";
 const string PktfwdNormProvCompOnline::LINKHR = "linkhr";
-const string PktfwdNormProvCompOnline::PACKETNONPROV = "packetNonProv";
+const string PktfwdNormProvCompOnline::PACKET = "packet";
 const string PktfwdNormProvCompOnline::PACKETPROV = "packetProv";
 const string PktfwdNormProvCompOnline::PROVHASHTABLE = "provHashTable";
 const string PktfwdNormProvCompOnline::RECVAUXPKT = "recvAuxPkt";
@@ -145,7 +145,7 @@ PktfwdNormProvCompOnline::DemuxRecv (Ptr<Tuple> tuple)
     {
       Prov_rs1_4_eca (tuple);
     }
-  if (IsRecvEvent (tuple, PACKETNONPROV))
+  if (IsRecvEvent (tuple, PACKET))
     {
       Rs1_eca (tuple);
     }
@@ -197,7 +197,7 @@ PktfwdNormProvCompOnline::DemuxRecv (Ptr<Tuple> tuple)
     {
       Prov_rh2_8_eca (tuple);
     }
-  if (IsRecvEvent (tuple, PACKETNONPROV))
+  if (IsRecvEvent (tuple, PACKET))
     {
       Rh2_eca (tuple);
     }
@@ -413,26 +413,26 @@ PktfwdNormProvCompOnline::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp)
 }
 
 void
-PktfwdNormProvCompOnline::Rs1_eca (Ptr<Tuple> packetNonProv)
+PktfwdNormProvCompOnline::Rs1_eca (Ptr<Tuple> packet)
 {
   RAPIDNET_LOG_INFO ("Rs1_eca triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (DEVICE)->Join (
-    packetNonProv,
+    packet,
     strlist ("device_attr1"),
-    strlist ("packetNonProv_attr1"));
+    strlist ("packet_attr1"));
 
   result = GetRelation (FLOWENTRY)->Join (
     result,
     strlist ("flowEntry_attr2", "flowEntry_attr1"),
-    strlist ("packetNonProv_attr3", "packetNonProv_attr1"));
+    strlist ("packet_attr3", "packet_attr1"));
 
   result = GetRelation (LINK)->Join (
     result,
     strlist ("link_attr2", "link_attr1"),
-    strlist ("flowEntry_attr3", "packetNonProv_attr1"));
+    strlist ("flowEntry_attr3", "packet_attr1"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -440,20 +440,18 @@ PktfwdNormProvCompOnline::Rs1_eca (Ptr<Tuple> packetNonProv)
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
-    PACKETNONPROV,
+    PACKET,
     strlist ("flowEntry_attr3",
-      "packetNonProv_attr2",
-      "packetNonProv_attr3",
-      "packetNonProv_attr4",
-      "packetNonProv_attr5",
-      "packetNonProv_attr6",
+      "packet_attr2",
+      "packet_attr3",
+      "packet_attr4",
+      "packet_attr5",
       "flowEntry_attr3"),
-    strlist ("packetNonProv_attr1",
-      "packetNonProv_attr2",
-      "packetNonProv_attr3",
-      "packetNonProv_attr4",
-      "packetNonProv_attr5",
-      "packetNonProv_attr6",
+    strlist ("packet_attr1",
+      "packet_attr2",
+      "packet_attr3",
+      "packet_attr4",
+      "packet_attr5",
       RN_DEST));
 
   Send (result);
@@ -575,6 +573,19 @@ PktfwdNormProvCompOnline::Rh103_eca (Ptr<Tuple> initPacketCount)
           VarExpr::New ("initPacketCount_attr3")),
         VarExpr::New ("initPacketCount_attr4")))));
 
+  result->Assign (Assignor::New ("PIDequiHash",
+    FAppend::New (
+      VarExpr::New ("initPacketCount_attr5"))));
+
+  result->Assign (Assignor::New ("PIDevHash",
+    FAppend::New (
+      VarExpr::New ("PIDev"))));
+
+  result->Assign (Assignor::New ("PIDHash",
+    FConcat::New (
+      VarExpr::New ("PIDequiHash"),
+      VarExpr::New ("PIDevHash"))));
+
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("device_attr2"),
@@ -586,20 +597,18 @@ PktfwdNormProvCompOnline::Rh103_eca (Ptr<Tuple> initPacketCount)
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
-    PACKETNONPROV,
+    PACKET,
     strlist ("linkhr_attr2",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",
-      "initPacketCount_attr5",
-      "PIDev",
+      "PIDHash",
       "linkhr_attr2"),
-    strlist ("packetNonProv_attr1",
-      "packetNonProv_attr2",
-      "packetNonProv_attr3",
-      "packetNonProv_attr4",
-      "packetNonProv_attr5",
-      "packetNonProv_attr6",
+    strlist ("packet_attr1",
+      "packet_attr2",
+      "packet_attr3",
+      "packet_attr4",
+      "packet_attr5",
       RN_DEST));
 
   Send (result);
@@ -689,6 +698,11 @@ PktfwdNormProvCompOnline::Prov_rh1_1_eca (Ptr<Tuple> initPacketCount)
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
         VarExpr::New ("List")))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("initPacketCount_attr6"),
+      ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -995,21 +1009,33 @@ PktfwdNormProvCompOnline::Prov_rh2_8_eca (Ptr<Tuple> recvPacketDecomp)
 }
 
 void
-PktfwdNormProvCompOnline::Rh2_eca (Ptr<Tuple> packetNonProv)
+PktfwdNormProvCompOnline::Rh2_eca (Ptr<Tuple> packet)
 {
   RAPIDNET_LOG_INFO ("Rh2_eca triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (DEVICE)->Join (
-    packetNonProv,
+    packet,
     strlist ("device_attr1"),
-    strlist ("packetNonProv_attr1"));
+    strlist ("packet_attr1"));
+
+  result->Assign (Assignor::New ("PIDequi",
+    FFirst::New (
+      VarExpr::New ("packet_attr5"))));
+
+  result->Assign (Assignor::New ("PIDevHash",
+    FRemoveFirst::New (
+      VarExpr::New ("packet_attr5"))));
+
+  result->Assign (Assignor::New ("PIDev",
+    FFirst::New (
+      VarExpr::New ("PIDevHash"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("packetNonProv_attr3"),
-      VarExpr::New ("packetNonProv_attr1"))));
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("packet_attr1"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1018,12 +1044,12 @@ PktfwdNormProvCompOnline::Rh2_eca (Ptr<Tuple> packetNonProv)
 
   result = result->Project (
     RECVPACKET,
-    strlist ("packetNonProv_attr1",
-      "packetNonProv_attr2",
-      "packetNonProv_attr3",
-      "packetNonProv_attr4",
-      "packetNonProv_attr5",
-      "packetNonProv_attr6"),
+    strlist ("packet_attr1",
+      "packet_attr2",
+      "packet_attr3",
+      "packet_attr4",
+      "PIDequi",
+      "PIDev"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
       "recvPacket_attr3",

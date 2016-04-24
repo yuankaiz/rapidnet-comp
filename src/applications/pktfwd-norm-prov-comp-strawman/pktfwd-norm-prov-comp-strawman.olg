@@ -78,14 +78,21 @@ prov_rh2_1 erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, Hash
 	   R := "rh2", 
 	   RID := f_sha1((R+ RLOC)+ List).
 
-prov_rh2_2 ruleExec(@RLOC, RID, R, List) :- 
-	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList).
+prov_rh2_2 eRecvPacketCount(@RLOC, RID, R, List, a_COUNT<*>) :-
+	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList),
+	   ruleExec(@RLOC, RID, R, List).
 
-prov_rh2_3 erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC, HashList) :- 
-	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList).
+prov_rh2_3 ruleExec(@RLOC, RID, R, List) :-
+	   eRecvPacketCount(@RLOC, RID, R, List, Count),
+	   Count == 0.
 
-prov_rh2_4 recvPacket(@Host, SrcAdd, DstAdd, Data, HashList) :- 
+prov_rh2_4 erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC, HashList) :- 
+	   erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList),
+	   Hash := f_append(RID);
+	   NewHashList := f_concat(HashList, Hash).
+
+prov_rh2_5 recvPacket(@Host, SrcAdd, DstAdd, Data, HashList) :- 
 	   erecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLOC, HashList).
 
-prov_rh2_5 recvAuxPkt(@Host, SrcAdd, Data, HashList) :- 
+prov_rh2_6 recvAuxPkt(@Host, SrcAdd, Data, HashList) :- 
 	   recvPacket(@Host, SrcAdd, DstAdd, Data, HashList).

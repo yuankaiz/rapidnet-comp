@@ -20,6 +20,7 @@
 #include <list>
 #include <map>
 #include <cstring>
+#include <vector>
 
 #include "ns3/uinteger.h"
 #include "ns3/core-module.h"
@@ -97,14 +98,15 @@
 #define ADDR_SUFFIX ".0"
 #define SIMULATION_LENGTH 500
 #define SAMPLE_INTERVAL 1
-#define BANDWIDTH_LABEL "Avg Bandwidth (Mbps)"
+#define BANDWIDTH_LABEL "Avg Bandwidth"
 #define MBPS_UNIT 1000000
 #define KBPS_UNIT 1000
 #define GRAPHIC_PREFIX "/localdrive1/chen/prov_bandwidth/"
+#define PACKET_INIT_TIME 4.0000
 
 const string plotTitle = "bandwidth usage";
 const string dataTitle = "bandwidth_data";
-const string plotFileName = "/localdrive1/chen/prov_bandwidth/bandwidth.pl";
+
 
 using namespace std;
 using namespace ns3;
@@ -114,6 +116,8 @@ using namespace ns3::rapidnet::USED_NAMESPACE;
 ApplicationContainer apps;
 
 int m_bytesTotal = 0;
+int m_bytesExpr = 0;
+bool counter_trigger = false;
 int counter = 0;
 #define COUNTER_MAX 10
 
@@ -292,7 +296,7 @@ int ParseTopology(const char* fname, AdjList* nodeArray)
 
 /* Create host nodes that are connected to stub nodes*/
 /* \return total number of nodes*/
-int AddHostNodes(AdjList* nodeArray, int totalSwcNum, int hostPerSwc, int* swcToHost)
+int AddHostNodes(AdjList* nodeArray, int totalSwcNum, int hostPerSwc, int* swcToHost, int* hostToSwc)
 {
   int curIdx = totalSwcNum; // Current index of the added host
   /* For each stub node, create hostPerSwc number of hosts connected to it*/
@@ -306,6 +310,7 @@ int AddHostNodes(AdjList* nodeArray, int totalSwcNum, int hostPerSwc, int* swcTo
               nodeArray[curIdx].ntype = AdjList::ENDPOINT;
               AddLink(nodeArray, swcID, curIdx);
               swcToHost[swcID] = curIdx;
+              hostToSwc[curIdx] = swcID;
               curIdx++;
             }
         }
@@ -488,13 +493,48 @@ void ShowAppAddr(ApplicationContainer& apps, int totalNum)
   ofile << "\n" << "Mapping: (Node ID -> Application address) " << "\n";
   for (int i = 0;i < totalNum;i++)
     {
-      int nodeID = i + 1;
+      int nodeID = i;
       ofile << "Node ID: " << nodeID;
       ofile << " -> ";
-      ofile << "App Ipv4ddress: " << app(nodeID)->GetAddress ();
+      ofile << "App Ipv4ddress: " << app(nodeID+1)->GetAddress ();
       ofile << "\n";
     }
   ofile << "\n";
+}
+
+/* Get the routing path between the src and the dst*/
+vector<int> GetPath(int src, int dst, map<int, int> rtables[MAX_NODE_NUM], int* hostToSwc)
+{
+  vector<int> path;
+
+  //Assert src should be in the range of hosts
+  
+  path.push_back(src);
+  //Get the direct switch of src
+  int swc = hostToSwc[src];
+  //Push intermediate nodes
+  int next = swc;
+  while (next != dst)
+    {
+      path.push_back(next);
+      next = rtables[next][dst];
+    }
+
+  path.push_back(dst);
+  return path;
+}
+
+/* Print the routing path to a file*/
+void PrintPathToFile(vector<int>& path)
+{
+  std::cout << "Path length: " << path.size() << std::endl;
+  std::ofstream outFile("/localdrive1/chen/others/pathFile.pt");
+  vector<int>::iterator itr;
+  for (itr = path.begin(); itr != path.end(); itr++)
+    {
+      outFile << *itr << "\n";
+    }
+  outFile.close();
 }
 
 /* Insert packets for experiments*/
@@ -507,11 +547,11 @@ void PacketInsertion(int src, int dst, string data)
 }
 
 /* Schedule packet transmission*/
-void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packetNum)
+void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packetNum, map<int, int> rtables[MAX_NODE_NUM], int* hostToSwc)
 {
   /* Setup: each host randomly picks another host and 
      send a series of packets to it*/
-  double trigger_time = 4.0000;
+  double trigger_time = PACKET_INIT_TIME;
   srand(1); 
   for (int i = 0; i < hostPairs; i++, trigger_time += 0.1)
     {
@@ -524,6 +564,8 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packe
       while (dst == src);
 
       std::cout << "Communicating pair: (" << src << "," << dst << ")" << endl;
+      vector<int> path = GetPath(src, dst, rtables, hostToSwc);
+      PrintPathToFile(path);
       double insert_time = trigger_time;
       ostringstream ss;
       int dataCount = 0;
@@ -551,22 +593,47 @@ void SerializeProv(int totalNum, string storePath)
     }
 }
 
+int GetDivisor(string bandwidthUnit)
+{
+  if (bandwidthUnit == "Bps")
+    {
+      return 1;
+    }
+
+  if (bandwidthUnit == "KBps")
+    {
+      return 1000;
+    }
+
+  if (bandwidthUnit == "MBps")
+    {
+      return 1000 * 1000;
+    }
+}
+
 
 void MeasureBandwidth(std::string context, Ptr< const Packet > packet)
 {
+  std::cout << "New packet counted. Size: " << packet->GetSize () << std::endl; 
   m_bytesTotal += packet->GetSize ();
+  m_bytesExpr += packet->GetSize ();
 }
 
-void Throughput(Gnuplot2dDataset& dataset, int totalNum)
+void Throughput(Gnuplot2dDataset& dataset, int totalNum, int bandw_divisor)
 {
   if (Simulator::Now () > Seconds (SIMULATION_LENGTH))
     {
       return;
     }
 
+  if (m_bytesTotal != 0)
+    {
+      counter_trigger = true;
+    }
+
   //Set a counter so that the throughput calculation stops 
   //when no more traffic goes through the network
-  if (m_bytesTotal == 0)
+  if (m_bytesTotal == 0 && counter_trigger == true)
     {
       counter++;
     }
@@ -581,10 +648,10 @@ void Throughput(Gnuplot2dDataset& dataset, int totalNum)
     }
 
   double seconds = Simulator::Now().GetSeconds ();
-  dataset.Add (seconds, m_bytesTotal/SAMPLE_INTERVAL/totalNum);
-  std::cout << std::endl << "Throughput: " << m_bytesTotal/SAMPLE_INTERVAL << std::endl;
+  dataset.Add (seconds, m_bytesTotal/SAMPLE_INTERVAL/bandw_divisor);
+  std::cout << std::endl << "Throughput: " << m_bytesTotal/SAMPLE_INTERVAL/bandw_divisor << std::endl;
   m_bytesTotal = 0;
-  Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum);
+  Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum, bandw_divisor);
 }
 
 
@@ -613,27 +680,35 @@ main (int argc, char *argv[])
   string storePath = "/localdrive1/chen/prov_storage/";
   uint32_t packetNum = 20;
   string graphicName = "bandwidth.pdf";
+  string plotFileName = "bandwidth.pl";
+  string bandwidthUnit = "Bps";
 
   CommandLine cmd;
   cmd.AddValue("hostPairs", "Number of pairs of communicating hosts", hostPairs);
   cmd.AddValue("storePath", "The path to the directory for provenance storage", storePath);
   cmd.AddValue("packetNum", "Number of packets sent between each pair of hosts", packetNum);
   cmd.AddValue("graphicName", "File name of the bandwidth plot", graphicName);
+  cmd.AddValue("plotFileName", "File name of the plot script", plotFileName);
+  cmd.AddValue("bandwidthUnit", "The unit for displaying bandwidth", bandwidthUnit);
   cmd.Parse(argc, argv);
 
   AdjList* nodeArray = new AdjList[MAX_NODE_NUM];
+  //Create mapping between switches and hosts
   int swcToHost[MAX_NODE_NUM];
+  int hostToSwc[MAX_NODE_NUM];
   for (int i = 0; i < MAX_NODE_NUM; i++)
     {
       nodeArray[i].ntype = AdjList::UNKNOWN;
       nodeArray[i].head = NULL;
 
       swcToHost[i] = -1;
+      hostToSwc[i] = -1;
     }
+  //Routig table for each node: (destination -> next hop)
   map<int, int> rtables[MAX_NODE_NUM];
 
   int totalSwcNum = ParseTopology(TOPO_FILE, nodeArray);
-  int totalNum = AddHostNodes(nodeArray, totalSwcNum, HOSTPERSWC, swcToHost);
+  int totalNum = AddHostNodes(nodeArray, totalSwcNum, HOSTPERSWC, swcToHost, hostToSwc);
   //  PrintTopology(nodeArray, totalNum);
 
   // Set up flow entry table
@@ -650,7 +725,7 @@ main (int argc, char *argv[])
   Simulator::Schedule (Seconds(3.0000), SetupFlowTable, rtables, totalSwcNum);  
 
   // Schedule traffic
-  SchedulePacketTrans(totalNum, totalSwcNum, hostPairs, packetNum);
+  SchedulePacketTrans(totalNum, totalSwcNum, hostPairs, packetNum, rtables, hostToSwc);
 
   /* Point-to-point device model*/
   Ptr<RapidNetApplicationHelper> appHelper;
@@ -681,7 +756,7 @@ main (int argc, char *argv[])
       if ((nodeArray[nid].ntype == AdjList::TRANSIT 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Gbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("50ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -691,7 +766,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -701,8 +776,8 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
-          ptpHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
+          ptpHelper.SetChannelAttribute ("Delay", StringValue ("600ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
 
@@ -712,7 +787,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::ENDPOINT 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("1ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -755,6 +830,8 @@ main (int argc, char *argv[])
   Ipv4GlobalRoutingHelper::PopulateRoutingTables ();
 
   apps = appHelper->Install (ptpNodes);
+  //Set max jitter of apps as 0
+  SetMaxJitter (apps, 0);
   
   ShowAppAddr(apps, totalNum);
 
@@ -766,6 +843,7 @@ main (int argc, char *argv[])
 
   //Measure bandwidth
   string config_path = "/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/PhyRxEnd";
+  //string config_path = "/NodeList/107/DeviceList/*/$ns3::PointToPointNetDevice/PhyTxEnd";
   Config::Connect (config_path, MakeCallback (&MeasureBandwidth));
 
   // string config_path2 = "/NodeList/*/DeviceList/*/$ns3::PointToPointNetDevice/PhyTxEnd";
@@ -776,7 +854,7 @@ main (int argc, char *argv[])
   Gnuplot plot (graphicPath);
   plot.SetTitle (plotTitle);
   string xLabel = "Time (s)";
-  string yLabel = BANDWIDTH_LABEL;
+  string yLabel = BANDWIDTH_LABEL + bandwidthUnit;
   plot.SetLegend (xLabel, yLabel);
   plot.SetTerminal ("pdf");
 
@@ -785,18 +863,21 @@ main (int argc, char *argv[])
   dataset.SetTitle (dataTitle);
   dataset.SetStyle (Gnuplot2dDataset::LINES_POINTS);
 
-  Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum);
+  int bandw_divisor = GetDivisor(bandwidthUnit);
+  Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum, bandw_divisor);
 
   Simulator::Run ();
   Simulator::Destroy ();
 
   //Plot the graph
   plot.AddDataset (dataset);
- std:ofstream plotFile (plotFileName.c_str());
+  string absPathPlotFile = GRAPHIC_PREFIX + plotFileName;
+  std:ofstream plotFile (absPathPlotFile.c_str());
   plot.GenerateOutput (plotFile);
   plotFile.close ();
 
   //Clean-up
+  std::cout << "Total bandwidth: " << m_bytesExpr << "Bytes" << std::endl;
   DeleteLinks(nodeArray, totalNum);
   delete[] nodeArray;
 

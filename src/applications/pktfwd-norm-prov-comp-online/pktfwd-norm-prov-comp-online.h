@@ -41,7 +41,7 @@ public:
   static const string INITPACKETHASH;
   static const string LINK;
   static const string LINKHR;
-  static const string PACKETNONPROV;
+  static const string PACKET;
   static const string PACKETPROV;
   static const string PROVHASHTABLE;
   static const string RECVAUXPKT;
@@ -76,7 +76,7 @@ protected:
 
   virtual void Prov_rs1_4_eca (Ptr<Tuple> epacketTemp);
 
-  virtual void Rs1_eca (Ptr<Tuple> packetNonProv);
+  virtual void Rs1_eca (Ptr<Tuple> packet);
 
   virtual void Rh100Eca0Ins (Ptr<Tuple> initPacket);
 
@@ -102,7 +102,7 @@ protected:
 
   virtual void Prov_rh2_8_eca (Ptr<Tuple> recvPacketDecomp);
 
-  virtual void Rh2_eca (Ptr<Tuple> packetNonProv);
+  virtual void Rh2_eca (Ptr<Tuple> packet);
 
   virtual void Rh3Eca0Ins (Ptr<Tuple> recvPacket);
 
