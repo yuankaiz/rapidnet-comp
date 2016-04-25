@@ -547,11 +547,13 @@ void PacketInsertion(int src, int dst, string data)
 }
 
 /* Schedule packet transmission*/
-void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packetNum, map<int, int> rtables[MAX_NODE_NUM], int* hostToSwc)
+void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packetNum, 
+                         map<int, int> rtables[MAX_NODE_NUM], int* hostToSwc)
 {
   /* Setup: each host randomly picks another host and 
      send a series of packets to it*/
   double trigger_time = PACKET_INIT_TIME;
+  int totalHops = 0;
   srand(1); 
   for (int i = 0; i < hostPairs; i++, trigger_time += 0.1)
     {
@@ -565,6 +567,7 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packe
 
       std::cout << "Communicating pair: (" << src << "," << dst << ")" << endl;
       vector<int> path = GetPath(src, dst, rtables, hostToSwc);
+      totalHops += path.size ();
       PrintPathToFile(path);
       double insert_time = trigger_time;
       ostringstream ss;
@@ -577,6 +580,12 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packe
           Simulator::Schedule (Seconds (insert_time), PacketInsertion, src, dst, data);
         }
     }
+
+  //Extra functionality: calculate the total number of hops and output to file
+  std::ofstream hopCountFile;
+  hopCountFile.open ("/localdrive1/chen/hopCount.dat", ios::out | ios::app);
+  hopCountFile << hostPairs << "\t" << totalHops << "\n";
+  hopCountFile.close();
 }
 
 void SerializeProv(int totalNum, string storePath)
@@ -866,8 +875,8 @@ main (int argc, char *argv[])
   int bandw_divisor = GetDivisor(bandwidthUnit);
   Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum, bandw_divisor);
 
-  Simulator::Run ();
-  Simulator::Destroy ();
+  //  Simulator::Run ();
+  //  Simulator::Destroy ();
 
   //Plot the graph
   plot.AddDataset (dataset);

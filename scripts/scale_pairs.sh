@@ -1,6 +1,7 @@
 #!/bin/bash
 # Argument 1: name of the test file
 # Argument 2: packet number
+# Argument 2: name of the output file
 
 DIRECTORY="/localdrive1/chen/prov_storage/*"
 storeDir="/localdrive1/chen/prov_storage"
