@@ -106,6 +106,8 @@ protected:
 
   virtual void Rh3Eca0Ins (Ptr<Tuple> recvPacket);
 
+  virtual void Rh3Eca0Del (Ptr<Tuple> recvPacket);
+
 };
 
 } // namespace pktfwdnormprovcomponline

@@ -22,7 +22,7 @@ The workaround is to call it cid or chord id. */
 /*A hit in the routing table, forward the packet accordingly*/
 prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :- 
 	   device(@Switch, Dvtype), 
-	   packetProv(@Switch, SrcAdd, DstAdd, Data, Tag), 
+	   pktProv(@Switch, SrcAdd, DstAdd, Data, Tag), 
 	   flowEntry(@Switch, DstAdd, Next), 
 	   link(@Switch, Next), 
 	   PID1 := f_sha1(("device"+ Switch)+ Dvtype), 
@@ -46,23 +46,16 @@ prov_rs1_3 ruleExec(@RLOC, RID, R, List) :-
 	   epacketCount(@RLOC, RID, R, List, Rcount),
 	   Rcount == 0.
 
-prov_rs1_4 packetProv(@Next, SrcAdd, DstAdd, Data, NewTag) :-
+prov_rs1_4 pktProv(@Next, SrcAdd, DstAdd, Data, NewTag) :-
 	   epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag),
 	   Hash := f_append(RID),
 	   NewTag := f_concat(Tag, Hash).
 
 /* Rules for normal execution without provenance */
-/*
-rs1 packetNonProv(@Next, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
+/* "P" in packetP is for padding for fair bandwidth*/
+rs1 packetP(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
         device(@Switch, Dvtype),
-        packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev),
-	flowEntry(@Switch, DstAdd, Next),
-	link(@Switch, Next),
-        Dvtype == SWITCH.
-*/
-rs1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
-        device(@Switch, Dvtype),
-        packet(@Switch, SrcAdd, DstAdd, Data, PIDHash),
+        packetP(@Switch, SrcAdd, DstAdd, Data, PIDHash),
 	flowEntry(@Switch, DstAdd, Next),
 	link(@Switch, Next),
         Dvtype == SWITCH.
@@ -81,16 +74,7 @@ rh102 equiHashTable(@Host, DstAdd, PIDequi) :-
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     PIDcount == 0.
 
-/*
-rh103 packetNonProv(@Switch, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
-    device(@Host, Dvtype),
-    initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
-    linkhr(@Host, Switch),
-    Dvtype == HOST,
-    PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
-    PIDcount != 0.
-*/
-rh103 packet(@Switch, SrcAdd, DstAdd, Data, PIDHash) :-
+rh103 packetP(@Switch, SrcAdd, DstAdd, Data, PIDHash) :-
     device(@Host, Dvtype),
     initPacketCount(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
     linkhr(@Host, Switch),
@@ -123,7 +107,7 @@ prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :
 /*Receive a packet*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :- 
 	   device(@Host, Dvtype), 
-	   packetProv(@Host, SrcAdd, DstAdd, Data, Tag), 
+	   pktProv(@Host, SrcAdd, DstAdd, Data, Tag), 
 	   DstAdd == Host, 
 	   Dvtype == HOST, 
 	   PID1 := f_sha1(("device"+ Host)+ Dvtype), 
@@ -173,7 +157,7 @@ rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
 */
 rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
         device(@Host, Dvtype),
-	packet(@Host, SrcAdd, DstAdd, Data, PIDHash),
+	packetP(@Host, SrcAdd, DstAdd, Data, PIDHash),
 	PIDequi := f_first(PIDHash),
 	PIDevHash := f_removeFirst(PIDHash),
 	PIDev := f_first(PIDevHash),

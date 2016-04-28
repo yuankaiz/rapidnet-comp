@@ -26,7 +26,7 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-prov-module.h"
+#include "ns3/pktfwd-norm-bdfair-prov-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
@@ -36,9 +36,9 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-address.h"
 
-#define APP_NAMESPACE PktfwdNormProv
-#define HELPER_NAME PktfwdNormProvHelper
-#define USED_NAMESPACE pktfwdnormprov
+#define APP_NAMESPACE PktfwdNormBdfairProv
+#define HELPER_NAME PktfwdNormBdfairProvHelper
+#define USED_NAMESPACE pktfwdnormbdfairprov
 
 /* Device identification*/
 #define device(host, dvtype)\
@@ -765,8 +765,8 @@ main (int argc, char *argv[])
       if ((nodeArray[nid].ntype == AdjList::TRANSIT 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
-          ptpHelper.SetChannelAttribute ("Delay", StringValue ("50ms"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Gbps"));
+          ptpHelper.SetChannelAttribute ("Delay", StringValue ("500ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
       
@@ -775,7 +775,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -785,8 +785,8 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
-          ptpHelper.SetChannelAttribute ("Delay", StringValue ("600ms"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
+          ptpHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
 
@@ -796,7 +796,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::ENDPOINT 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("1ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -875,8 +875,8 @@ main (int argc, char *argv[])
   int bandw_divisor = GetDivisor(bandwidthUnit);
   Simulator::Schedule (Seconds (SAMPLE_INTERVAL), Throughput, dataset, totalNum, bandw_divisor);
 
-  //  Simulator::Run ();
-  //  Simulator::Destroy ();
+  Simulator::Run ();
+  Simulator::Destroy ();
 
   //Plot the graph
   plot.AddDataset (dataset);

@@ -17,7 +17,7 @@ materialize(recvAuxPkt, infinity, infinity, keys(2:cid)).
 /*A hit in the routing table, forward the packet accordingly*/
 prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
-    packet(@Switch, SrcAdd, DstAdd, Data, HashList),
+    packetP(@Switch, SrcAdd, DstAdd, Data, HashList),
     flowEntry(@Switch, DstAdd, Next),
     link(@Switch, Next),
     PID1 := f_sha1(("device"+ Switch)+ Dvtype),
@@ -41,7 +41,8 @@ prov_rs1_3 ruleExec(@RLOC, RID, R, List) :-
     epacketCount(@RLOC, RID, R, List, Rcount),
     Rcount == 0.
 
-prov_rs1_4 packet(@Next, SrcAdd, DstAdd, Data, NewHashList) :-
+/* "P" is used for padding, to ensure that each in-network tuple's name has the same length*/
+prov_rs1_4 packetP(@Next, SrcAdd, DstAdd, Data, NewHashList) :-
     epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
     Hash := f_append(RID),
     NewHashList := f_concat(HashList, Hash).
@@ -66,7 +67,7 @@ prov_rh1_1 epacketTemp(@RLOC, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashLi
 /*Receive a packet*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
     device(@Host, Dvtype),
-    packet(@Host, SrcAdd, DstAdd, Data, HashList),
+    packetP(@Host, SrcAdd, DstAdd, Data, HashList),
     DstAdd == Host,
     Dvtype == 1,
     PID1 := f_sha1(("device"+ Host)+ Dvtype),

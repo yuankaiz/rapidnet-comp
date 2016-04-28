@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This script collects sizes of all provenance tables
+# Output file: /localdrive1/chen/calc_prov_storage/storage_distribution.dat
+
+storageFiles="/localdrive1/chen/prov_storage/*"
 storageDir="/localdrive1/chen/prov_storage"
 outputPath="/localdrive1/chen/calc_prov_storage"
 outputFile="/localdrive1/chen/calc_prov_storage/storage_distribution.dat"
@@ -17,4 +21,4 @@ do
     printf "%s %s \n" "$file" "$fsize" >> "$outputFile"
 done
 
-rm -rf $storageDir
+rm $storageFiles

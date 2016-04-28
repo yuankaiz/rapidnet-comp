@@ -26,7 +26,7 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-prov-comp-strawman-module.h"
+#include "ns3/pktfwd-norm-bdfair-prov-comp-strawman-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
@@ -36,9 +36,9 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-address.h"
 
-#define APP_NAMESPACE PktfwdNormProvCompStrawman
-#define HELPER_NAME PktfwdNormProvCompStrawmanHelper
-#define USED_NAMESPACE pktfwdnormprovcompstrawman
+#define APP_NAMESPACE PktfwdNormBdfairProvCompStrawman
+#define HELPER_NAME PktfwdNormBdfairProvCompStrawmanHelper
+#define USED_NAMESPACE pktfwdnormbdfairprovcompstrawman
 
 /* Device identification*/
 #define device(host, dvtype)\
@@ -755,7 +755,7 @@ main (int argc, char *argv[])
       if ((nodeArray[nid].ntype == AdjList::TRANSIT 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Gbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("50ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -765,7 +765,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::TRANSIT))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("1Mbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("100Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("10ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
@@ -775,8 +775,8 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::STUB 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
-          ptpHelper.SetChannelAttribute ("Delay", StringValue ("600ms"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("50Mbps"));
+          ptpHelper.SetChannelAttribute ("Delay", StringValue ("2ms"));
           ptpDevice = ptpHelper.Install (pair);
         }
 
@@ -786,7 +786,7 @@ main (int argc, char *argv[])
           (nodeArray[nid].ntype == AdjList::ENDPOINT 
            && nodeArray[curNode->nodeID].ntype == AdjList::STUB))
         {
-          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("5Kbps"));
+          ptpHelper.SetDeviceAttribute ("DataRate", StringValue ("10Mbps"));
           ptpHelper.SetChannelAttribute ("Delay", StringValue ("1ms"));
           ptpDevice = ptpHelper.Install (pair);
         }

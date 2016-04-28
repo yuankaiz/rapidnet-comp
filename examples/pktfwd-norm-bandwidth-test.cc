@@ -17,15 +17,19 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-module.h"
+#include "ns3/pktfwd-norm-bdfair-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
 #include "ns3/gnuplot.h"
 
+#define APP_NAMESPACE PktfwdNormBdfair
+#define HELPER_NAME PktfwdNormBdfairHelper
+#define USED_NAMESPACE pktfwdnormbdfair
+
 /* Device identification*/
 #define device(host, dvtype)\
-  tuple(PktfwdNorm::DEVICE,\
+  tuple(APP_NAMESPACE::DEVICE,\
   attr("device_attr1", Ipv4Value, host),  \
   attr("device_attr2", Int32Value, dvtype))
 
@@ -34,7 +38,7 @@
 
 /* Links connecting hosts to switches*/
 #define linkhr(host, sw)\
-  tuple(PktfwdNorm::LINKHR,\
+  tuple(APP_NAMESPACE::LINKHR,\
   attr("linkhr_attr1", Ipv4Value, host),  \
   attr("linkhr_attr2", Ipv4Value, sw))
 
@@ -43,7 +47,7 @@
 
 /* Links connecting switches to other devices*/
 #define link(sw, nei)\
-  tuple(PktfwdNorm::LINK,\
+  tuple(APP_NAMESPACE::LINK,\
   attr("link_attr1", Ipv4Value, sw),  \
   attr("link_attr2", Ipv4Value, nei))
 
@@ -52,7 +56,7 @@
 
 /* Input packets */
 #define initpacket(host, srcadd, dstadd, data)         \
-  tuple(PktfwdNorm::INITPACKET,\
+  tuple(APP_NAMESPACE::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
   attr("initPacket_attr3", Ipv4Value, dstadd), \
@@ -63,7 +67,7 @@
 
 /* flow entry */
 #define flowentry(sw, dst, next)		\
-  tuple(PktfwdNorm::FLOWENTRY,\
+  tuple(APP_NAMESPACE::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", Ipv4Value, dst),         \
 	attr("flowEntry_attr3", Ipv4Value, next))
@@ -85,7 +89,7 @@ const string dataTitle = "bandwidth_data";
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
-using namespace ns3::rapidnet::pktfwdnorm;
+using namespace ns3::rapidnet::USED_NAMESPACE;
 
 ApplicationContainer apps;
 
@@ -93,7 +97,7 @@ int m_bytesTotal = 0;
 
 void Print ()
 {
-  PrintRelation (apps, PktfwdNorm::RECVPACKET);
+  PrintRelation (apps, APP_NAMESPACE::RECVPACKET);
 }
 
 void SetupDevices()
@@ -185,7 +189,7 @@ void Throughput(Gnuplot2dDataset& dataset)
 int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("PktfwdNorm", LOG_LEVEL_INFO);
+  LogComponentEnable("APP_NAMESPACE", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
   //  LogComponentEnable("Ipv4ListRouting", LOG_LEVEL_INFO);
 
@@ -194,7 +198,7 @@ main (int argc, char *argv[])
 
   /* Point-to-point device model*/
   Ptr<RapidNetApplicationHelper> appHelper;
-  appHelper = Create<PktfwdNormHelper> ();
+  appHelper = Create<HELPER_NAME> ();
 
   NodeContainer ptpNodes;
   ptpNodes.Create (nodeNum);
