@@ -9,7 +9,7 @@ mkdir -p $storeDir
 
 outputFile=/localdrive1/chen/others/$3
 rm -f $outputFile
-for pairNum in {10..90..10}
+for pairNum in {1000..9000..1000}
 do
     rm -f $DIRECTORY
     # Run the experiment
