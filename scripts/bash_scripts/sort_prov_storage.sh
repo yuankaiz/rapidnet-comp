@@ -2,6 +2,7 @@
 
 DIRECTORY="/localdrive1/chen/prov_storage/*"
 storeDir="/localdrive1/chen/prov_storage"
+outputFile="/localdrive1/chen/calc_prov_storage/storage_cdf.dat"
 mkdir -p $storeDir
 
 count=0
@@ -24,7 +25,6 @@ echo $avg >> "$avgFile"
 sortRes=( $(printf "%s\n" "${fileSizes[@]}" | sort -g))
 
 # Create the cumulative result
-outputFile="storage_cdf.dat"
 rm -f $outputFile
 for ((i=0;i<fileNum;i++))
 do
