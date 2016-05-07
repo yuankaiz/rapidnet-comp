@@ -7,8 +7,8 @@ DIRECTORY=/localdrive1/chen/prov_storage/*
 storeDir=/localdrive1/chen/prov_storage
 mkdir -p $storeDir
 
-outputFile="/localdrive1/chen/others/$3"
-for pktNum in {10..30..10}
+outputFile="/localdrive1/chen/calc_prov_storage/$3"
+for pktNum in {100..1000..100}
 do
     rm -f $DIRECTORY
     # Run the experiment
