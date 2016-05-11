@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-norm-bdfair-prov-comp-online', ['internet-stack'])
+    module.source = [
+        'pktfwd-norm-bdfair-prov-comp-online.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-norm-bdfair-prov-comp-online'
+    headers.source = [
+        'pktfwd-norm-bdfair-prov-comp-online.h',
+        'pktfwd-norm-bdfair-prov-comp-online-helper.h',
+        ]

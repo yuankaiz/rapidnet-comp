@@ -96,7 +96,6 @@
 #define SWITCH 0
 #define HOST 1
 #define HOSTPERSWC 1 //Warning: This is not changeable under the current routing algorithm
-#define DEFAULT_PKTNUM 10
 
 using namespace std;
 using namespace ns3;
@@ -132,6 +131,7 @@ void Print ()
 {
   PrintRelation (apps, PktfwdSdnProvComp::RECVPACKET);
   PrintRelation (apps, PktfwdSdnProvComp::RULEEXEC);
+  PrintRelation (apps, PktfwdSdnProvComp::RECVAUXPKT);
 }
 
 void AddLink(AdjList* nodeArray, int i, int j)
@@ -491,7 +491,7 @@ void PacketInsertion(int src, int dst, string data)
 }
 
 /* Schedule packet transmission*/
-void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs)
+void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs, int packetNum)
 {
   /* DEFAULT_PKTNUM of packet transmissions between a single pair of nodes */
   // double insert_time = 4.0000;
@@ -508,6 +508,7 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs)
   /* Setup: each host randomly picks another host and 
      send a series of packets to it*/
   double trigger_time = 4.0000;
+  int dataCount = 0;
   srand(1); 
   for (int i = 0; i < hostPairs; i++, trigger_time += 0.1)
     {
@@ -522,8 +523,7 @@ void SchedulePacketTrans(int totalNum, int totalSwcNum, int hostPairs)
       std::cout << "Communicating pair: (" << src << "," << dst << ")" << endl;
       double insert_time = trigger_time;
       ostringstream ss;
-      int dataCount = 0;
-      for (int j = 0;j < DEFAULT_PKTNUM;j++, insert_time += 0.0010, dataCount++)
+      for (int j = 0;j < packetNum;j++, insert_time += 0.0010, dataCount++)
         {
           ss.str("");
           ss << dataCount;
@@ -552,7 +552,8 @@ void SerializeProv(int totalNum, string storePath)
 {
   vector<string> relNames;
   relNames.push_back("ruleExec");
-
+  relNames.push_back("recvAuxPkt");
+  
   for (int i = 0; i < totalNum; i++)
     {
       int node = i + 1;
@@ -568,10 +569,12 @@ main (int argc, char *argv[])
 
   uint32_t hostPairs = 1;
   string storePath = "/localdrive1/chen/prov_storage/";
+  uint32_t packetNum = 20;
 
   CommandLine cmd;
   cmd.AddValue("hostPairs", "Number of pairs of communicating hosts", hostPairs);
   cmd.AddValue("storePath", "The path to the directory for provenance storage", storePath);
+  cmd.AddValue("packetNum", "Number of packets sent between each pair of hosts", packetNum);
   cmd.Parse(argc, argv);
 
   AdjList* nodeArray = new AdjList[MAX_NODE_NUM];
@@ -587,11 +590,11 @@ main (int argc, char *argv[])
 
   int totalSwcNum = ParseTopology(TOPO_FILE, nodeArray);
   int totalNum = AddHostNodes(nodeArray, totalSwcNum, HOSTPERSWC, swcToHost);
-  //  PrintTopology(nodeArray, totalNum);
+  PrintTopology(nodeArray, totalNum);
 
   // Set up flow entry table
   Routing(nodeArray, totalSwcNum, swcToHost, rtables);
-  //  PrintRoutingTable(rtables, totalSwcNum);
+  PrintRoutingTable(rtables, totalSwcNum);
 
   // Insert linking information to the database
   Simulator::Schedule (Seconds(0.0001), InsertLinkTables, nodeArray, totalNum);  
@@ -603,7 +606,7 @@ main (int argc, char *argv[])
   Simulator::Schedule (Seconds(3.0000), SetupFlowTable, rtables, totalSwcNum);  
 
   // Schedule traffic
-  SchedulePacketTrans(totalNum, totalSwcNum, hostPairs);
+  SchedulePacketTrans(totalNum, totalSwcNum, hostPairs, packetNum);
 
   /* Create RapidNet apps*/
   //apps = InitRapidNetApps (totalNum, Create<PktfwdSdnProvCompHelper> ());

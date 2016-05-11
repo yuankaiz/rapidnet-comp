@@ -1,0 +1,5 @@
+ECA Rule rs1_eca ACTION_REMOTE_SEND<packet(@Next, SrcAdd, DstAdd, Data)> :- EVENT_RECV<packet(@Switch, SrcAdd, DstAdd, Data)>, device(@Switch, Dvtype), flowEntry(@Switch, DstAdd, Next), link(@Switch, Next), Dvtype == 0.
+ECA Rule rh1Eca0Ins ACTION_REMOTE_SEND<packet(@Switch, SrcAdd, DstAdd, Data)> :- EVENT_INSERT<device(@Host, Dvtype)>, initPacket(@Host, SrcAdd, DstAdd, Data), linkhr(@Host, Switch), Dvtype == 1.
+ECA Rule rh1Eca1Ins ACTION_REMOTE_SEND<packet(@Switch, SrcAdd, DstAdd, Data)> :- EVENT_INSERT<initPacket(@Host, SrcAdd, DstAdd, Data)>, device(@Host, Dvtype), linkhr(@Host, Switch), Dvtype == 1.
+ECA Rule rh1Eca2Ins ACTION_REMOTE_SEND<packet(@Switch, SrcAdd, DstAdd, Data)> :- EVENT_INSERT<linkhr(@Host, Switch)>, device(@Host, Dvtype), initPacket(@Host, SrcAdd, DstAdd, Data), Dvtype == 1.
+ECA Rule rh2_eca ACTION_ADD<recvPacket(@Host, SrcAdd, DstAdd, Data)> :- EVENT_RECV<packet(@Host, SrcAdd, DstAdd, Data)>, device(@Host, Dvtype), DstAdd == Host, Dvtype == 1.

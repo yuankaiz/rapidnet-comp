@@ -34,8 +34,8 @@ public:
   static const string EMATCHINGPACKETCOUNT;
   static const string EMATCHINGPACKETTEMP;
   static const string EPACKET;
+  static const string EPACKETCOUNT;
   static const string EPACKETTEMP;
-  static const string EPAKETCOUNT;
   static const string ERECVPACKET;
   static const string ERECVPACKETCOUNT;
   static const string ERECVPACKETTEMP;
@@ -47,6 +47,7 @@ public:
   static const string MATCHINGPACKET;
   static const string MAXPRIORITY;
   static const string PACKET;
+  static const string RECVAUXPKT;
   static const string RECVPACKET;
   static const string RULEEXEC;
 
@@ -86,7 +87,7 @@ protected:
 
   virtual void Rs32_eca (Ptr<Tuple> ePacketTemp);
 
-  virtual void Rs33_eca (Ptr<Tuple> ePaketCount);
+  virtual void Rs33_eca (Ptr<Tuple> ePacketCount);
 
   virtual void Rs34_eca (Ptr<Tuple> ePacket);
 
@@ -107,6 +108,10 @@ protected:
   virtual void Rs23_eca (Ptr<Tuple> eRecvPacketCount);
 
   virtual void Rh24_eca (Ptr<Tuple> eRecvPacket);
+
+  virtual void Rh25Eca0Ins (Ptr<Tuple> recvPacket);
+
+  virtual void Rh25Eca0Del (Ptr<Tuple> recvPacket);
 
 };
 

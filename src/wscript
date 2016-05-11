@@ -77,6 +77,14 @@ all_modules = (
     'applications/pktfwd-sdn-prov',
     'applications/pktfwd-sdn-prov-comp',
     'applications/pktfwd-sdn-prov-comp-static-check',            
+    'applications/pktfwd-norm',
+    'applications/pktfwd-norm-prov',
+    'applications/pktfwd-norm-prov-comp-strawman',
+    'applications/pktfwd-norm-prov-comp-online',
+    'applications/pktfwd-norm-bdfair',
+    'applications/pktfwd-norm-bdfair-prov',
+    'applications/pktfwd-norm-bdfair-prov-comp-strawman',
+    'applications/pktfwd-norm-bdfair-prov-comp-online',
     )
 
 def set_options(opt):

@@ -39,6 +39,7 @@ const string PktfwdSdnProvCompStaticCheck::MAXPRIORITY = "maxPriority";
 const string PktfwdSdnProvCompStaticCheck::PACKETNONPROV = "packetNonProv";
 const string PktfwdSdnProvCompStaticCheck::PACKETPROV = "packetProv";
 const string PktfwdSdnProvCompStaticCheck::PROVHASHTABLE = "provHashTable";
+const string PktfwdSdnProvCompStaticCheck::RECVAUXPKT = "recvAuxPkt";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKET = "recvPacket";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETDECOMP = "recvPacketDecomp";
 const string PktfwdSdnProvCompStaticCheck::RECVPACKETTEMP = "recvPacketTemp";
@@ -124,6 +125,10 @@ PktfwdSdnProvCompStaticCheck::InitDatabase ()
 
   AddRelationWithKeys (PROVHASHTABLE, attrdeflist (
     attrdef ("provHashTable_attr3", LIST)));
+
+  AddRelationWithKeys (RECVAUXPKT, attrdeflist (
+    attrdef ("recvAuxPkt_attr2", IPV4),
+    attrdef ("recvAuxPkt_attr3", STR)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -260,6 +265,14 @@ PktfwdSdnProvCompStaticCheck::DemuxRecv (Ptr<Tuple> tuple)
   if (IsRecvEvent (tuple, PACKETNONPROV))
     {
       Rh2_eca (tuple);
+    }
+  if (IsInsertEvent (tuple, RECVPACKET))
+    {
+      Rh28Eca0Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, RECVPACKET))
+    {
+      Rh28Eca0Del (tuple);
     }
 }
 
@@ -409,7 +422,7 @@ PktfwdSdnProvCompStaticCheck::Rs12_eca (Ptr<Tuple> eMatchingPacketTemp)
 
   result = GetRelation (RULEEXEC)->Join (
     eMatchingPacketTemp,
-    strlist ("ruleExec_attr4", "ruleExec_attr2", "ruleExec_attr3", "ruleExec_attr1"),
+    strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
     strlist ("eMatchingPacketTemp_attr8", "eMatchingPacketTemp_attr7", "eMatchingPacketTemp_attr6", "eMatchingPacketTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eMatchingPacketTemp);
@@ -1366,7 +1379,7 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
     FAppend::New (
       VarExpr::New ("PIDev"))));
 
-  result->Assign (Assignor::New ("Eventlist",
+  result->Assign (Assignor::New ("Tag",
     FConcat::New (
       VarExpr::New ("Equilist"),
       VarExpr::New ("Evlist"))));
@@ -1405,15 +1418,6 @@ PktfwdSdnProvCompStaticCheck::Rh104_eca (Ptr<Tuple> initPacketCount)
       Operation::New (RN_PLUS,
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
-
-  result->Assign (Assignor::New ("Hashlist",
-    FAppend::New (
-      VarExpr::New ("RID"))));
-
-  result->Assign (Assignor::New ("Tag",
-    FConcat::New (
-      VarExpr::New ("Eventlist"),
-      VarExpr::New ("Hashlist"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1486,6 +1490,11 @@ PktfwdSdnProvCompStaticCheck::Rh20_eca (Ptr<Tuple> packetProv)
       Operation::New (RN_PLUS,
         VarExpr::New ("R"),
         VarExpr::New ("List")))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packetProv_attr3"),
+      VarExpr::New ("packetProv_attr1"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -1755,5 +1764,51 @@ PktfwdSdnProvCompStaticCheck::Rh2_eca (Ptr<Tuple> packetNonProv)
       "recvPacket_attr6"));
 
   Insert (result);
+}
+
+void
+PktfwdSdnProvCompStaticCheck::Rh28Eca0Ins (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh28Eca0Ins triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
+      "recvPacket_attr4",
+      "recvPacket_attr5",
+      "recvPacket_attr6"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4",
+      "recvAuxPkt_attr5"));
+
+  Insert (result);
+}
+
+void
+PktfwdSdnProvCompStaticCheck::Rh28Eca0Del (Ptr<Tuple> recvPacket)
+{
+  RAPIDNET_LOG_INFO ("Rh28Eca0Del triggered");
+
+  Ptr<Tuple> result = recvPacket;
+
+  result = result->Project (
+    RECVAUXPKT,
+    strlist ("recvPacket_attr1",
+      "recvPacket_attr2",
+      "recvPacket_attr4",
+      "recvPacket_attr5",
+      "recvPacket_attr6"),
+    strlist ("recvAuxPkt_attr1",
+      "recvAuxPkt_attr2",
+      "recvAuxPkt_attr3",
+      "recvAuxPkt_attr4",
+      "recvAuxPkt_attr5"));
+
+  Delete (result);
 }
 

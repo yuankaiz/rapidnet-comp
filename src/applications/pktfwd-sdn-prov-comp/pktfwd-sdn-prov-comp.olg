@@ -2,8 +2,8 @@
 /* Note: we remove RLoc from RID in this version*/
 
 /*Materialized table*/
-materialize(initPacket,infinity,infinity,keys(2,3)). /*Input packets at hosts*/
-materialize(recvPacket,infinity,infinity,keys(2,3)). /*Received packets at hosts*/
+materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
+materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
 materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
 materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
 materialize(flowEntry,infinity,infinity,keys(2,4:int32)). /*Flow tables of switches*/
@@ -13,7 +13,7 @@ materialize(hashTable,infinity,infinity,keys(2:int32)). /*Hash table for compres
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
-
+materialize(recvAuxPkt,infinity,infinity,keys(2,3:str)). /*Record the hash list*/
 
 #define SWITCH 0
 #define HOST 1
@@ -21,7 +21,7 @@ materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule executio
 /* Rewritten provenance-enabled rules*/
 /*Switch program*/
 /*Query the controller when receiving unknown packets */
-rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList) :-
+rs10 eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
     packet(@Switch, SrcAdd, DstAdd, Data, HashList),
     maxPriority(@Switch, TopPriority),
@@ -34,18 +34,20 @@ rs10 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, 
     List2 := f_append(PID2),
     List := f_concat(List, List2),
     RID := f_sha1(R + List),
-    Rlist := f_append(R),
-    RTempList := f_concat(Rlist, List).
+    SwitchList := f_append(Switch),
+    SrcAddList := f_append(SrcAdd),
+    SwcSrcList := f_concat(SwitchList, SrcAddList).
 
 rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, HashList) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList).
+    eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList),
+    Switch := f_first(SwcSrcList),
+    SrcList := f_removeFirst(SwcSrcList),
+    SrcAdd := f_first(SrcList).
 
 /* TODO: the performance of using aggregation for hash table is not expected to be good */
 rs12 eMatchingPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
-    eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RTempList, HashList),
-    R == f_first(RTempList),
-    List == f_removeFirst(RTempList),
-    ruleExec(@RLoc, R, RID, List).
+    eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, TopPriority, RID, R, List, HashList),
+    ruleExec(@RLoc, RID, R, List).
 
 /* If the RID does not exist, store the provenance node*/
 rs13 ruleExec(@RLoc, RID, R, List) :-
@@ -59,7 +61,7 @@ rs15 matchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, NewHashList) :-
 	NewHashList := f_concat(HashList, Hash).
 
 /*Recursively matching entries in a routing table*/
-rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID, RTempList, HashList) :-
+rs20 eMatchingPacketTemp(@RLoc, SwcSrcList, DstAdd, Data, NextPriority, RID, R, List, HashList) :-
     device(@Switch, Dvtype),
     matchingPacket(@Switch, SrcAdd, DstAdd, Data, Priority, HashList),
     flowEntry(@Switch, DstEntry, Next, Priority),
@@ -75,11 +77,12 @@ rs20 eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, NextPriority, RID,
     List2 := f_append(PID2),
     List := f_concat(List, List2),
     RID := f_sha1(R + List),
-    Rlist := f_append(R),
-    RTempList := f_concat(Rlist, List).
+    SwitchList := f_append(Switch),
+    SrcAddList := f_append(SrcAdd),
+    SwcSrcList := f_concat(SwitchList, SrcAddList).
 
 /* rs21 - rs24 are identical to rs11 - rs14*/
- 
+
 
 /*A hit in the routing table, forward the packet accordingly*/
 rs30 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
@@ -106,12 +109,12 @@ rs31 ePacket(@Next, SrcAdd, DstAdd, Data, RID, RLoc, HashList) :-
 	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList).
 
 /*TODO: optimization - join on RID is enough*/
-rs32 ePaketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
+rs32 ePacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
 	ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList),
 	ruleExec(@RLoc, RID, R, List).
 
 rs33 ruleExec(@RLoc, RID, R, List) :-
-	ePaketCount(@RLoc, RID, R, List, Rcount),
+	ePacketCount(@RLoc, RID, R, List, Rcount),
 	Rcount == 0.
 
 rs34 packet(@Next, SrcAdd, DstAdd, Data, NewHashList) :-
@@ -143,6 +146,7 @@ rs40 ePacketTemp(@RLoc, Next, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 /* rs41 - rs44 are identical to rs31 - rs34*/
 
 /*Host program*/
+/* TODO: Separate the generation of PIDev and HashList, because RID could be conpressed*/
 rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
         device(@Host, Dvtype),
         initPacket(@Host, SrcAdd, DstAdd, Data),
@@ -151,15 +155,13 @@ rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 	RLoc := Host,
 	R := "rh1",
 	PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data),
-	Eventlist := f_append(PIDev),
 	PID1 := f_sha1("device" + Host + Dvtype),
 	PID2 := f_sha1("linkhr" + Host + Switch),
 	List := f_append(PID1),
 	List2 := f_append(PID2),
 	List := f_concat(List, List2),
 	RID := f_sha1(R + List),
-	RIDlist := f_append(RID),
-	HashList := f_concat(Eventlist, RIDlist). //Add hash of the event and first rule execution
+	HashList := f_append(PIDev).
 
 /* rh11 - rh14 are identical to rs21 - rs24*/
 
@@ -167,6 +169,7 @@ rh10 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, HashList) :-
 	device(@Host, Dvtype),
 	packet(@Host, SrcAdd, DstAdd, Data, HashList),
+	DstAdd == Host,
         Dvtype == HOST,
 	RLoc := Host,
 	R := "rh2",
@@ -189,5 +192,8 @@ rh24 recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList) :-
 	eRecvPacket(@Host, SrcAdd, DstAdd, Data, RID, RLoc, HashList),
 	Hash := f_append(RID),
 	NewHashList := f_concat(HashList, Hash).
+
+rh25 recvAuxPkt(@Host, SrcAdd, Data, NewHashList) :-
+        recvPacket(@Host, SrcAdd, DstAdd, Data, NewHashList).
     
 

@@ -15,6 +15,7 @@ materialize(ruleExec,infinity,infinity,keys(3:str, 4:list)). /*Hash table for pr
 
 /* Provenance tables*/
 materialize(ruleExec,infinity,infinity,keys(4:list)). /*Record the rule execution*/
+materialize(recvAuxPkt,infinity,infinity,keys(2,3:str)). /*Record the extra hash values*/
 
 #define SWITCH 0
 #define HOST 1
@@ -46,7 +47,7 @@ rs11 eMatchingPacket(@Switch, SrcAdd, DstAdd, Data, TopPriority, RID, RLoc, Tag)
 /* TODO: Matching on all ruleExec attributes is not necessary*/
 rs12 eMatchingPacketCount(@RLoc, RID, R, List, a_COUNT<*>) :-
     eMatchingPacketTemp(@RLoc, Switch, SrcAdd, DstAdd, TopPriority, RID, R, List, DataTag),
-    ruleExec(@RLoc, R, RID, List).
+    ruleExec(@RLoc, RID, R, List).
 
 /* If the RID does not exist, store the provenance node*/
 rs13 ruleExec(@RLoc, RID, R, List) :-
@@ -213,15 +214,13 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	PIDev := f_sha1("initPacket" + Host + SrcAdd + DstAdd + Data), /*Generate event hash*/
 	Equilist := f_append(PIDequi),
 	Evlist := f_append(PIDev),
-	Eventlist := f_concat(Equilist, Evlist),
+	Tag := f_concat(Equilist, Evlist),
 	PID1 := f_sha1("device" + Host + Dvtype), /*Generate rule ID*/
 	PID2 := f_sha1("linkhr" + Host + Switch),
 	List := f_append(PID1),
 	List2 := f_append(PID2),
 	List := f_concat(List, List2),
-	RID := f_sha1(R + List), 
-	Hashlist := f_append(RID),
-	Tag := f_concat(Eventlist, Hashlist).
+	RID := f_sha1(R + List).
 
 /* rh11 - rh14 are identical to rs31 - rs34*/
 
@@ -230,6 +229,7 @@ rh104 ePacketTemp(@RLoc, Switch, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 rh20 eRecvPacketTemp(@RLoc, Host, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	device(@Host, Dvtype),
 	packetProv(@Host, SrcAdd, DstAdd, Data, Tag),
+	DstAdd == Host,
         Dvtype == HOST,
 	RLoc := Host,
 	R := "rh2",
@@ -272,3 +272,5 @@ rh2 recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
 	packetNonProv(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev),
         Dvtype == HOST.
 
+rh28 recvAuxPkt(@Host, SrcAdd, Data, PIDequi, PIDev) :-
+        recvPacket(@Host, SrcAdd, DstAdd, Data, PIDequi, PIDev).
