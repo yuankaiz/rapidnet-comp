@@ -858,6 +858,18 @@ LookupFunction (string functionName)
       return "FSvRemove";
     }
   // no functions found, return error
+  else if (functionName == "f_substr")
+    {
+      return "FSubString";
+    }
+  else if (functionName == "f_indexof")
+    {
+      return "FIndexOf";
+    }
+  else if (functionName == "f_strlen")
+    {
+      return "FStrLength";
+    }
   else
     {
       NS_LOG_ERROR ("Function " << functionName << " not known!");

@@ -1099,6 +1099,68 @@ FGet::New (Ptr<Expression> list, Ptr<Expression> i, Ptr<RapidNetApplicationBase>
   return retval;
 }
 
+
+Ptr<Value>
+FSubString::Eval (Ptr<Tuple> tuple)
+{
+  string result = str->Eval(tuple)->ToString();
+  int32_t startIndexInt = rn_int32(startIndex->Eval(tuple));
+  int32_t endIndexInt = rn_int32(endIndex->Eval(tuple));
+  string substring = "";
+  if(startIndexInt <= endIndexInt && endIndexInt<= result.length())
+    {
+      substring = result.substr(startIndexInt,endIndexInt-startIndexInt);
+    }
+  return StrValue::New (substring);
+}
+
+Ptr<FunctionExpr> 
+FSubString::New (Ptr<Expression> str, Ptr<Expression> startIndex,Ptr<Expression> endIndex, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FSubString> retval = Create<FSubString> ();
+  retval->str = str;
+  retval->startIndex = startIndex;
+  retval->endIndex = endIndex;
+  return retval;
+}
+
+Ptr<Value>
+FIndexOf::Eval (Ptr<Tuple> tuple)
+{
+  string result = str->Eval(tuple)->ToString();
+  string patternToFind = strToFind->Eval(tuple)->ToString();
+  int found = result.find(patternToFind);
+  if(found==string::npos)
+    found = -1;
+  return Int32Value::New (found);
+}
+
+Ptr<FunctionExpr> 
+FIndexOf::New (Ptr<Expression> str, Ptr<Expression> strToFind, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FIndexOf> retval = Create<FIndexOf> ();
+  retval->str = str;
+  retval->strToFind = strToFind;
+  return retval;
+}
+
+Ptr<Value>
+FStrLength::Eval (Ptr<Tuple> tuple)
+{
+  string result = str->Eval(tuple)->ToString();
+  return Int32Value::New (result.length());
+}
+
+Ptr<FunctionExpr> 
+FStrLength::New (Ptr<Expression> str, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FStrLength> retval = Create<FStrLength> ();
+  retval->str = str;
+  return retval;
+}
+
+
+
 /* ************************************************************** */
 
 

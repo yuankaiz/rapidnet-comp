@@ -232,7 +232,7 @@ FunctionsTest::FSha1Test ()
   expr2 = FSha1::New (ValueExpr::New (value->Clone ()));
   NS_TEST_ASSERT (expr1->Eval (dummy)->Equals (expr2->Eval (dummy)));
 
-  //cout << "FSha1 tests passed!" << endl;
+  cout << "FSha1 tests passed!" << endl;
   return result;
 }
 
