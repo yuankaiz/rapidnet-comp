@@ -34,7 +34,7 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-address.h"
 
-#inculde "pktfwd-utility.h"
+#include "pktfwd-utility.h"
 
 /* Device identification*/
 #define device(host, dvtype)\
