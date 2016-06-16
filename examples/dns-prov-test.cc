@@ -5,18 +5,33 @@
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 
+
+#include<iostream>
+#include<list>
+#include<vector>
+#include<time.h>
+#include<sstream>
+#include "fstream"
+#include "stdlib.h"
+#include "math.h"
+
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
+
 using namespace ns3::rapidnet::dnsprov;
 
+
+int totalNumNodes;
+ApplicationContainer apps;
 //MACROS
 
-#define url_tuple(src,url,host)		\
+#define url_tuple(src,url,host,requestID)\
   tuple(DnsProv::URL,\
 	attr("url_attr1",Ipv4Value,src),\
 	attr("url_attr2",StrValue,url),\
-	attr("url_attr3",Ipv4Value,host))
+	attr("url_attr3",Ipv4Value,host),\
+	attr("url_attr4",Int32Value,requestID))
 
 #define name_server_tuple(src,domain,server)\
   tuple(DnsProv::NAME_SERVER,\
@@ -36,8 +51,8 @@ using namespace ns3::rapidnet::dnsprov;
 	attr("result_attr2",StrValue,url),\
 	attr("result_attr3",Ipv4Value,host))
 
-#define insertURL(src,url,host)				\
-  app(src)->Insert(url_tuple(addr(src),url,addr(host)))
+#define insertURL(src,url,host,requestID)\
+  app(src)->Insert(url_tuple(addr(src),url,addr(host),requestID))
 
 #define insertNameServer(src,domain,server)\
   app(src)->Insert(name_server_tuple(addr(src),domain,server))
@@ -49,7 +64,53 @@ using namespace ns3::rapidnet::dnsprov;
   app(host)->Insert(result_record(addr(host),url,addr(address)))
 
 
-ApplicationContainer apps;
+void insertURLTuple(int src, string url, int host, int requestID)
+{
+  insertURL(src,url,host,requestID);
+}
+
+
+void generateTree(int *nextNodeID, string currentPath, list<string> *pathList, int level,\
+			int minFanout, int maxFanout)
+{
+	if(level > 0)
+	{
+		int fanout = rand()%(maxFanout-minFanout)+minFanout;
+		int i=0;
+		int rootID = *nextNodeID;
+
+		for(i=0;i<fanout;i++)
+		{
+			(*nextNodeID)++;
+			if(level-1 > 0)
+			{
+			  //cout<<"Adding at "<<rootID<<" "<<"."<<*nextNodeID<<currentPath<<endl;
+				stringstream newPath;
+				newPath<<"."<<*nextNodeID<<currentPath;	
+				insertNameServer(rootID,newPath.str(),newPath.str()+"server");
+				insertAddressRecord(rootID,newPath.str()+"server",*nextNodeID);
+				generateTree(nextNodeID,newPath.str(),pathList,level-1,minFanout,maxFanout);
+			}
+			else
+			{ 
+			  //cout<<"Adding at "<<rootID<<" "<<*nextNodeID<<currentPath<<endl;
+				stringstream newPath;
+				newPath<<*nextNodeID<<currentPath;
+				insertNameServer(rootID,newPath.str(),newPath.str()+"server");
+				insertAddressRecord(rootID,newPath.str()+"server",*nextNodeID);
+				generateTree(nextNodeID,newPath.str(),pathList,level-1,minFanout,maxFanout);
+			}	
+		}
+	}
+	else
+	{
+		(*pathList).push_back(currentPath);
+	}
+}
+
+
+
+
 
 void Print()
 {
@@ -69,95 +130,144 @@ void Print()
   cout<<endl;
 }
 
-void SerializeProv(int totalNum, string storePath)
-{
-  vector<string> relNames;
-  relNames.push_back("ruleExec");
-  relNames.push_back("prov");
 
-  for (int i = 0; i < totalNum; i++)
+
+struct probvals
+{
+  float prob;
+  float cum_prob;
+};
+
+void get_zipf(float theta, int N, struct probvals *zdist)
+{
+   float sum = 0.0;
+  float c = 0.0;
+  float expo;
+  float sumc = 0.0;
+
+  int i=0;
+  
+  expo = 1- theta;
+  
+  for(i=1; i<=N;i++)
+    sum+=1.0/(float)pow((double)i,(double)expo);
+
+  c = 1.0/sum;
+
+  for(i=0; i<N; i++)
     {
-      int node = i + 1;
-      app(node) -> SerializeRel(relNames, node, storePath);
+      zdist[i].prob = c/(float)pow((double)(i+1),(double)(expo));
+      sumc += zdist[i].prob;
+      zdist[i].cum_prob = sumc;
     }
+}
+
+void insertRandomURL(list<string> pathList)
+{
+  
+  
+  int rootNodeID = 2;
+  int resultNodeID = 1;
+  struct probvals *zdist;
+
+  int N = pathList.size();
+  zdist = (struct probvals *)malloc(N*sizeof(struct probvals));
+
+  get_zipf(0.001,pathList.size(),zdist);
+
+  //list<string>::iterator iter = pathList.begin();
+  //int j=0;
+  //for(;j<N;j++)
+  //cout<<zdist[j].cum_prob<<endl;
+  int numURL = 1000;
+  double timer = 0;
+  while(numURL > 0)
+    {
+      double probRand = ((double) rand() / (RAND_MAX));
+      
+      int i=0;
+
+      for(;i<pathList.size();i++)
+	{
+	  if(zdist[i].cum_prob >= probRand)
+	    {
+	      //cout<<i<<" "<<zdist[i].cum_prob<<" "<<probRand<<endl;
+	      break;
+	    }
+	}
+
+      list<string>::iterator iter = pathList.begin();
+
+      for(;iter!=pathList.end();iter++)
+	{
+	  if(i == 0)
+	    {
+	      Simulator::Schedule(Seconds(timer),insertURLTuple,rootNodeID,*iter,resultNodeID,numURL);
+	      //insertURL(rootNodeID,*iter,resultNodeID,numURL);
+	      //delay(1);
+	      break;
+	    }
+	  i--;
+	}
+      numURL--;
+      timer+=0.001;
+    }
+    free(zdist);
 }
 
 void UpdateTable()
 {
   //Final results will be at 1
-  //list< Ptr<Value> > path;
-  insertURL(2,"mailto.cis.upenn.edu",1);
+   int nextNodeID = 2;
+  int rootNodeID = 2;
+  string path = ".";
+  list<string> pathList;
 
-  //list< Ptr<Value> > path2;
-  //insertURL(2,"www.csail.mit.edu",1);
+  int minDepth = 9;//atoi(argv[1]);
+  int maxDepth = 10;//atoi(argv[2]);
+		
+  int level = rand()%(maxDepth-minDepth)+minDepth;
+  //cout<<"HEIGHT "<<level<<endl;
+  int minFanout = 2;//atoi(argv[3]);
+  int maxFanout = 3;//atoi(argv[4]);
+  generateTree(&nextNodeID,path,&pathList,level,minFanout,maxFanout);
+  totalNumNodes = nextNodeID;
+  //cout<<"NUM NODES GENERATED "<<nextNodeID<<endl;
+ list<string>::iterator iter = pathList.begin();
+  int resultNodeID = 1;
+  int counter = 0;
+  double timer = 0;
+   for(;counter<50;counter++)
+    {
+      int numRequests = 0;
+      for(;numRequests < 10;numRequests++,timer+=0.01)
+	{
+	   Simulator::Schedule(Seconds(timer),insertURLTuple,rootNodeID,*iter,resultNodeID,numRequests);
+	   //timer+=1;
+	}
+      iter++;
+      }
+  //insertRandomURL(pathList);
 
-  //insertURL(2,"www.ibm.net",1);
+}
 
-  //Create root node
-  insertNameServer(2,".edu","edu.server");
-  insertAddressRecord(2,"edu.server",3);
 
-  insertNameServer(2,".com","com.server");
-  insertAddressRecord(2,"com.server",4);
 
-  insertNameServer(2,".net","net.server");
-  insertAddressRecord(2,"net.server",5);
+void SerializeProv(string storePath)
+{
+  cout<<"NUM NODES "<<totalNumNodes<<endl;
+  cout<<"STORE PATH "<<storePath<<endl;
+  vector<string> relNames;
+  relNames.push_back("ruleExec");
+  //relNames.push_back("prov");
 
-  //edu server
-  insertNameServer(3,".upenn.edu","upenn.edu.server");
-  insertAddressRecord(3,"upenn.edu.server",6);
-  
-  insertNameServer(3,".mit.edu","mit.edu.server");
-  insertAddressRecord(3,"mit.edu.server",7);
-
-  //Com server
-  insertNameServer(4,".google.com","google.com.server");
-  insertAddressRecord(4,"google.com.server",8);
-
-  insertNameServer(4,".yahoo.com","yahoo.com.server");
-  insertAddressRecord(4,"yahoo.com.server",9);
-
-  //net server
-  insertNameServer(5,".ibm.net","ibm.net.server");
-  insertAddressRecord(5,"ibm.net.server",10);
-
-  //upenn server
-  insertNameServer(6,".cis.upenn.edu","cis.upenn.server");
-  insertAddressRecord(6,"cis.upenn.server",11);
-
-  insertNameServer(6,".sas.upenn.edu","sas.upenn.edu.server");
-  insertAddressRecord(6,"sas.upenn.edu.server",12);
-
-  //mit server
-  insertNameServer(7,".csail.mit.edu","csail.mit.edu.server");
-  insertAddressRecord(7,"csail.mit.edu.server",13);
-
-  //google server
-  insertNameServer(8,"www.google.com","www.google.com.server");
-  insertAddressRecord(8,"www.google.com.server",14);
-
-  //yahoo server
-  insertNameServer(9,"www.yahoo.com","www.yahoo.com.server");
-  insertAddressRecord(9,"www.yahoo.com.server",15);
-
-  //ibm server
-  insertNameServer(10,"www.ibm.net","www.ibm.net.server");
-  insertAddressRecord(10,"www.ibm.net.server",16);
-
-  //cis.upenn.edu server
-  insertNameServer(11,"www.cis.upenn.edu","www.cis.upenn.edu.server");
-  insertAddressRecord(11,"www.cis.upenn.edu.server",17);
-
-  insertNameServer(11,"mailto.cis.upenn.edu","mailto.cis.upenn.edu.server");
-  insertAddressRecord(11,"mailto.cis.upenn.edu.server",18);
-
-  //sas.upenn.edu server
-  insertNameServer(12,"www.sas.upenn.edu","www.sas.upenn.edu.server");
-  insertAddressRecord(12,"www.sas.upenn.edu.server",19);
-
-  //csail.mit.edu server
-  insertNameServer(13,"www.csail.mit.edu","www.csail.mit.edu.server");
-  insertAddressRecord(13,"www.csail.mit.edu.server",20);
+  for (int i = 2; i < totalNumNodes+1; i++)
+    {
+      int node = i;
+      
+      app(node) -> SerializeRel(relNames, node, storePath);
+      
+    }
 }
 
 
@@ -165,15 +275,47 @@ int main(int argc,char *argv[])
 {
   LogComponentEnable("DnsProv", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
+  
 
-  apps = InitRapidNetApps (20, Create<DnsProvHelper> ());
+  string storePath = "/localdrive1/harshal/prov_test/";
+
+  CommandLine cmd;
+  cmd.AddValue("storePth","The path to the directory for provenance storage",storePath);
+
+  cmd.Parse(argc,argv);
+
+
+  NodeContainer csmaNodes;
+  csmaNodes.Create (5000);
+
+  CsmaHelper csma;
+  csma.SetDeviceAttribute ("EncapsulationMode", StringValue ("Dix"));
+  csma.SetDeviceAttribute ("FrameSize", UintegerValue (64000));
+
+  NetDeviceContainer csmaDevices;
+  csmaDevices = csma.Install (csmaNodes);
+
+  InternetStackHelper stack;
+  stack.Install (csmaNodes);
+
+  Ipv4AddressHelper address;
+
+  address.SetBase ("192.0.0.0", "255.0.0.0");
+  address.Assign (csmaDevices);
+
+  Ptr<RapidNetApplicationHelper> appHelper = Create<DnsProvHelper> ();
+  apps = appHelper->Install (csmaNodes);
+
+
+  //apps = InitRapidNetApps (800, Create<DnsProvHelper> ());
   apps.Start (Seconds (0.0));
-  apps.Stop (Seconds (10.0));
-
+  apps.Stop (Seconds (500.0));
+  
   schedule (0.0, UpdateTable);
-  schedule (10.0, Print);
-
+  Simulator::Schedule (Seconds(499.0000), SerializeProv, storePath);
+  schedule (500.0, Print);
   Simulator::Run ();
+  cout<<"Total Number Nodes "<<totalNumNodes<<endl;
   Simulator::Destroy ();
   return 0;
 }

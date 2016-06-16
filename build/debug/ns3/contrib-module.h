@@ -14,4 +14,5 @@
 #include "file-config.h"
 #include "flow-id-tag.h"
 #include "gnuplot.h"
+#include "gtk-config-store.h"
 #endif

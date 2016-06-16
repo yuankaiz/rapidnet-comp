@@ -101,7 +101,8 @@ DnsProv::InitDatabase ()
   AddRelationWithKeys (RESULT, attrdeflist (
     attrdef ("result_attr1", IPV4),
     attrdef ("result_attr2", STR),
-    attrdef ("result_attr3", IPV4)));
+    attrdef ("result_attr3", IPV4),
+    attrdef ("result_attr4", INT32)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
     attrdef ("ruleExec_attr4", LIST)));
@@ -109,7 +110,8 @@ DnsProv::InitDatabase ()
   AddRelationWithKeys (URL, attrdeflist (
     attrdef ("url_attr1", IPV4),
     attrdef ("url_attr2", STR),
-    attrdef ("url_attr3", IPV4)));
+    attrdef ("url_attr3", IPV4),
+    attrdef ("url_attr4", INT32)));
 
 }
 
@@ -187,10 +189,12 @@ DnsProv::R00Eca1Ins (Ptr<Tuple> url)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("initURL")),
-            VarExpr::New ("url_attr1")),
-          VarExpr::New ("url_attr2")),
-        VarExpr::New ("url_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("initURL")),
+              VarExpr::New ("url_attr1")),
+            VarExpr::New ("url_attr2")),
+          VarExpr::New ("url_attr3")),
+        VarExpr::New ("url_attr4")))));
 
   result->Assign (Assignor::New ("RID",
     VarExpr::New ("VID")));
@@ -224,10 +228,12 @@ DnsProv::R00Eca1Del (Ptr<Tuple> url)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("initURL")),
-            VarExpr::New ("url_attr1")),
-          VarExpr::New ("url_attr2")),
-        VarExpr::New ("url_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("initURL")),
+              VarExpr::New ("url_attr1")),
+            VarExpr::New ("url_attr2")),
+          VarExpr::New ("url_attr3")),
+        VarExpr::New ("url_attr4")))));
 
   result->Assign (Assignor::New ("RID",
     VarExpr::New ("VID")));
@@ -258,10 +264,12 @@ DnsProv::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("url")),
-            VarExpr::New ("url_attr1")),
-          VarExpr::New ("url_attr2")),
-        VarExpr::New ("url_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("url")),
+              VarExpr::New ("url_attr1")),
+            VarExpr::New ("url_attr2")),
+          VarExpr::New ("url_attr3")),
+        VarExpr::New ("url_attr4")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -287,6 +295,7 @@ DnsProv::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       "url_attr1",
       "url_attr2",
       "url_attr3",
+      "url_attr4",
       "RID",
       "R",
       "List",
@@ -298,6 +307,7 @@ DnsProv::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       "eRequestTemp_attr5",
       "eRequestTemp_attr6",
       "eRequestTemp_attr7",
+      "eRequestTemp_attr8",
       RN_DEST));
 
   Send (result);
@@ -313,9 +323,9 @@ DnsProv::Prov_r1_2_eca (Ptr<Tuple> eRequestTemp)
   result = result->Project (
     RULEEXEC,
     strlist ("eRequestTemp_attr1",
-      "eRequestTemp_attr5",
       "eRequestTemp_attr6",
-      "eRequestTemp_attr7"),
+      "eRequestTemp_attr7",
+      "eRequestTemp_attr8"),
     strlist ("ruleExec_attr1",
       "ruleExec_attr2",
       "ruleExec_attr3",
@@ -337,6 +347,7 @@ DnsProv::Prov_r1_3_eca (Ptr<Tuple> eRequestTemp)
       "eRequestTemp_attr3",
       "eRequestTemp_attr4",
       "eRequestTemp_attr5",
+      "eRequestTemp_attr6",
       "eRequestTemp_attr1",
       "eRequestTemp_attr2"),
     strlist ("eRequest_attr1",
@@ -344,6 +355,7 @@ DnsProv::Prov_r1_3_eca (Ptr<Tuple> eRequestTemp)
       "eRequest_attr3",
       "eRequest_attr4",
       "eRequest_attr5",
+      "eRequest_attr6",
       RN_DEST));
 
   Send (result);
@@ -360,10 +372,12 @@ DnsProv::Prov_r1_4_eca (Ptr<Tuple> eRequest)
     REQUEST,
     strlist ("eRequest_attr1",
       "eRequest_attr2",
-      "eRequest_attr3"),
+      "eRequest_attr3",
+      "eRequest_attr4"),
     strlist ("request_attr1",
       "request_attr2",
-      "request_attr3"));
+      "request_attr3",
+      "request_attr4"));
 
   SendLocal (result);
 }
@@ -380,17 +394,19 @@ DnsProv::Prov_r1_5_eca (Ptr<Tuple> eRequest)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("request")),
-            VarExpr::New ("eRequest_attr1")),
-          VarExpr::New ("eRequest_attr2")),
-        VarExpr::New ("eRequest_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("request")),
+              VarExpr::New ("eRequest_attr1")),
+            VarExpr::New ("eRequest_attr2")),
+          VarExpr::New ("eRequest_attr3")),
+        VarExpr::New ("eRequest_attr4")))));
 
   result = result->Project (
     PROV,
     strlist ("eRequest_attr1",
       "VID",
-      "eRequest_attr4",
-      "eRequest_attr5"),
+      "eRequest_attr5",
+      "eRequest_attr6"),
     strlist ("prov_attr1",
       "prov_attr2",
       "prov_attr3",
@@ -421,10 +437,12 @@ DnsProv::Prov_r2_1_eca (Ptr<Tuple> request)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("request")),
-            VarExpr::New ("request_attr1")),
-          VarExpr::New ("request_attr2")),
-        VarExpr::New ("request_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("request")),
+              VarExpr::New ("request_attr1")),
+            VarExpr::New ("request_attr2")),
+          VarExpr::New ("request_attr3")),
+        VarExpr::New ("request_attr4")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -500,6 +518,7 @@ DnsProv::Prov_r2_1_eca (Ptr<Tuple> request)
       "address_record_attr3",
       "request_attr2",
       "request_attr3",
+      "request_attr4",
       "RID",
       "R",
       "List",
@@ -511,6 +530,7 @@ DnsProv::Prov_r2_1_eca (Ptr<Tuple> request)
       "eRequestTemp_attr5",
       "eRequestTemp_attr6",
       "eRequestTemp_attr7",
+      "eRequestTemp_attr8",
       RN_DEST));
 
   Send (result);
@@ -538,10 +558,12 @@ DnsProv::Prov_r3_1_eca (Ptr<Tuple> request)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("request")),
-            VarExpr::New ("request_attr1")),
-          VarExpr::New ("request_attr2")),
-        VarExpr::New ("request_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("request")),
+              VarExpr::New ("request_attr1")),
+            VarExpr::New ("request_attr2")),
+          VarExpr::New ("request_attr3")),
+        VarExpr::New ("request_attr4")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -617,6 +639,7 @@ DnsProv::Prov_r3_1_eca (Ptr<Tuple> request)
       "address_record_attr3",
       "request_attr2",
       "request_attr3",
+      "request_attr4",
       "RID",
       "R",
       "List",
@@ -628,6 +651,7 @@ DnsProv::Prov_r3_1_eca (Ptr<Tuple> request)
       "eResultTemp_attr5",
       "eResultTemp_attr6",
       "eResultTemp_attr7",
+      "eResultTemp_attr8",
       RN_DEST));
 
   Send (result);
@@ -643,9 +667,9 @@ DnsProv::Prov_r3_2_eca (Ptr<Tuple> eResultTemp)
   result = result->Project (
     RULEEXEC,
     strlist ("eResultTemp_attr1",
-      "eResultTemp_attr5",
       "eResultTemp_attr6",
-      "eResultTemp_attr7"),
+      "eResultTemp_attr7",
+      "eResultTemp_attr8"),
     strlist ("ruleExec_attr1",
       "ruleExec_attr2",
       "ruleExec_attr3",
@@ -667,6 +691,7 @@ DnsProv::Prov_r3_3_eca (Ptr<Tuple> eResultTemp)
       "eResultTemp_attr3",
       "eResultTemp_attr4",
       "eResultTemp_attr5",
+      "eResultTemp_attr6",
       "eResultTemp_attr1",
       "eResultTemp_attr2"),
     strlist ("eResult_attr1",
@@ -674,6 +699,7 @@ DnsProv::Prov_r3_3_eca (Ptr<Tuple> eResultTemp)
       "eResult_attr3",
       "eResult_attr4",
       "eResult_attr5",
+      "eResult_attr6",
       RN_DEST));
 
   Send (result);
@@ -690,10 +716,12 @@ DnsProv::Prov_r3_4_eca (Ptr<Tuple> eResult)
     RESULT,
     strlist ("eResult_attr1",
       "eResult_attr2",
-      "eResult_attr3"),
+      "eResult_attr3",
+      "eResult_attr4"),
     strlist ("result_attr1",
       "result_attr2",
-      "result_attr3"));
+      "result_attr3",
+      "result_attr4"));
 
   Insert (result);
 }
@@ -710,17 +738,19 @@ DnsProv::Prov_r3_5_eca (Ptr<Tuple> eResult)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("result")),
-            VarExpr::New ("eResult_attr1")),
-          VarExpr::New ("eResult_attr2")),
-        VarExpr::New ("eResult_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("result")),
+              VarExpr::New ("eResult_attr1")),
+            VarExpr::New ("eResult_attr2")),
+          VarExpr::New ("eResult_attr3")),
+        VarExpr::New ("eResult_attr4")))));
 
   result = result->Project (
     PROV,
     strlist ("eResult_attr1",
       "VID",
-      "eResult_attr4",
-      "eResult_attr5"),
+      "eResult_attr5",
+      "eResult_attr6"),
     strlist ("prov_attr1",
       "prov_attr2",
       "prov_attr3",

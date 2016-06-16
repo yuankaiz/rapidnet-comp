@@ -1,0 +1,43 @@
+materialize(url,infinity,infinity,keys(1,2:str)).
+materialize(address_record,infinity,infinity,keys(1,2:str,3)).
+materialize(name_server,infinity,infinity,keys(1,2:str,3:str)).
+materialize(result,infinity,infinity,keys(1,2:str,3)).
+
+r1 request(@SRC,URL,COUNTER) :- url(@SRC,URL,COUNTER).
+
+/*First time the URL is seen*/
+r2 request(@ADDR,URL,COUNTER) :- request(@SRC,URL,COUNTER),
+   			      name_server(@SRC,DOMAIN,SERVER),
+			      address_record(@SRC,SERVER,ADDR),COUNTER == 0,
+			      f_indexof(URL,DOMAIN)!=-1,
+			      URL!=DOMAIN.
+/*Cache miss*/
+r3 request(@ADDR,URL,COUNTER) :- request(@SRC,URL,COUNTER),
+   			      	 name_server(@SRC,DOMAIN,SERVER),
+				 address_record(@SRC,SERVER,ADDR),COUNTER > 0,
+				 cache(@SRC,URL,CACHEADDR,TIMESTAMP),
+				 CURRENTTIME := f_now(),
+				 f_diffTime(CURRENTTIME,TIMESTAMP) > 10,
+				 f_indexof(URL,DOMAIN)!=-1,
+				 URL!=DOMAIN.
+
+
+/*Cache hit*/
+r4 result(@SRC,URL,CACHEADDR) :-  request(@SRC,URL,COUNTER),
+   			     name_server(@SRC,DOMAIN,SERVER),
+			     address_record(@SRC,SREVER,ADDR),COUNTER > 0,
+			     cache(@SRC,URL,CACHEADDR,TIMESTAMP),
+			     CURRENTTIME := f_time(),
+			     f_diffTime(CURRENTTIME,TIMESTAMP) <= 10.
+
+/*Result through normal lookup*/
+r5 result(@RESOLVEDADDR,URL,RESOLVEDADDR) :- request(@SRC,URL,COUNTER),
+   				     name_server(@SRC,DOMAIN,SERVER),
+				     address_record(@SRC,SERVER,RESOLVEDADDR),
+				     f_indexof(URL,DOMAIN)!=-1,
+				     URL == DOMAIN.
+
+
+/*Cache Update*/
+r6 cache(@ADDR,URL,RESOLVEDADDR,TIMESTAMP) :- result(@SRC,URL,RESOLVEDADDR),PARENT(ADDR)
+   					      ,TIMESTAMP := f_now().

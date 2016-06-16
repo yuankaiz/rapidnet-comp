@@ -96,7 +96,8 @@ DnsProvCompStrawman::InitDatabase ()
   AddRelationWithKeys (RESULT, attrdeflist (
     attrdef ("result_attr1", IPV4),
     attrdef ("result_attr2", STR),
-    attrdef ("result_attr3", IPV4)));
+    attrdef ("result_attr3", IPV4),
+    attrdef ("result_attr4", INT32)));
 
   AddRelationWithKeys (RESULTAUX, attrdeflist (
     attrdef ("resultAux_attr2", ID)));
@@ -107,7 +108,8 @@ DnsProvCompStrawman::InitDatabase ()
   AddRelationWithKeys (URL, attrdeflist (
     attrdef ("url_attr1", IPV4),
     attrdef ("url_attr2", STR),
-    attrdef ("url_attr3", IPV4)));
+    attrdef ("url_attr3", IPV4),
+    attrdef ("url_attr4", INT32)));
 
 }
 
@@ -174,10 +176,12 @@ DnsProvCompStrawman::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("url")),
-            VarExpr::New ("url_attr1")),
-          VarExpr::New ("url_attr2")),
-        VarExpr::New ("url_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("url")),
+              VarExpr::New ("url_attr1")),
+            VarExpr::New ("url_attr2")),
+          VarExpr::New ("url_attr3")),
+        VarExpr::New ("url_attr4")))));
 
   result->Assign (Assignor::New ("List",
     FEmpty::New (
@@ -207,6 +211,7 @@ DnsProvCompStrawman::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       "url_attr1",
       "url_attr2",
       "url_attr3",
+      "url_attr4",
       "RID",
       "R",
       "List",
@@ -220,6 +225,7 @@ DnsProvCompStrawman::Prov_r1_1Eca0Ins (Ptr<Tuple> url)
       "eRequestTemp_attr6",
       "eRequestTemp_attr7",
       "eRequestTemp_attr8",
+      "eRequestTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -235,16 +241,16 @@ DnsProvCompStrawman::Prov_r1_2_eca (Ptr<Tuple> eRequestTemp)
   result = GetRelation (RULEEXEC)->Join (
     eRequestTemp,
     strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
-    strlist ("eRequestTemp_attr7", "eRequestTemp_attr6", "eRequestTemp_attr5", "eRequestTemp_attr1"));
+    strlist ("eRequestTemp_attr8", "eRequestTemp_attr7", "eRequestTemp_attr6", "eRequestTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eRequestTemp);
 
   result = result->Project (
     EREQUESTCOUNT,
     strlist ("eRequestTemp_attr1",
-      "eRequestTemp_attr5",
       "eRequestTemp_attr6",
       "eRequestTemp_attr7",
+      "eRequestTemp_attr8",
       "count"),
     strlist ("eRequestCount_attr1",
       "eRequestCount_attr2",
@@ -290,11 +296,11 @@ DnsProvCompStrawman::Prov_r1_4_eca (Ptr<Tuple> eRequestTemp)
 
   result->Assign (Assignor::New ("Hash",
     FAppend::New (
-      VarExpr::New ("eRequestTemp_attr5"))));
+      VarExpr::New ("eRequestTemp_attr6"))));
 
   result->Assign (Assignor::New ("NewHashList",
     FConcat::New (
-      VarExpr::New ("eRequestTemp_attr8"),
+      VarExpr::New ("eRequestTemp_attr9"),
       VarExpr::New ("Hash"))));
 
   result = result->Project (
@@ -302,12 +308,14 @@ DnsProvCompStrawman::Prov_r1_4_eca (Ptr<Tuple> eRequestTemp)
     strlist ("eRequestTemp_attr2",
       "eRequestTemp_attr3",
       "eRequestTemp_attr4",
+      "eRequestTemp_attr5",
       "NewHashList",
       "eRequestTemp_attr2"),
     strlist ("request_attr1",
       "request_attr2",
       "request_attr3",
       "request_attr4",
+      "request_attr5",
       RN_DEST));
 
   Send (result);
@@ -404,10 +412,11 @@ DnsProvCompStrawman::Prov_r2_1_eca (Ptr<Tuple> request)
       "address_record_attr3",
       "request_attr2",
       "request_attr3",
+      "request_attr4",
       "RID",
       "R",
       "List",
-      "request_attr4",
+      "request_attr5",
       "RLOC"),
     strlist ("eRequestTemp_attr1",
       "eRequestTemp_attr2",
@@ -417,6 +426,7 @@ DnsProvCompStrawman::Prov_r2_1_eca (Ptr<Tuple> request)
       "eRequestTemp_attr6",
       "eRequestTemp_attr7",
       "eRequestTemp_attr8",
+      "eRequestTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -444,10 +454,12 @@ DnsProvCompStrawman::Prov_r3_1_eca (Ptr<Tuple> request)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("request")),
-            VarExpr::New ("request_attr1")),
-          VarExpr::New ("request_attr2")),
-        VarExpr::New ("request_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("request")),
+              VarExpr::New ("request_attr1")),
+            VarExpr::New ("request_attr2")),
+          VarExpr::New ("request_attr3")),
+        VarExpr::New ("request_attr4")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -523,10 +535,11 @@ DnsProvCompStrawman::Prov_r3_1_eca (Ptr<Tuple> request)
       "address_record_attr3",
       "request_attr2",
       "request_attr3",
+      "request_attr4",
       "RID",
       "R",
       "List",
-      "request_attr4",
+      "request_attr5",
       "RLOC"),
     strlist ("eResultTemp_attr1",
       "eResultTemp_attr2",
@@ -536,6 +549,7 @@ DnsProvCompStrawman::Prov_r3_1_eca (Ptr<Tuple> request)
       "eResultTemp_attr6",
       "eResultTemp_attr7",
       "eResultTemp_attr8",
+      "eResultTemp_attr9",
       RN_DEST));
 
   Send (result);
@@ -551,16 +565,16 @@ DnsProvCompStrawman::Prov_r3_2_eca (Ptr<Tuple> eResultTemp)
   result = GetRelation (RULEEXEC)->Join (
     eResultTemp,
     strlist ("ruleExec_attr4", "ruleExec_attr3", "ruleExec_attr2", "ruleExec_attr1"),
-    strlist ("eResultTemp_attr7", "eResultTemp_attr6", "eResultTemp_attr5", "eResultTemp_attr1"));
+    strlist ("eResultTemp_attr8", "eResultTemp_attr7", "eResultTemp_attr6", "eResultTemp_attr1"));
 
   result = AggWrapCount::New ()->Compute (result, eResultTemp);
 
   result = result->Project (
     ERESULTCOUNT,
     strlist ("eResultTemp_attr1",
-      "eResultTemp_attr5",
       "eResultTemp_attr6",
       "eResultTemp_attr7",
+      "eResultTemp_attr8",
       "count"),
     strlist ("eResultCount_attr1",
       "eResultCount_attr2",
@@ -606,11 +620,11 @@ DnsProvCompStrawman::Prov_r3_4_eca (Ptr<Tuple> eResultTemp)
 
   result->Assign (Assignor::New ("Hash",
     FAppend::New (
-      VarExpr::New ("eResultTemp_attr5"))));
+      VarExpr::New ("eResultTemp_attr6"))));
 
   result->Assign (Assignor::New ("NewHashList",
     FConcat::New (
-      VarExpr::New ("eResultTemp_attr8"),
+      VarExpr::New ("eResultTemp_attr9"),
       VarExpr::New ("Hash"))));
 
   result = result->Project (
@@ -619,8 +633,9 @@ DnsProvCompStrawman::Prov_r3_4_eca (Ptr<Tuple> eResultTemp)
       "eResultTemp_attr3",
       "eResultTemp_attr4",
       "eResultTemp_attr5",
+      "eResultTemp_attr6",
       "eResultTemp_attr1",
-      "eResultTemp_attr8",
+      "eResultTemp_attr9",
       "eResultTemp_attr2"),
     strlist ("eResult_attr1",
       "eResult_attr2",
@@ -628,6 +643,7 @@ DnsProvCompStrawman::Prov_r3_4_eca (Ptr<Tuple> eResultTemp)
       "eResult_attr4",
       "eResult_attr5",
       "eResult_attr6",
+      "eResult_attr7",
       RN_DEST));
 
   Send (result);
@@ -644,10 +660,12 @@ DnsProvCompStrawman::Prov_r3_5_eca (Ptr<Tuple> eResult)
     RESULT,
     strlist ("eResult_attr1",
       "eResult_attr2",
-      "eResult_attr3"),
+      "eResult_attr3",
+      "eResult_attr4"),
     strlist ("result_attr1",
       "result_attr2",
-      "result_attr3"));
+      "result_attr3",
+      "result_attr4"));
 
   Insert (result);
 }
@@ -664,16 +682,18 @@ DnsProvCompStrawman::Prov_r3_6_eca (Ptr<Tuple> eResult)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("result")),
-            VarExpr::New ("eResult_attr1")),
-          VarExpr::New ("eResult_attr2")),
-        VarExpr::New ("eResult_attr3")))));
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("result")),
+              VarExpr::New ("eResult_attr1")),
+            VarExpr::New ("eResult_attr2")),
+          VarExpr::New ("eResult_attr3")),
+        VarExpr::New ("eResult_attr4")))));
 
   result = result->Project (
     RESULTAUX,
     strlist ("eResult_attr1",
       "PID",
-      "eResult_attr6"),
+      "eResult_attr7"),
     strlist ("resultAux_attr1",
       "resultAux_attr2",
       "resultAux_attr3"));

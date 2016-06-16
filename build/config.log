@@ -1,4 +1,4 @@
-# project ns (3.5) configured on Tue May 24 02:29:50 2016 by
+# project ns (3.5) configured on Sun Jun 12 17:15:35 2016 by
 # waf 1.5.8 (abi 7, python 20703f0 on linux2)
 # using ./waf
 #
@@ -135,9 +135,11 @@ int main() {
 <==
 [1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
 [0m../test.cpp:1:26: fatal error: sys/inttypes.h: No such file or directory
+ #include <sys/inttypes.h>
+                          ^
 compilation terminated.
 ['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
-command returned 'Traceback (most recent call last):\n  File "/home/ubuntu/College/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/home/ubuntu/College/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx test.cpp -> test_1.o}\n'Checking for library rt
+command returned 'Traceback (most recent call last):\n  File "/home/harshal/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/home/harshal/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx test.cpp -> test_1.o}\n'Checking for library rt
 
 ==>
 
@@ -183,10 +185,10 @@ int main() {
 [0m['/usr/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
 Checking for pkg-config flags for GTK_CONFIG_STORE 
 
-['/usr/bin/pkg-config', '--cflags', '--libs', 'gtk+-2.0 >= 2.12']: '' (exit code 1)
+['/usr/bin/pkg-config', '--cflags', '--libs', 'gtk+-2.0 >= 2.12']: '-pthread -I/usr/include/gtk-2.0 -I/usr/lib/x86_64-linux-gnu/gtk-2.0/include -I/usr/include/atk-1.0 -I/usr/include/cairo -I/usr/include/gdk-pixbuf-2.0 -I/usr/include/pango-1.0 -I/usr/include/gio-unix-2.0/ -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng12  -lgtk-x11-2.0 -lgdk-x11-2.0 -latk-1.0 -lgio-2.0 -lpangoft2-1.0 -lpangocairo-1.0 -lgdk_pixbuf-2.0 -lcairo -lpango-1.0 -lfreetype -lfontconfig -lgobject-2.0 -lglib-2.0  \n' (exit code 0)
 Checking for pkg-config flags for LIBXML2 
 
-['/usr/bin/pkg-config', '--cflags', '--libs', 'libxml-2.0 >= 2.6']: '' (exit code 1)
+['/usr/bin/pkg-config', '--cflags', '--libs', 'libxml-2.0 >= 2.6']: '-I/usr/include/libxml2  -lxml2  \n' (exit code 0)
 Checking for library sqlite3
 
 ==>
@@ -200,9 +202,9 @@ int main() {
 [0m['/usr/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
 [2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
 [0m/usr/bin/ld: cannot find -lsqlite3
-collect2: ld returned 1 exit status
+collect2: error: ld returned 1 exit status
 ['/usr/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-Wl,-Bdynamic', '-lsqlite3']
-command returned 'Traceback (most recent call last):\n  File "/home/ubuntu/College/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/home/ubuntu/College/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'Checking for NSC location 
+command returned 'Traceback (most recent call last):\n  File "/home/harshal/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/home/harshal/rapidnet-comp/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'Checking for NSC location 
 
 Checking for library crypto
 
@@ -324,5 +326,5 @@ find program='hg' paths=[] var='MERCURIAL' -> ''
 
 Checking for program valgrind
 
-find program='valgrind' paths=[] var='VALGRIND' -> ''
+find program='valgrind' paths=[] var='VALGRIND' -> '/usr/bin/valgrind'
 

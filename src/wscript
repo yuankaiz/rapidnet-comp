@@ -33,7 +33,11 @@ all_modules = (
     'applications/dns-prov',
     'applications/dns-prov-comp-strawman',
     'applications/dns-prov-comp-online',
-
+    
+    'applications/pktfwd-norm-prov-ete',
+    'applications/pktfwd-norm-prov-comp-online-ete',
+    'applications/pktfwd-norm-prov-comp-strawman-ete',
+    
     'routing/olsr',
     'routing/global-routing',
     'routing/static-routing',

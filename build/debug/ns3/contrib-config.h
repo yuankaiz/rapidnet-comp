@@ -11,4 +11,5 @@
 /* #undef HAVE_SYS_INT_TYPES_H */
 #define HAVE_PACKET_H 1
 #define HAVE_IF_TUN_H 1
+#define HAVE_LIBXML2 1
 #endif /* _NS3_CONTRIB_CONFIG_H_WAF */

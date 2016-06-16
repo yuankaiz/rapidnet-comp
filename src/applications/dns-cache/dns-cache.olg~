@@ -1,0 +1,2 @@
+materialize(url,infinity,infinity,keys(1,2:str)).
+materialize(address_record,infinity,infinity,keys(1,2:str,3)).

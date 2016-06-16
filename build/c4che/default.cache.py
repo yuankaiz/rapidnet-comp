@@ -1,7 +1,7 @@
 AR = '/usr/bin/ar'
 ARFLAGS = 'rcs'
 CCFLAGS_MACBUNDLE = ['-fPIC']
-CC_VERSION = ('4', '6', '3')
+CC_VERSION = ('4', '9', '2')
 COMPILER_CXX = 'g++'
 CPP = '/usr/bin/cpp'
 CPPPATH_ST = '-I%s'
@@ -20,7 +20,7 @@ LIB_ST = '-l%s'
 LINKFLAGS_MACBUNDLE = ['-bundle', '-undefined', 'dynamic_lookup']
 LINK_CXX = ['/usr/bin/g++']
 NS3_ACTIVE_VARIANT = 'debug'
-NS3_BUILDDIR = '/home/ubuntu/College/rapidnet-comp/build'
+NS3_BUILDDIR = '/home/harshal/rapidnet-comp/build'
 NS3_OPTIONAL_FEATURES = []
 PKG_CONFIG = '/usr/bin/pkg-config'
 PREFIX = '/usr/local'

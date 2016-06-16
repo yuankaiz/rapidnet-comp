@@ -61,6 +61,7 @@ int main(int argc, char* argv[])
 		int minFanout = atoi(argv[3]);
 		int maxFanout = atoi(argv[4]);
 		generateTree(&nextNodeID,path,&pathList,level,minFanout,maxFanout);
+		cout<<"TOTAL NUMBER OF NODES : "<<nextNodeID<<endl;
 		list<string>::iterator iter = pathList.begin();
 		for(;iter!=pathList.end();iter++)
 			cout<<"URL "<<*iter<<endl;
