@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-norm-prov-comp-online-ete', ['internet-stack'])
+    module.source = [
+        'pktfwd-norm-prov-comp-online-ete.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-norm-prov-comp-online-ete'
+    headers.source = [
+        'pktfwd-norm-prov-comp-online-ete.h',
+        'pktfwd-norm-prov-comp-online-ete-helper.h',
+        ]

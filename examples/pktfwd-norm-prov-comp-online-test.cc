@@ -56,7 +56,7 @@
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
   attr("initPacket_attr3", Ipv4Value, dstadd),    \
-  attr("initPacket_attr4", StrValue, data))
+        attr("initPacket_attr4", StrValue, data))
 
 #define insert_packet(host, srcadd, dstadd, data)                            \
   app(host) -> Insert(initpacket(addr(host), addr(srcadd), addr(dstadd), data));

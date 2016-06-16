@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('dns', ['internet-stack'])
+    module.source = [
+        'dns.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'dns'
+    headers.source = [
+        'dns.h',
+        'dns-helper.h',
+        ]
