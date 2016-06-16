@@ -144,7 +144,7 @@ PktfwdNormProvEte::DemuxRecv (Ptr<Tuple> tuple)
     {
       Prov_rh1_1Eca0Ins (tuple);
     }
-  if (IsInsertEvent (tuple, LINKHR))
+  if (IsInsertEvent (tuple, LINK))
     {
       Prov_rh1_1Eca1Ins (tuple);
     }
@@ -460,9 +460,9 @@ PktfwdNormProvEte::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (LINKHR)->Join (
+  result = GetRelation (LINK)->Join (
     initPacket,
-    strlist ("linkhr_attr1"),
+    strlist ("link_attr1"),
     strlist ("initPacket_attr1"));
 
   result->Assign (Assignor::New ("PID2",
@@ -487,7 +487,7 @@ PktfwdNormProvEte::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
         Operation::New (RN_PLUS,
           ValueExpr::New (StrValue::New ("linkhr")),
           VarExpr::New ("initPacket_attr1")),
-        VarExpr::New ("linkhr_attr2")))));
+        VarExpr::New ("link_attr2")))));
 
   result->Assign (Assignor::New ("List3",
     FAppend::New (
@@ -515,7 +515,7 @@ PktfwdNormProvEte::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
-      "linkhr_attr2",
+      "link_attr2",
       "initPacket_attr2",
       "initPacket_attr3",
       "initPacket_attr4",
@@ -537,16 +537,16 @@ PktfwdNormProvEte::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
 }
 
 void
-PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> linkhr)
+PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> link)
 {
   RAPIDNET_LOG_INFO ("Prov_rh1_1Eca1Ins triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (INITPACKET)->Join (
-    linkhr,
+    link,
     strlist ("initPacket_attr1"),
-    strlist ("linkhr_attr1"));
+    strlist ("link_attr1"));
 
   result->Assign (Assignor::New ("PID2",
     FSha1::New (
@@ -555,7 +555,7 @@ PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> linkhr)
           Operation::New (RN_PLUS,
             Operation::New (RN_PLUS,
               ValueExpr::New (StrValue::New ("initPacket")),
-              VarExpr::New ("linkhr_attr1")),
+              VarExpr::New ("link_attr1")),
             VarExpr::New ("initPacket_attr2")),
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
@@ -569,8 +569,8 @@ PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> linkhr)
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           ValueExpr::New (StrValue::New ("linkhr")),
-          VarExpr::New ("linkhr_attr1")),
-        VarExpr::New ("linkhr_attr2")))));
+          VarExpr::New ("link_attr1")),
+        VarExpr::New ("link_attr2")))));
 
   result->Assign (Assignor::New ("List3",
     FAppend::New (
@@ -582,7 +582,7 @@ PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> linkhr)
       VarExpr::New ("List3"))));
 
   result->Assign (Assignor::New ("RLOC",
-    VarExpr::New ("linkhr_attr1")));
+    VarExpr::New ("link_attr1")));
 
   result->Assign (Assignor::New ("R",
     ValueExpr::New (StrValue::New ("rh1"))));
@@ -598,7 +598,7 @@ PktfwdNormProvEte::Prov_rh1_1Eca1Ins (Ptr<Tuple> linkhr)
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
-      "linkhr_attr2",
+      "link_attr2",
       "initPacket_attr2",
       "initPacket_attr3",
       "initPacket_attr4",

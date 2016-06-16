@@ -581,9 +581,9 @@ PktfwdNormProvCompOnlineEte::Prov_rh1_1_eca (Ptr<Tuple> initPacketCount)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (LINKHR)->Join (
+  result = GetRelation (LINK)->Join (
     initPacketCount,
-    strlist ("linkhr_attr1"),
+    strlist ("link_attr1"),
     strlist ("initPacketCount_attr1"));
 
   result->Assign (Assignor::New ("PIDev",
@@ -617,7 +617,7 @@ PktfwdNormProvCompOnlineEte::Prov_rh1_1_eca (Ptr<Tuple> initPacketCount)
         Operation::New (RN_PLUS,
           ValueExpr::New (StrValue::New ("linkhr")),
           VarExpr::New ("initPacketCount_attr1")),
-        VarExpr::New ("linkhr_attr2")))));
+        VarExpr::New ("link_attr2")))));
 
   result->Assign (Assignor::New ("List",
     FAppend::New (
@@ -645,7 +645,7 @@ PktfwdNormProvCompOnlineEte::Prov_rh1_1_eca (Ptr<Tuple> initPacketCount)
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
-      "linkhr_attr2",
+      "link_attr2",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",

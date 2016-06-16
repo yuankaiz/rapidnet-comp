@@ -65,7 +65,7 @@ prov_rs1_5 prov(@Next, VID, RID, RLOC) :-
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :-
     /*device(@Node, Dvtype),*/
     initPacket(@Node, SrcAdd, DstAdd, Data),
-    linkhr(@Node, Next),
+    link(@Node, Next),
     /*PID1 := f_sha1(("device"+ Host)+ Dvtype), 
 	   List := f_append(PID1),*/
     PID2 := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data),

@@ -92,7 +92,7 @@ rh103 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
 
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :- 
 	   initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
-	   linkhr(@Node, Next),
+	   link(@Node, Next),
 	   PIDcount == 0,
 	   PIDev := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data),
 	   Equilist := f_append(PIDequi),
