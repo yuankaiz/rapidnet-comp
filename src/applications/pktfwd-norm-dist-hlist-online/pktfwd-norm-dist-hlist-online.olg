@@ -16,7 +16,7 @@ materialize(ruleExec, infinity, infinity, keys(4:list)).
 materialize(provLink, infinity, infinity, keys()).
 materialize(equiHashTable,infinity,infinity,keys(2)). /*Hash table for equivalence detection*/
 materialize(provHashTable,infinity,infinity,keys(3:list)). /*Hash table for provenance query*/
-materialize(recvAuxPkt, infinity, infinity, keys(2:cid))./*Auxiliary table for received packets*/
+materialize(recvPacketProv, infinity, infinity, keys(2:cid))./*Provenance-queryable recv packet*/
 
 /* 'ID' is a keyword. Parse error on using id for type!
 The workaround is to call it cid or chord id. */
@@ -78,33 +78,34 @@ rs1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
         
 /*Host program*/
 /* Hash on equivalence attributes*/
-rh100 initPacketHash(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID) :-
+prov_ri1 initPacketHash(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID) :-
     initPacket(@Node, SrcAdd, DstAdd, Data),
     programID(@Node, DstAdd, ProgID),
     PIDequi := f_sha1("" + Node + DstAdd).
     
-rh101 initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, a_COUNT<*>) :-
+prov_ri2 initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, a_COUNT<*>) :-
     initPacketHash(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID),
     equiHashTable(@Node, DstAdd, PIDequi).
 
-rh102 equiHashTable(@Node, DstAdd, PIDequi) :-
+prov_ri3 equiHashTable(@Node, DstAdd, PIDequi) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
     PIDcount == 0.
 
 /* Execution of rh1 without provenance maintenance*/
-rh103 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
+rh1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
     link(@Node, Next),
     PIDev := f_sha1("initPacket" + Node + SrcAdd + DstAdd + Data),
     PIDcount != 0,
-/* Add program ID*/    
     PIDequiHash := f_append(PIDequi),
     PIDevHash := f_append(PIDev),
-    PIDHash := f_concat(PIDequiHash, PIDevHash).
+    ProgIDlist := f_append(ProgID),
+    PIDHash1 := f_concat(PIDequiHash, PIDevHash),
+    PIDHash := f_concat(PIDHash1, ProgIDlist).
 
 /* Execution of rh1 with provenance enabled*/
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :- 
-	   initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDcount),
+	   initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
 	   link(@Node, Next),
 	   PIDcount == 0,
 	   PID := f_sha1(("link"+ Node)+ Next), 
@@ -115,6 +116,7 @@ prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	   Equilist := f_append(PIDequi),
 	   PIDev := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data),
            Evlist := f_append(PIDev),
+	   ProgIDlist := f_append(ProgID),
 	   Count := 0,
 	   Countlist := f_append(Count),
 	   InitProvNode := RLOC,
@@ -124,7 +126,8 @@ prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 	   TempTag1 := f_concat(Countlist, InitProvNodelist),
 	   TempTag2 := f_concat(TempTag1, InitProvHashlist),
 	   TempTag3 := f_concat(TempTag2, Equilist),
-           Tag := f_concat(TempTag3, Evlist).	   
+           TempTag4 := f_concat(TempTag3, Evlist),
+	   Tag := f_concat(TempTag4, ProgIDlist).	   
 
 /*Receive a packet*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Node, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-  
@@ -169,8 +172,8 @@ prov_rh2_5 recvPacket(@Node, SrcAdd, DstAdd, Data, NewTag) :-
 
 
 /* Handle provenance information for the output recv tuple*/
-/* Create a tuple for provHashTable*/
-ro1 provHashTable(@Node, PIDequi, RLOC, RID, Count) :-
+/* Create a tuple in provHashTable. The tuple connects the output tuple to a provenance tree*/
+ro1 provHashTable(@Node, EquiHash, ProgID, Loc, RID, Count) :-
 	   recvPacket(@Node, SrcAdd, DstAdd, Data, Tag),
 	   Count := f_first(Tag),
 	   RemainTag1 := f_removeFirst(Tag),
@@ -178,29 +181,43 @@ ro1 provHashTable(@Node, PIDequi, RLOC, RID, Count) :-
 	   RemainTag2 := f_removeFirst(RemainTag1),
 	   RID := f_first(RemainTag2),
 	   RemainTag3 := f_removeFirst(RemainTag2),
-	   PID
+	   PIDequi := f_first(RemainTag3),
+	   RemainTag4 := f_removeFirst(RemainTag3),
+	   PIDev := f_first(RemainTag4),
+	   RemainTag5 := f_removeFirst(RemainTag4),
+	   ProgID := f_first(RemainTag5),
+	   EquiHash := f_sha1(ProgID, PIDequi).
 
+ro2 recvPacketProv(@Node, PID, EquiHash, PIDev) :-
+	   recvPacket(@Node, SrcAdd, DstAdd, Data, Tag),
+           PID := f_sha1("recvPacket" + Node + SrcAdd + DstAdd + Data),
+	   Count := f_first(Tag),
+	   RemainTag1 := f_removeFirst(Tag),
+	   Loc := f_first(RemainTag1),
+	   RemainTag2 := f_removeFirst(RemainTag1),
+	   RID := f_first(RemainTag2),
+	   RemainTag3 := f_removeFirst(RemainTag2),
+	   PIDequi := f_first(RemainTag3),
+	   RemainTag4 := f_removeFirst(RemainTag3),
+	   PIDev := f_first(RemainTag4),
+	   RemainTag5 := f_removeFirst(RemainTag4),
+	   ProgID := f_first(RemainTag5),
+	   EquiHash := f_sha1(ProgID, PIDequi).
 
-ro2 recvPacketDecomp(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist) :-
-	   recvPacketTemp(@Node, SrcAdd, DstAdd, Data, Tag),
-	   PIDequi := f_first(Tag),
-	   Remainlist := f_removeFirst(Tag),
-	   PIDev := f_first(Remainlist),
-	   Hashlist := f_removeFirst(Remainlist).
-
-	   recvPacketDecomp(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist).
-
-ro4 recvPacket(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev) :- 
-	   recvPacketDecomp(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev, Hashlist).	
 
 /* Execution of original rh2*/
-rh2 recvPacket(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev) :-
+rh2 recvPacket(@Node, SrcAdd, DstAdd, Data, PIDHash) :-
 	packet(@Node, SrcAdd, DstAdd, Data, PIDHash),
-	PIDequi := f_first(PIDHash),
-	PIDevHash := f_removeFirst(PIDHash),
-	PIDev := f_first(PIDevHash),
 	DstAdd == Node.
 
-rh3 recvAuxPkt(@Node, PID, PIDequi, PIDev) :-
-        recvPacket(@Node, SrcAdd, DstAdd, Data, PIDequi, PIDev),
-        PID := f_sha1("recvPacket" + Node + SrcAdd + DstAdd + Data).	
+rh2 recvPacketProv(@Node, PID, EquiHash, PIDev) :-
+	recvPacket(@Node, SrcAdd, DstAdd, Data, PIDHash),
+	DstAdd == Node,
+        PID := f_sha1("recvPacket" + Node + SrcAdd + DstAdd + Data),
+	PIDequi := f_first(PIDHash),
+	PIDHash1 := f_removeFirst(PIDHash),
+	PIDev := f_first(PIDHash1),
+	PIDHash2 := f_removeFirst(PIDHash1),
+	ProgID := f_first(PIDHash2),
+	EquiHash := f_sha1(ProgID, PIDequi).
+
