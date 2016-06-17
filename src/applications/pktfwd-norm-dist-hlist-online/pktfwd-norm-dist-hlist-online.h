@@ -110,9 +110,9 @@ protected:
 
   virtual void Rh2_eca (Ptr<Tuple> packet);
 
-  virtual void Rh2Eca0Ins (Ptr<Tuple> recvPacket);
+  virtual void Rho3Eca0Ins (Ptr<Tuple> recvPacket);
 
-  virtual void Rh2Eca0Del (Ptr<Tuple> recvPacket);
+  virtual void Rho3Eca0Del (Ptr<Tuple> recvPacket);
 
 };
 
