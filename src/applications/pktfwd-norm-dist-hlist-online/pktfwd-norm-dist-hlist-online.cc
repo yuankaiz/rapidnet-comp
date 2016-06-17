@@ -109,7 +109,12 @@ PktfwdNormDistHlistOnline::InitDatabase ()
   AddRelationWithKeys (PROVHASHTABLE, attrdeflist (
     attrdef ("provHashTable_attr3", LIST)));
 
-  AddRelationWithKeys (PROVLINK, attrdeflist ();
+  AddRelationWithKeys (PROVLINK, attrdeflist (
+    attrdef ("provLink_attr2", ID),
+    attrdef ("provLink_attr3", INT32),
+    attrdef ("provLink_attr4", IPV4),
+    attrdef ("provLink_attr5", ID),
+    attrdef ("provLink_attr6", INT32)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
     attrdef ("recvPacket_attr2", IPV4),
@@ -120,7 +125,7 @@ PktfwdNormDistHlistOnline::InitDatabase ()
     attrdef ("recvPacketProv_attr2", ID)));
 
   AddRelationWithKeys (RULEEXEC, attrdeflist (
-    attrdef ("ruleExec_attr4", LIST)));
+    attrdef ("ruleExec_attr2", ID)));
 
 }
 
@@ -219,11 +224,11 @@ PktfwdNormDistHlistOnline::DemuxRecv (Ptr<Tuple> tuple)
     }
   if (IsInsertEvent (tuple, RECVPACKET))
     {
-      Rh2Eca0Ins (tuple);
+      Rho3Eca0Ins (tuple);
     }
   if (IsDeleteEvent (tuple, RECVPACKET))
     {
-      Rh2Eca0Del (tuple);
+      Rho3Eca0Del (tuple);
     }
 }
 
@@ -1457,9 +1462,9 @@ PktfwdNormDistHlistOnline::Rh2_eca (Ptr<Tuple> packet)
 }
 
 void
-PktfwdNormDistHlistOnline::Rh2Eca0Ins (Ptr<Tuple> recvPacket)
+PktfwdNormDistHlistOnline::Rho3Eca0Ins (Ptr<Tuple> recvPacket)
 {
-  RAPIDNET_LOG_INFO ("Rh2Eca0Ins triggered");
+  RAPIDNET_LOG_INFO ("Rho3Eca0Ins triggered");
 
   Ptr<Tuple> result = recvPacket;
 
@@ -1520,9 +1525,9 @@ PktfwdNormDistHlistOnline::Rh2Eca0Ins (Ptr<Tuple> recvPacket)
 }
 
 void
-PktfwdNormDistHlistOnline::Rh2Eca0Del (Ptr<Tuple> recvPacket)
+PktfwdNormDistHlistOnline::Rho3Eca0Del (Ptr<Tuple> recvPacket)
 {
-  RAPIDNET_LOG_INFO ("Rh2Eca0Del triggered");
+  RAPIDNET_LOG_INFO ("Rho3Eca0Del triggered");
 
   Ptr<Tuple> result = recvPacket;
 

@@ -12,8 +12,8 @@ materialize(flowEntry,infinity,infinity,keys(2)). /*Links between routers and ot
 materialize(programID,infinity,infinity,keys(2)). /*Allow the user to specify program ID*/
 
 /* Provenance tables*/
-materialize(ruleExec, infinity, infinity, keys(4:list)).
-materialize(provLink, infinity, infinity, keys()).
+materialize(ruleExec, infinity, infinity, keys(2:cid)).
+materialize(provLink, infinity, infinity, keys(2:cid,3:int32,4,5:cid,6:int32)).
 materialize(equiHashTable,infinity,infinity,keys(2)). /*Hash table for equivalence detection*/
 materialize(provHashTable,infinity,infinity,keys(3:list)). /*Hash table for provenance query*/
 materialize(recvPacketProv, infinity, infinity, keys(2:cid))./*Provenance-queryable recv packet*/
@@ -25,7 +25,7 @@ The workaround is to call it cid or chord id. */
 
 
 /*Switch program*/
-/*A hit in the routing table, forward the packet accordingly*/
+/* Execution of rs1 with provenance enabled*/
 prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
     packetProv(@Node, SrcAdd, DstAdd, Data, Tag),
     flowEntry(@Node, DstAdd, Next),
@@ -47,6 +47,7 @@ prov_rs1_3 ruleExec(@RLOC, RID, R, List) :-
     epacketCount(@RLOC, RID, R, List, Rcount),
     Rcount == 0.
 
+/* Update provLink, which associates the current RID with the RID of the previous rule.*/
 prov_rs1_4 provLink(@RLOC, RID, CurCount, Preloc, PreRID, PreCount) :-
     epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag),
     PreCount := f_first(Tag),
@@ -70,14 +71,15 @@ prov_rs1_5 packetProv(@Next, SrcAdd, DstAdd, Data, NewTag) :-
     TempNewTag5 := f_concat(Loclist, TempNewTag4),
     NewTag := f_concat(NewCountlist, TempNewTag5).
 
-/* Rules for normal execution without provenance */
+/* Execution for original rs1*/
 rs1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
         packet(@Node, SrcAdd, DstAdd, Data, PIDHash),
  flowEntry(@Node, DstAdd, Next),
  link(@Node, Next).
 
 /*Host program*/
-/* Hash on equivalence attributes*/
+/* prov_ri1 to prov_ri3 hashes on equivalence-class identifier,*/
+/* and check whether the hash value "PIDequi" exists in the hash set "equiHashTable"*/
 prov_ri1 initPacketHash(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID) :-
     initPacket(@Node, SrcAdd, DstAdd, Data),
     programID(@Node, DstAdd, ProgID),
@@ -91,7 +93,7 @@ prov_ri3 equiHashTable(@Node, DstAdd, PIDequi) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
     PIDcount == 0.
 
-/* Execution of rh1 without provenance maintenance*/
+/* Execution of original rh1*/
 rh1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
     link(@Node, Next),
@@ -129,7 +131,7 @@ prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
            TempTag4 := f_concat(TempTag3, Evlist),
     Tag := f_concat(TempTag4, ProgIDlist).
 
-/*Receive a packet*/
+/* Receive a packet with provenance maintenance enabled*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Node, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
     packetProv(@Node, SrcAdd, DstAdd, Data, Tag),
     DstAdd == Node,
@@ -210,7 +212,7 @@ rh2 recvPacket(@Node, SrcAdd, DstAdd, Data, PIDHash) :-
  packet(@Node, SrcAdd, DstAdd, Data, PIDHash),
  DstAdd == Node.
 
-rh2 recvPacketProv(@Node, PID, EquiHash, PIDev) :-
+rho3 recvPacketProv(@Node, PID, EquiHash, PIDev) :-
  recvPacket(@Node, SrcAdd, DstAdd, Data, PIDHash),
  DstAdd == Node,
         PID := f_sha1("recvPacket" + Node + SrcAdd + DstAdd + Data),
