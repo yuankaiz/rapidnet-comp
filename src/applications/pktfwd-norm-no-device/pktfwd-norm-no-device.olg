@@ -20,3 +20,4 @@ rh2 recvPacket(@Node, SrcAdd, DstAdd, Data) :-
 	packet(@Node, SrcAdd, DstAdd, Data),
 	DstAdd == Node.
 
+

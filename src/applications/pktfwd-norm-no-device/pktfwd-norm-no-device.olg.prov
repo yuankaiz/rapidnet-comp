@@ -41,3 +41,4 @@ rv6 provQuery(@X, NNQID, VID, $1) :- $1 := X, eProvQuery(@X, NNQID, VID).
 rv7 rResultTmp(@X, NQID, Ret, RID, Buf) :- pReturn(@X, NNQID, VID, Prov), rResultTmp(@X, NQID, Ret, RID, Buf1), NNQID == f_sha1((+ NQID)+ VID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
 rv8 eRReturn(@X, NQID) :- rResultTmp(@X, NQID, Ret, RID, Buf), rQList(@X, NQID, List), f_size(Buf) == f_size(List).
 rv9 rReturn(@Ret, NQID, RID, Prov) :- eRReturn(@X, NQID), rResultTmp(@X, NQID, Ret, RID, Buf), ruleExec(@X, RID, R, List), Prov := f_pRULE(Buf, X, R).
+

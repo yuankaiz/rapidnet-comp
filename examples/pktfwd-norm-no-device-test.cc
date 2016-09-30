@@ -18,13 +18,14 @@
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
 #include "ns3/pktfwd-norm-no-device-module.h"
+#include "ns3/pktfwd-norm-nodev-provquery-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
 
 /* Links connecting network devices*/
 #define link(sw, nei)\
-  tuple(PktfwdNorm::LINK,\
+  tuple(PktfwdNormNoDevice::LINK,\
   attr("link_attr1", Ipv4Value, sw),  \
   attr("link_attr2", Ipv4Value, nei))
 
@@ -33,7 +34,7 @@
 
 /* Input packets */
 #define initpacket(host, srcadd, dstadd, data)         \
-  tuple(PktfwdNorm::INITPACKET,\
+  tuple(PktfwdNormNoDevice::INITPACKET,\
   attr("initPacket_attr1", Ipv4Value, host),  \
   attr("initPacket_attr2", Ipv4Value, srcadd), \
   attr("initPacket_attr3", Ipv4Value, dstadd), \
@@ -44,27 +45,45 @@
 
 /* flow entry */
 #define flowentry(sw, dst, next)		\
-  tuple(PktfwdNorm::FLOWENTRY,\
+  tuple(PktfwdNormNoDevice::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", Ipv4Value, dst),         \
 	attr("flowEntry_attr3", Ipv4Value, next))
 
 #define insert_flowentry(sw, dst, next)				\
-  app(sw) -> Insert(flowentry(addr(sw), addr(dst), addr(next)))
+  app(sw) -> Insert(flowentry(addr(sw), addr(dst), addr(next)));
 
+/* Tuple to query*/
+#define queryTuple(ret, name, loc, src, dst, data) \
+  tuple(PktfwdNormNodevProvquery::TUPLE,\
+  attr("tuple_attr1", Ipv4Value, ret),  \
+  attr("tuple_attr2", StrValue, name),  \
+  attr("tuple_attr3", Ipv4Value, loc), \
+  attr("tuple_attr4", Ipv4Value, src), \
+  attr("tuple_attr5", Ipv4Value, dst),\
+  attr("tuple_attr6", StrValue, data))
+
+
+#define insert_queryTuple(name, loc, src, dst, data) \
+  qnode->Insert(queryTuple(qnode->GetAddress(), name, addr(loc), addr(src), addr(dst), data));
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::pktfwdnormnodevice;
+using namespace ns3::rapidnet::pktfwdnormnodevprovquery;
 
 ApplicationContainer apps;
+ApplicationContainer queryApps;
 
 void Print ()
 {
-  PrintRelation (apps, PktfwdNorm::RECVPACKET);
-}
+  PrintRelation (apps, PktfwdNormNoDevice::RECVPACKET);
+  PrintRelation (apps, PktfwdNormNoDevice::PROV);
+  PrintRelation (apps, PktfwdNormNoDevice::RULEEXEC);
 
+  PrintRelation (queryApps, PktfwdNormNodevProvquery::RECORDS);
+}
 
 /*
  * Topology: 
@@ -83,37 +102,71 @@ void BuildTopology()
 void SetupFlowTable()
 {
   /* Set up the flow entry for switch 5*/
-  insert_flowentry(5, 4, 6);
-  insert_flowentry(5, 3, 6);
-  insert_flowentry(5, 1, 6);
-
-  /* Set up the flow entry for switch 6*/
-  insert_flowentry(6, 3, 3);
-  insert_flowentry(6, 4, 4);
-  insert_flowentry(6, 1, 5);
+  insert_flowentry(1, 3, 2);
+  insert_flowentry(2, 3, 3);
 }
 
 void PacketInsertion()
 {
-  insert_packet(1, 1, 4, "data");
+  insert_packet(1, 1, 3, "data");
+}
+
+void QueryInsertion()
+{
+  Ptr<RapidNetApplicationBase> qnode = queryApps(0)->GetObject<RapidNetApplicationBase>();
+  insert_queryTuple("recvPacket", 1, 1, 3, "data");
+}
+
+void initApps(int nodeNum)
+{
+  NodeContainer mainNodes;
+  NodeContainer queryNode;
+
+  mainNodes.Create(3);
+  queryNode.Create(1);
+
+  CsmaHelper csma;
+  
+  NetDeviceContainer csmaNodes;
+  csmaNodes.Add(mainNodes);
+  csmaNodes.Add(queryNode);
+  csmaDevices = csma.Install(csmaNodes);
+
+  InternetStackHelper stack;
+  stack.Install(csmaNodes);
+
+  Ipv4AddressHelper address;
+  Ipv4Address base = "10.1.1.0";
+
+  address.SetBase(base, "255.255.255.0");
+  address.Assign(csmaDevices);
+
+  apps.Add(Create<PktfwdNormNoDeviceHelper>()->Install(mainNodes));
+  queryApps.Add(Create<Pkt>(PktfwdNormNodevProvqueryHelper)->Install(queryNode));
+
+  SetMaxJitter (apps, 0.001);
+  SetMaxJitter (queryNode, 0.001);
 }
 
 int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("PktfwdNorm", LOG_LEVEL_INFO);
+  LogComponentEnable("PktfwdNormNoDevice", LOG_LEVEL_INFO);
+  LogComponentEnable("PktfwdNormNodevProvquery", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
-  int nodeNum = 6;
-  apps = InitRapidNetApps (nodeNum, Create<PktfwdNormHelper> ());
+  int nodeNum = 3;
+  initApps();
 
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (500.0));
+  queryApps.Start (Seconds(0.0));
+  queryApps.Stop (Seconds (500.0));
 
   schedule (0.0001, BuildTopology);
-  schedule (0.0010, SetupDevices);
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, PacketInsertion);
+  schedule (400.0000, QueryInsertion);
   schedule (499.0000, Print);
 
   Simulator::Run ();
