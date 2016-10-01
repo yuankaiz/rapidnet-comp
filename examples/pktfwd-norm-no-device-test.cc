@@ -113,23 +113,25 @@ void PacketInsertion()
 
 void QueryInsertion()
 {
-  Ptr<RapidNetApplicationBase> qnode = queryApps(0)->GetObject<RapidNetApplicationBase>();
-  insert_queryTuple("recvPacket", 1, 1, 3, "data");
+  Ptr<RapidNetApplicationBase> qnode = queryApps.Get(0)->GetObject<RapidNetApplicationBase>();
+  insert_queryTuple("recvPacket", 3, 1, 3, "data");
 }
 
-void initApps(int nodeNum)
+void InitApps(int nodeNum)
 {
   NodeContainer mainNodes;
   NodeContainer queryNode;
 
-  mainNodes.Create(3);
+  mainNodes.Create(nodeNum);
   queryNode.Create(1);
 
-  CsmaHelper csma;
-  
-  NetDeviceContainer csmaNodes;
+  NodeContainer csmaNodes;
   csmaNodes.Add(mainNodes);
   csmaNodes.Add(queryNode);
+
+  CsmaHelper csma;
+
+  NetDeviceContainer csmaDevices;
   csmaDevices = csma.Install(csmaNodes);
 
   InternetStackHelper stack;
@@ -142,10 +144,10 @@ void initApps(int nodeNum)
   address.Assign(csmaDevices);
 
   apps.Add(Create<PktfwdNormNoDeviceHelper>()->Install(mainNodes));
-  queryApps.Add(Create<Pkt>(PktfwdNormNodevProvqueryHelper)->Install(queryNode));
+  queryApps.Add(Create<PktfwdNormNodevProvqueryHelper>()->Install(queryNode));
 
   SetMaxJitter (apps, 0.001);
-  SetMaxJitter (queryNode, 0.001);
+  SetMaxJitter (queryApps, 0.001);
 }
 
 int
@@ -156,7 +158,7 @@ main (int argc, char *argv[])
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
   int nodeNum = 3;
-  initApps();
+  InitApps(nodeNum);
 
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (500.0));
