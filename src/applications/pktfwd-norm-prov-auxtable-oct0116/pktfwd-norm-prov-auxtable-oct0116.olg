@@ -1,16 +1,21 @@
+/* This program only maintains auxiliary tables for provenance of tuples,*/
+/* but not those of rules.*/
+
+/* Implementation detail: Each prov table is auxmented with a provStr table,*/
+/*                        which stores the tuple of VID in the form of a list,*/
+/*                        for future provenance queries.*/
+
 /*Materialized table*/
 materialize(initPacket,infinity,infinity,keys(2,3,4:str)). /*Input packets at hosts*/
 materialize(recvPacket,infinity,infinity,keys(2,3,4:str)). /*Received packets at hosts*/
-materialize(linkhr,infinity,infinity,keys(2)). /*Links between hosts and routers*/
-materialize(link,infinity,infinity,keys(2)). /*Links between routers and other devices*/
+materialize(link,infinity,infinity,keys(2)). /*Links between network devices*/
 materialize(flowEntry,infinity,infinity,keys(2)). /*Links between routers and other devices*/
-/*materialize(device,infinity,infinity,keys(2:int32)).Identify the device type of the node*/
 
 /* Provenance tables*/
 materialize(ruleExec, infinity, infinity, keys(4:list)).
+materialize(prov, infinity, infinity, keys(2:cid,3:cid)).
+materialize(provStr, infinity, infinity, keys(2:cid)).
 
-#define SWITCH 0
-#define HOST 1
 
 /* Edb provenance rules*/
 r00 prov(@Node, VID, RID, Node) :-
@@ -18,26 +23,55 @@ r00 prov(@Node, VID, RID, Node) :-
     VID := f_sha1("initPacket" + Node + SrcAdd + DstAdd + Data),
     RID := VID.
 
-/*r01 prov(@Device, VID, RID, Device) :-
-    device(@Device, Dvtype),
-    VID := f_sha1("device" + Device + Dvtype),
-    RID := VID.*/
+prov_r00 provStr(@Node, VID, TpStrList) :-
+	   initPacket(@Node, SrcAdd, DstAdd, Data),
+	   VID := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data),
+	   TpStrList1 := f_append("initPacket"),
+	   TpStrList2 := f_append(Node),
+	   TpStrList3 := f_concat(TpStrList1, TpStrList2),
+	   TpStrList4 := f_append(SrcAdd),
+	   TpStrList5 := f_concat(TpStrList3, TpStrList4),
+	   TpStrList6 := f_append(DstAdd),
+	   TpStrList7 := f_concat(TpStrList5, TpStrList6),
+	   TpStrList8 := f_append(Data),
+	   TpStrList := f_concat(TpStrList7, TpStrList8).
 
-r02 prov(@Node, VID, RID, Node) :-
+
+r01 prov(@Node, VID, RID, Node) :-
     link(@Node, Next),
     VID := f_sha1("link" + Node + Next),
     RID := VID.
+
+prov_r01 provStr(@Node, VID, TpStrList) :-
+	   link(@Node, Next),
+	   VID := f_sha1(("link"+ Node)+ Next),
+	   TpStrList1 := f_append("link"),
+	   TpStrList2 := f_append(Node),
+	   TpStrList3 := f_concat(TpStrList1, TpStrList2),
+	   TpStrList4 := f_append(Next),
+	   TpStrList := f_concat(TpStrList3, TpStrList4).
+
 
 r03 prov(@Node, VID, RID, Node) :-
     flowEntry(@Node, DstEntry, Next),
     VID := f_sha1("flowEntry" + Node + DstEntry + Next),
     RID := VID.
 
+prov_r03 provStr(@Node, VID, TpStrList) :-
+	   flowEntry(@Node, DstEntry, Next),
+	   VID := f_sha1((("flowEntry"+ Node)+ DstEntry)+ Next),
+	   TpStrList1 := f_append("flowEntry"),
+	   TpStrList2 := f_append(Node),
+	   TpStrList3 := f_concat(TpStrList1, TpStrList2),
+	   TpStrList4 := f_append(DstEntry),
+	   TpStrList5 := f_concat(TpStrList3, TpStrList4),
+	   TpStrList6 := f_append(Next),
+	   TpStrList := f_concat(TpStrList5, TpStrList6).
 
-/*Switch program*/
+/* Main program*/
+
 /*A hit in the routing table, forward the packet accordingly*/
 prov_rs1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :- 
-	   /*device(@Switch, Dvtype),*/ 
 	   packet(@Node, SrcAdd, DstAdd, Data), 
 	   flowEntry(@Node, DstAdd, Next), 
 	   link(@Node, Next), 
@@ -66,35 +100,38 @@ prov_rs1_5 prov(@Next, VID, RID, RLOC) :-
 	   epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC), 
 	   VID := f_sha1(((("packet"+ Next)+ SrcAdd)+ DstAdd)+ Data).
 
-/*Host program*/
+prov_rs1_6 provStr(@Next, VID, TpStrList) :-
+	   epacket(@Next, SrcAdd, DstAdd, Data, RID, RLOC), 
+	   VID := f_sha1(((("packet"+ Next)+ SrcAdd)+ DstAdd)+ Data),
+	   TpStrList1 := f_append("packet"),
+	   TpStrList2 := f_append(Next),
+	   TpStrList3 := f_concat(TpStrList1, TpStrList2),
+	   TpStrList4 := f_append(SrcAdd),
+	   TpStrList5 := f_concat(TpStrList3, TpStrList4),
+	   TpStrList6 := f_append(DstAdd),
+	   TpStrList7 := f_concat(TpStrList5, TpStrList6),
+	   TpStrList8 := f_append(Data),
+	   TpStrList := f_concat(TpStrList7, TpStrList8).
+ 
+/*Packet initialization*/
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :- 
-	   /*device(@Node, Dvtype),*/ 
 	   initPacket(@Node, SrcAdd, DstAdd, Data), 
 	   link(@Node, Next), 
-	   /*PID1 := f_sha1(("device"+ Host)+ Dvtype), 
-	   List := f_append(PID1),*/ 
 	   PID2 := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data), 
 	   List := f_append(PID2), 
-	   /*List := f_concat(List, List2),*/ 
-	   PID3 := f_sha1(("linkhr"+ Node)+ Next), 
+	   PID3 := f_sha1(("link"+ Node)+ Next), 
 	   List3 := f_append(PID3), 
 	   List := f_concat(List, List3), 
-	   /*Dvtype == HOST,*/ 
 	   RLOC := Node, 
 	   R := "rh1", 
 	   RID := f_sha1((R+ RLOC)+ List).
 
 /*Receive a packet*/
 prov_rh2_1 erecvPacketTemp(@RLOC, Node, SrcAdd, DstAdd, Data, RID, R, List) :- 
-	   /*device(@Host, Dvtype),*/ 
 	   packet(@Node, SrcAdd, DstAdd, Data), 
 	   DstAdd == Node, 
-	   /*Dvtype == HOST, 
-	   PID1 := f_sha1(("device"+ Host)+ Dvtype), 
-	   List := f_append(PID1), */
 	   PID2 := f_sha1(((("packet"+ Node)+ SrcAdd)+ DstAdd)+ Data), 
 	   List := f_append(PID2), 
-	   /*List := f_concat(List, List2),*/ 
 	   RLOC := Node, 
 	   R := "rh2", 
 	   RID := f_sha1((R+ RLOC)+ List).
@@ -111,3 +148,16 @@ prov_rh2_4 recvPacket(@Node, SrcAdd, DstAdd, Data) :-
 prov_rh2_5 prov(@Node, VID, RID, RLOC) :- 
 	   erecvPacket(@Node, SrcAdd, DstAdd, Data, RID, RLOC), 
 	   VID := f_sha1(((("recvPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data).
+
+prov_rh2_6 provStr(@Node, VID, TpStrList) :-
+	   erecvPacket(@Node, SrcAdd, DstAdd, Data, RID, RLOC), 
+	   VID := f_sha1(((("recvPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data),
+	   TpStrList1 := f_append("recvPacket"),
+	   TpStrList2 := f_append(Node),
+	   TpStrList3 := f_concat(TpStrList1, TpStrList2),
+	   TpStrList4 := f_append(SrcAdd),
+	   TpStrList5 := f_concat(TpStrList3, TpStrList4),
+	   TpStrList6 := f_append(DstAdd),
+	   TpStrList7 := f_concat(TpStrList5, TpStrList6),
+	   TpStrList8 := f_append(Data),
+	   TpStrList := f_concat(TpStrList7, TpStrList8).

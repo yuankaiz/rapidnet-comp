@@ -316,3 +316,15 @@ def build(bld):
 
     obj = bld.create_ns3_program('pktfwd-norm-no-device-test')
     obj.source = 'pktfwd-norm-no-device-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-prov-oct0116-test')
+    obj.source = 'pktfwd-norm-prov-oct0116-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-prov-query-oct0116-test')
+    obj.source = 'pktfwd-norm-prov-query-oct0116-test.cc'
+
+    obj = bld.create_ns3_program('id-equi-test-test')
+    obj.source = 'id-equi-test-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-prov-auxtable-oct0116-test')
+    obj.source = 'pktfwd-norm-prov-auxtable-oct0116-test.cc'
