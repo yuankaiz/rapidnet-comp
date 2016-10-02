@@ -99,6 +99,11 @@ all_modules = (
     'applications/pktfwd-norm-bdfair-prov-comp-online',
     'applications/pktfwd-norm-no-device',
     'applications/pktfwd-norm-nodev-provquery',
+    'applications/pktfwd-norm-prov-oct0116',
+    'applications/pktfwd-norm-prov-query-oct0116',
+    'applications/pktfwd-norm-prov-provquery-oct0116',
+    'applications/id-equi-test',
+    'applications/pktfwd-norm-prov-auxtable-oct0116',
     )
 
 def set_options(opt):
