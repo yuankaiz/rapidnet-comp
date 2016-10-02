@@ -23,9 +23,14 @@ r00 prov(@Node, VID, RID, Node) :-
     VID := f_sha1("device" + Device + Dvtype),
     RID := VID.*/
 
+r02 prov(@Node, VID, RID, Node) :-
+    link(@Node, Next),
+    VID := f_sha1("link" + Node + Next),
+    RID := VID.
+
 r03 prov(@Node, VID, RID, Node) :-
     flowEntry(@Node, DstEntry, Next),
-    VID := f_sha1("Node" + DstEntry + Next),
+    VID := f_sha1("flowEntry" + Node + DstEntry + Next),
     RID := VID.
 
 
