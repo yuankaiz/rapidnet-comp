@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-norm-prov-ruleauxtable', ['internet-stack'])
+    module.source = [
+        'pktfwd-norm-prov-ruleauxtable.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-norm-prov-ruleauxtable'
+    headers.source = [
+        'pktfwd-norm-prov-ruleauxtable.h',
+        'pktfwd-norm-prov-ruleauxtable-helper.h',
+        ]

@@ -104,6 +104,8 @@ all_modules = (
     'applications/pktfwd-norm-prov-provquery-oct0116',
     'applications/id-equi-test',
     'applications/pktfwd-norm-prov-auxtable-oct0116',
+    'applications/pktfwd-norm-prov-auxtable-query',
+    'applications/pktfwd-norm-prov-ruleauxtable',
     )
 
 def set_options(opt):
