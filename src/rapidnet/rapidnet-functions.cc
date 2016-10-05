@@ -650,10 +650,10 @@ FPRule::New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rul
   retval->m_rule = rule;
 
   return retval;
-}
+  }
 
 
-
+/* ************************************************************** */
 
 Ptr<Value>
 FSign::Eval(Ptr<Tuple> tuple)
@@ -1163,7 +1163,7 @@ FStrLength::New (Ptr<Expression> str, Ptr<RapidNetApplicationBase> app)
 
 /* ************************************************************** */
 
-/* Re-implement the FPEdb, FPIdb and FPRule functions*/
+/* Re-implement the FPEdb and FPRule functions*/
 /* The new implementation returns concrete tuple information in the provenance*/
 
 Ptr<Value>
@@ -1173,6 +1173,7 @@ FPEdb::Eval(Ptr<Tuple> tuple)
 
   ostringstream tupleStr;
   bool predName = true;
+  tupleStr << "(";
   for (rn_list_iterator it = provList.begin();it != provList.end(); it++)
     {
       tupleStr << (*it);
@@ -1187,7 +1188,190 @@ FPEdb::Eval(Ptr<Tuple> tuple)
         }
     }
   tupleStr << ")";
+  tupleStr << ")";
 
   return StrValue::New (tupleStr.str());
 }
 
+/* Find the value for var in provList*/
+string
+FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
+{
+  // Find the first appearance of var in the rule body
+  size_t pos_first_var = rbody.find(var);
+  if (pos_first_var == string::npos)
+    {
+      return "";
+    }
+
+  // Find the name of the rule body that contains var
+  size_t pos_body_leftpar = rbody.rfind("(", pos_first_var);
+  size_t pos_rel_delimiter = rbody.rfind(",", pos_body_leftpar);
+  size_t pos_body_rel = 0;
+  if (pos_rel_delimiter != string::npos)
+    {
+      pos_body_rel = pos_rel_delimiter + 1;
+    }
+  size_t body_name_length = pos_body_leftpar - pos_body_rel;
+  string body_name = rbody.substr(pos_body_rel, body_name_length);
+  
+  // Find the corresponding body tuple in the provList
+  // Here we assume there is no redundant body tuple
+  string body_tuple;
+  size_t pos_body_tuple = 0;
+  rn_list_iterator it;
+  for (it = provList.begin(); it != provList.end(); it++)
+    {
+      body_tuple = (*it)->ToString ();
+      pos_body_tuple = body_tuple.find(body_name);
+      if (pos_body_tuple != string::npos)
+        {
+          break;
+        }
+    }
+  if (it == provList.end())
+    {
+      return "";
+    }
+
+  // Find the position of value in the body tuple corresponding to var
+  size_t pos_btuple_left_paren = body_tuple.find("(");
+  size_t pos_comma = rbody.find(",");
+  size_t pos_value = 0;
+  size_t value_length = 0;
+  if (pos_comma == string::npos)
+    {
+      //The body relation has only one attribute
+      size_t pos_btuple_right_paren = body_tuple.find(")", pos_btuple_left_paren);
+      value_length = pos_btuple_right_paren - pos_btuple_left_paren - 1;
+      pos_value = pos_btuple_left_paren + 1;
+    }
+  else
+    {
+      size_t pos_last_comma = pos_btuple_left_paren;
+      while (pos_comma < pos_first_var && pos_comma != string::npos)
+        {
+          pos_last_comma = pos_comma;
+          pos_comma = rbody.find(",", pos_comma);
+        }
+      if (pos_comma == string::npos)
+        {
+          return "";
+        }
+      
+      value_length = pos_comma - pos_last_comma  - 1;
+      pos_value = pos_last_comma + 1;
+    }
+
+  string value = body_tuple.substr(pos_value, value_length);
+  return value;
+}
+
+/* Symbolically execute the rule to derive the head tuple in string*/
+/* Currently we assume all head attributes take values from body relations*/
+string 
+DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& provList)
+{
+  //cout << "DeriveSymbolicHead" << endl;
+  ostringstream htuple_stream;
+
+  // Construct the name of the head tuple
+  size_t pos_left_paren = rhead.find("(");
+  string head_name = rhead.substr(0, pos_left_paren);
+  htuple_stream << head_name << "(";
+  
+  /* Fetch variables of the head relation one by one.
+   For each variable var, find the corresponding variable var'
+   in the body relation (or atom).
+   Follow var' in the body relation to its concrete value v
+   in the body tuple, and assign v to var in the head.*/
+
+  size_t pos_first_comma = rhead.find(",");
+  string first_var;
+  size_t pos_right_paren;
+  if (pos_first_comma == string::npos)
+    {
+      // The head relation has only one attribute
+      pos_right_paren = rhead.find(")");
+      size_t var_length = pos_right_paren - pos_left_paren - 1;
+      first_var = rhead.substr(pos_left_paren+1, var_length);
+    }
+  else
+    {
+      size_t var_length = pos_first_comma - pos_left_paren - 1;
+      first_var = rhead.substr(pos_left_paren+1, var_length);
+    }
+
+  string var_value = FetchVarValue(first_var, rbody, provList);
+  htuple_stream << var_value;
+
+  size_t pos_last_comma = pos_left_paren;
+  size_t pos_comma = pos_first_comma;
+  string var;
+  while (pos_comma != string::npos)
+    {
+      size_t var_length = pos_comma - pos_last_comma - 1;
+      var = rhead.substr(pos_last_comma+1, var_length);
+      var_value = FetchVarValue(var, rbody, provList);
+      htuple_stream << var_value;
+
+      pos_last_comma = pos_comma;
+      pos_comma = rhead.find(",", pos_comma);
+    }
+  // The last variable
+  size_t var_length = pos_right_paren - pos_last_comma - 1;
+  var = rhead.substr(pos_last_comma+1, var_length);
+  var_value = FetchVarValue(var, rbody, provList);
+  htuple_stream << var_value;
+  
+  htuple_stream << ")";
+  return htuple_stream.str();
+}
+
+Ptr<Value>
+FPRuleItm::Eval(Ptr<Tuple> tuple)
+{
+  list<Ptr<Value> > provList = rn_list (m_provList->Eval (tuple));
+
+  stringstream ss;
+
+  string rule = m_rule->Eval (tuple)->ToString ();
+
+  string rhead = m_head->Eval (tuple)->ToString ();
+
+  string rbody = m_body->Eval (tuple)->ToString ();
+
+  string headTuple = DeriveSymbolicHead(rule, rhead, rbody, provList);
+
+  ss << "(" << headTuple << "<-";
+
+  uint32_t ipaddr = (rn_ipv4 (m_rloc->Eval (tuple))).Get ();
+  ipaddr = (ipaddr / 256) % 65536;
+  ss << rule << "@n" << ipaddr << "(";
+
+    int index = 0;
+
+    for (rn_list_iterator it = provList.begin (); it != provList.end (); it++)
+    {
+      if (index++!=0) ss << "*";
+      ss << (*it)->ToString ();
+    }
+
+    ss << ")";
+    ss << ")";
+
+return StrValue::New (ss.str ());
+}
+
+Ptr<FunctionExpr>
+FPRuleItm::New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rule, Ptr<Expression> rhead, Ptr<Expression> rbody, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FPRuleItm> retval = Create<FPRuleItm>();
+  retval->m_provList = provList;
+  retval->m_rloc = rloc;
+  retval->m_rule = rule;
+  retval->m_head = rhead;
+  retval->m_body = rbody;
+
+  return retval;
+  }

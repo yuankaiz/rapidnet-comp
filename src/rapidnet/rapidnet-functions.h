@@ -553,7 +553,20 @@ public:
 
 private:
   Ptr<Expression> m_provList, m_rloc, m_rule;
+  };
+
+/* FPRuleItm computes the intermediate tuples during provenance queries*/
+class FPRuleItm : public FunctionExpr
+{
+public:
+  virtual ~FPRuleItm () {}
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+  static Ptr<FunctionExpr> New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rule, Ptr<Expression> rhead, Ptr<Expression> rbody, Ptr<RapidNetApplicationBase> app = NULL);
+
+private:
+  Ptr<Expression> m_provList, m_rloc, m_rule, m_head, m_body;
 };
+
 
 
 class FAppend2 : public FunctionExpr
