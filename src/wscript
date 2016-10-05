@@ -106,6 +106,7 @@ all_modules = (
     'applications/pktfwd-norm-prov-auxtable-oct0116',
     'applications/pktfwd-norm-prov-auxtable-query',
     'applications/pktfwd-norm-prov-ruleauxtable',
+    'applications/pktfwd-norm-prov-ruleauxtable-query',
     )
 
 def set_options(opt):
