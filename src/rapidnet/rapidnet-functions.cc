@@ -1172,22 +1172,30 @@ FPEdb::Eval(Ptr<Tuple> tuple)
   list<Ptr<Value> > provList = rn_list (m_prov->Eval(tuple));
 
   ostringstream tupleStr;
-  bool predName = true;
-  tupleStr << "(";
+  bool is_tuple_name = true;
+  bool is_first_var = true;
   for (rn_list_iterator it = provList.begin();it != provList.end(); it++)
     {
-      tupleStr << (*it);
-      if (predName == true)
+      // Tuple name
+      if (is_tuple_name)
         {
-          tupleStr << "(";
-          predName = false;
+          is_tuple_name = false;
         }
       else
         {
-          tupleStr << ",";
+          if (is_first_var)
+            {
+              is_first_var = false;
+              tupleStr << "(";
+            }
+          else
+            {
+              tupleStr << ",";
+            }
         }
+      
+      tupleStr << (*it);
     }
-  tupleStr << ")";
   tupleStr << ")";
 
   return StrValue::New (tupleStr.str());
@@ -1206,7 +1214,7 @@ FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
 
   // Find the name of the rule body that contains var
   size_t pos_body_leftpar = rbody.rfind("(", pos_first_var);
-  size_t pos_rel_delimiter = rbody.rfind(",", pos_body_leftpar);
+  size_t pos_rel_delimiter = rbody.rfind(";", pos_body_leftpar);
   size_t pos_body_rel = 0;
   if (pos_rel_delimiter != string::npos)
     {
@@ -1284,46 +1292,31 @@ DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& p
    For each variable var, find the corresponding variable var'
    in the body relation (or atom).
    Follow var' in the body relation to its concrete value v
-   in the body tuple, and assign v to var in the head.*/
+   in the body tuple in provList, and assign v to var in the head.*/
 
-  size_t pos_first_comma = rhead.find(",");
-  string first_var;
-  size_t pos_right_paren;
-  if (pos_first_comma == string::npos)
-    {
-      // The head relation has only one attribute
-      pos_right_paren = rhead.find(")");
-      size_t var_length = pos_right_paren - pos_left_paren - 1;
-      first_var = rhead.substr(pos_left_paren+1, var_length);
-    }
-  else
-    {
-      size_t var_length = pos_first_comma - pos_left_paren - 1;
-      first_var = rhead.substr(pos_left_paren+1, var_length);
-    }
-
-  string var_value = FetchVarValue(first_var, rbody, provList);
-  htuple_stream << var_value;
-
-  size_t pos_last_comma = pos_left_paren;
-  size_t pos_comma = pos_first_comma;
+  bool end_of_head = false;
+  size_t pos_left_delimiter = pos_left_paren;
+  size_t pos_right_delimiter = pos_left_paren;
   string var;
-  while (pos_comma != string::npos)
-    {
-      size_t var_length = pos_comma - pos_last_comma - 1;
-      var = rhead.substr(pos_last_comma+1, var_length);
-      var_value = FetchVarValue(var, rbody, provList);
-      htuple_stream << var_value;
-
-      pos_last_comma = pos_comma;
-      pos_comma = rhead.find(",", pos_comma);
-    }
-  // The last variable
-  size_t var_length = pos_right_paren - pos_last_comma - 1;
-  var = rhead.substr(pos_last_comma+1, var_length);
-  var_value = FetchVarValue(var, rbody, provList);
-  htuple_stream << var_value;
   
+  do {
+    pos_right_delimiter = rhead.find(",", pos_left_paren);
+    if (pos_right_delimiter == string::npos)
+      {
+        end_of_head = true;
+        pos_right_delimiter = rhead.find(")",pos_left_paren);
+      }
+    size_t var_length = pos_right_delimiter - pos_left_delimiter - 1;
+    string var = rhead.substr(pos_left_delimiter+1, var_length);
+    string var_value = FetchVarValue(var, rbody, provList);
+    htuple_stream << var_value;
+    if (!end_of_head)
+      {
+        htuple_stream << ",";
+      }
+    pos_left_delimiter = pos_right_delimiter;
+  }while{!end_of_head};
+
   htuple_stream << ")";
   return htuple_stream.str();
 }
