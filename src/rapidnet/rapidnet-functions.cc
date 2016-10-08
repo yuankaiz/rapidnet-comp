@@ -1225,54 +1225,56 @@ FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
   
   // Find the corresponding body tuple in the provList
   // Here we assume there is no redundant body tuple
-  string body_tuple;
+
+  string body_prov;
+  size_t btuple_left_paren = 0;
   size_t pos_body_tuple = 0;
   rn_list_iterator it;
   for (it = provList.begin(); it != provList.end(); it++)
     {
-      body_tuple = (*it)->ToString ();
-      pos_body_tuple = body_tuple.find(body_name);
+      body_prov = (*it)->ToString();
+      btuple_left_paren = body_prov.find("(");
+      pos_body_tuple = body_prov.rfind(body_name, btuple_left_paren);
       if (pos_body_tuple != string::npos)
         {
+          //The provenance has the desired body tuple as its head
           break;
         }
     }
   if (it == provList.end())
     {
+      //No body tuple is found
       return "";
     }
 
+
   // Find the position of value in the body tuple corresponding to var
-  size_t pos_btuple_left_paren = body_tuple.find("(");
-  size_t pos_comma = rbody.find(",");
-  size_t pos_value = 0;
-  size_t value_length = 0;
-  if (pos_comma == string::npos)
+  size_t pos_body_right_delimiter = rbody.find(")", pos_body_leftpar);
+  size_t pos_btuple_right_delimiter = body_prov.find(")", btuple_left_paren);
+  size_t pos_body_delimiter = pos_body_leftpar;
+  size_t pos_val_left_delimiter = btuple_left_paren;
+
+  while (pos_body_delimiter < pos_body_right_delimiter)
     {
-      //The body relation has only one attribute
-      size_t pos_btuple_right_paren = body_tuple.find(")", pos_btuple_left_paren);
-      value_length = pos_btuple_right_paren - pos_btuple_left_paren - 1;
-      pos_value = pos_btuple_left_paren + 1;
-    }
-  else
-    {
-      size_t pos_last_comma = pos_btuple_left_paren;
-      while (pos_comma < pos_first_var && pos_comma != string::npos)
+      if (pos_body_delimiter == pos_first_var - 1)
         {
-          pos_last_comma = pos_comma;
-          pos_comma = rbody.find(",", pos_comma);
-        }
-      if (pos_comma == string::npos)
-        {
-          return "";
+          break;
         }
       
-      value_length = pos_comma - pos_last_comma  - 1;
-      pos_value = pos_last_comma + 1;
+      pos_body_delimiter = rbody.find(",", pos_body_delimiter+1);
+      pos_val_left_delimiter = body_prov.find(",", pos_val_left_delimiter+1);
     }
 
-  string value = body_tuple.substr(pos_value, value_length);
-  return value;
+  size_t pos_val_right_delimiter = body_prov.find(",", pos_val_left_delimiter+1);
+  if (pos_val_right_delimiter > pos_btuple_right_delimiter ||
+      pos_val_right_delimiter == string::npos)
+    {
+      pos_val_right_delimiter = pos_btuple_right_delimiter;
+    }
+  size_t value_length = pos_val_right_delimiter - pos_val_left_delimiter - 1; 
+  string val = body_prov.substr(pos_val_left_delimiter+1, value_length);
+
+  return val;
 }
 
 /* Symbolically execute the rule to derive the head tuple in string*/
@@ -1280,7 +1282,7 @@ FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
 string 
 DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& provList)
 {
-  //cout << "DeriveSymbolicHead" << endl;
+  cout << endl << "DeriveSymbolicHead" << endl;
   ostringstream htuple_stream;
 
   // Construct the name of the head tuple
@@ -1300,7 +1302,7 @@ DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& p
   string var;
   
   do {
-    pos_right_delimiter = rhead.find(",", pos_left_paren);
+    pos_right_delimiter = rhead.find(",", pos_right_delimiter+1);
     if (pos_right_delimiter == string::npos)
       {
         end_of_head = true;
@@ -1308,14 +1310,16 @@ DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& p
       }
     size_t var_length = pos_right_delimiter - pos_left_delimiter - 1;
     string var = rhead.substr(pos_left_delimiter+1, var_length);
+    cout << endl << "Obtain the value for the variable:" << var << endl; 
     string var_value = FetchVarValue(var, rbody, provList);
+    cout << endl << "Result:" << var << ":" << var_value << endl;
     htuple_stream << var_value;
     if (!end_of_head)
       {
         htuple_stream << ",";
       }
     pos_left_delimiter = pos_right_delimiter;
-  }while{!end_of_head};
+  }while(!end_of_head);
 
   htuple_stream << ")";
   return htuple_stream.str();
@@ -1329,14 +1333,17 @@ FPRuleItm::Eval(Ptr<Tuple> tuple)
   stringstream ss;
 
   string rule = m_rule->Eval (tuple)->ToString ();
+  cout << endl << "rule:" << rule << endl;
 
   string rhead = m_head->Eval (tuple)->ToString ();
+  cout << endl << "rhead:" << rhead << endl;
 
   string rbody = m_body->Eval (tuple)->ToString ();
+  cout << endl << "rbody:" << rbody << endl;
 
   string headTuple = DeriveSymbolicHead(rule, rhead, rbody, provList);
 
-  ss << "(" << headTuple << "<-";
+  ss << headTuple << "<-";
 
   uint32_t ipaddr = (rn_ipv4 (m_rloc->Eval (tuple))).Get ();
   ipaddr = (ipaddr / 256) % 65536;
@@ -1350,7 +1357,6 @@ FPRuleItm::Eval(Ptr<Tuple> tuple)
       ss << (*it)->ToString ();
     }
 
-    ss << ")";
     ss << ")";
 
 return StrValue::New (ss.str ());

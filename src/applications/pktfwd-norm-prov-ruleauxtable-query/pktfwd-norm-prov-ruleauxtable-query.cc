@@ -379,10 +379,10 @@ PktfwdNormProvRuleauxtableQuery::Rr01Eca0Ins (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rh1"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("packet(@Next,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("packet(Next,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("initPacket(@Node,SrcAdd,DstAdd,Data);link(@Node,Next)."))));
+    ValueExpr::New (StrValue::New ("initPacket(Node,SrcAdd,DstAdd,Data);link(Node,Next)."))));
 
   result = result->Project (
     RULEINFO,
@@ -409,10 +409,10 @@ PktfwdNormProvRuleauxtableQuery::Rr01Eca0Del (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rh1"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("packet(@Next,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("packet(Next,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("initPacket(@Node,SrcAdd,DstAdd,Data);link(@Node,Next)."))));
+    ValueExpr::New (StrValue::New ("initPacket(Node,SrcAdd,DstAdd,Data);link(Node,Next)."))));
 
   result = result->Project (
     RULEINFO,
@@ -439,10 +439,10 @@ PktfwdNormProvRuleauxtableQuery::Rr02Eca0Ins (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rs1"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("packet(@Next,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("packet(Next,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("packet(@Node, SrcAdd, DstAdd, Data);flowEntry(@Node, DstAdd, Next);link(@Node, Next)."))));
+    ValueExpr::New (StrValue::New ("packet(Node,SrcAdd,DstAdd,Data);flowEntry(Node,DstAdd,Next);link(Node,Next)."))));
 
   result = result->Project (
     RULEINFO,
@@ -469,10 +469,10 @@ PktfwdNormProvRuleauxtableQuery::Rr02Eca0Del (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rs1"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("packet(@Next,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("packet(Next,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("packet(@Node, SrcAdd, DstAdd, Data);flowEntry(@Node, DstAdd, Next);link(@Node, Next)."))));
+    ValueExpr::New (StrValue::New ("packet(Node,SrcAdd,DstAdd,Data);flowEntry(Node,DstAdd,Next);link(Node,Next)."))));
 
   result = result->Project (
     RULEINFO,
@@ -499,10 +499,10 @@ PktfwdNormProvRuleauxtableQuery::Rr03Eca0Ins (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rh2"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("recvPacket(@Node,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("recvPacket(Node,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("packet(@Node,SrcAdd,DstAdd,Data);DstAdd == Node."))));
+    ValueExpr::New (StrValue::New ("packet(Node,SrcAdd,DstAdd,Data);DstAdd == Node."))));
 
   result = result->Project (
     RULEINFO,
@@ -529,10 +529,10 @@ PktfwdNormProvRuleauxtableQuery::Rr03Eca0Del (Ptr<Tuple> recordRule)
     ValueExpr::New (StrValue::New ("rh2"))));
 
   result->Assign (Assignor::New ("RHead",
-    ValueExpr::New (StrValue::New ("recvPacket(@Node,SrcAdd,DstAdd,Data)"))));
+    ValueExpr::New (StrValue::New ("recvPacket(Node,SrcAdd,DstAdd,Data)"))));
 
   result->Assign (Assignor::New ("RBody",
-    ValueExpr::New (StrValue::New ("packet(@Node,SrcAdd,DstAdd,Data);DstAdd == Node."))));
+    ValueExpr::New (StrValue::New ("packet(Node,SrcAdd,DstAdd,Data);DstAdd == Node."))));
 
   result = result->Project (
     RULEINFO,
