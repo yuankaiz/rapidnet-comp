@@ -834,6 +834,11 @@ LookupFunction (string functionName)
     { 
       return "FPRule";
     }
+  else if (functionName == "f_pRULEITM")
+    { 
+      return "FPRuleItm";
+    }
+
   /*
    * Summary Vector (SV) related functions
    */
