@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-norm-prov-exspan-withitm-query', ['internet-stack'])
+    module.source = [
+        'pktfwd-norm-prov-exspan-withitm-query.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-norm-prov-exspan-withitm-query'
+    headers.source = [
+        'pktfwd-norm-prov-exspan-withitm-query.h',
+        'pktfwd-norm-prov-exspan-withitm-query-helper.h',
+        ]
