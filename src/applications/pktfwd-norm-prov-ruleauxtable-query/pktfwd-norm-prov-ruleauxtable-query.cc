@@ -1833,7 +1833,7 @@ PktfwdNormProvRuleauxtableQuery::Edb1_eca (Ptr<Tuple> provQuery)
     strlist ("provQuery_attr3", "provQuery_attr1"));
 
   result->Assign (Assignor::New ("Prov",
-    FPEdb::New (
+    FPEdbTp::New (
       VarExpr::New ("provStr_attr3"),
       VarExpr::New ("provQuery_attr1"))));
 

@@ -826,6 +826,10 @@ LookupFunction (string functionName)
     { 
       return "FPEdb";
     }
+  else if (functionName == "f_pEDBTP")
+    { 
+      return "FPEdbTp";
+    }
   else if (functionName == "f_pIDB")
     { 
       return "FPIdb";

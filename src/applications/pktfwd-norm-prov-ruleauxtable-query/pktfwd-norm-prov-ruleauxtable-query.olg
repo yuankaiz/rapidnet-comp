@@ -1,6 +1,6 @@
-/* This program appends the provenance query program at the end*/
-/* The query program is supposed to return concrete provenance information for tuples,*/
-/* base on the contents of the provStr table*/
+/* This program appends the provenance query program at the end.
+* The query program is supposed to compute concrete provenance information
+* for intermediate tuples,base on the contents of the provStr table*/
 
 
 /*Materialized table*/
@@ -194,7 +194,7 @@ prov_rh2_6 provStr(@Node, VID, TpStrList) :-
 /* EDB vertex */
 edb1 pReturn(@Ret,QID,VID,Prov) :- provQuery(@X,QID,VID,Ret),
        prov(@X,VID,RID,RLoc), provStr(@X, VID, TpStrList), 
-       RID==VID, Prov:=f_pEDB(TpStrList,X).
+       RID==VID, Prov:=f_pEDBTP(TpStrList,X).
 
 /* IDB vertex */
 idb1 pQList(@X,QID,a_LIST<RID>) :- provQuery(@X,QID,VID,Ret),

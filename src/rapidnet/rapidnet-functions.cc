@@ -554,13 +554,13 @@ FSvRemove::New (Ptr<Expression> svExpr,
 
 /* ************************************************************** */
 
-// Ptr<Value>
-// FPEdb::Eval(Ptr<Tuple> tuple)
-// {
-//   string prov = m_prov->Eval (tuple)-> ToString();
+Ptr<Value>
+FPEdb::Eval(Ptr<Tuple> tuple)
+{
+  string prov = m_prov->Eval (tuple)-> ToString();
 
-//   return StrValue::New (prov);
-// }
+  return StrValue::New (prov);
+}
 
 Ptr<FunctionExpr>
 FPEdb::New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBase> app)
@@ -1167,7 +1167,7 @@ FStrLength::New (Ptr<Expression> str, Ptr<RapidNetApplicationBase> app)
 /* The new implementation returns concrete tuple information in the provenance*/
 
 Ptr<Value>
-FPEdb::Eval(Ptr<Tuple> tuple)
+FPEdbTp::Eval(Ptr<Tuple> tuple)
 {
   list<Ptr<Value> > provList = rn_list (m_prov->Eval(tuple));
 
@@ -1200,6 +1200,16 @@ FPEdb::Eval(Ptr<Tuple> tuple)
 
   return StrValue::New (tupleStr.str());
 }
+
+Ptr<FunctionExpr>
+FPEdbTp::New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FPEdbTp> retval = Create<FPEdbTp>();
+  retval->m_prov = prov;
+  retval->m_id = id;
+  return retval;
+}
+
 
 /* Find the value for var in provList*/
 string
