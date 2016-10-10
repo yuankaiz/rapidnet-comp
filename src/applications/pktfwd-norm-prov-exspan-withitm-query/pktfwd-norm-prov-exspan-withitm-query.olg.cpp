@@ -1,6 +1,6 @@
-/* This program appends the provenance query program at the end.
-* The query program is supposed to compute concrete provenance information
-* for intermediate tuples,base on the contents of the provStr table*/
+/* This program appends the provenance query program at the end*/
+/* The query program is supposed to return concrete intermediate tuples,*/
+/* base on the contents of the provStr table*/
 
 
 /*Materialized table*/
@@ -20,30 +20,6 @@ materialize(pQList,infinity,infinity,keys(1,2:cid)).
 materialize(rQList,infinity,infinity,keys(1,2:cid)).
 materialize(pResultTmp,infinity,infinity,keys(1,2:cid)).
 materialize(rResultTmp,infinity,infinity,keys(1,2:cid)).
-
-/* Rule recording tables*/
-materialize(recordRule, infinity, infinity, keys(1)).
-materialize(ruleInfo, infinity, infinity, keys(2:str)).
-
-
-/* Record rule information */
-rr01 ruleInfo(@Node, RName, RHead, RBody) :-
- recordRule(@Node),
- RName := "rh1",
- RHead := "packet(Next,SrcAdd,DstAdd,Data)",
- RBody := "initPacket(Node,SrcAdd,DstAdd,Data);link(Node,Next).".
-
-rr02 ruleInfo(@Node, RName, RHead, RBody) :-
- recordRule(@Node),
- RName := "rs1",
- RHead := "packet(Next,SrcAdd,DstAdd,Data)",
- RBody := "packet(Node,SrcAdd,DstAdd,Data);flowEntry(Node,DstAdd,Next);link(Node,Next).".
-
-rr03 ruleInfo(@Node, RName, RHead, RBody) :-
- recordRule(@Node),
- RName := "rh2",
- RHead := "recvPacket(Node,SrcAdd,DstAdd,Data)",
- RBody := "packet(Node,SrcAdd,DstAdd,Data);DstAdd == Node.".
 
 
 /* Edb provenance rules*/
@@ -194,7 +170,7 @@ prov_rh2_6 provStr(@Node, VID, TpStrList) :-
 /* EDB vertex */
 edb1 pReturn(@Ret,QID,VID,Prov) :- provQuery(@X,QID,VID,Ret),
        prov(@X,VID,RID,RLoc), provStr(@X, VID, TpStrList),
-       RID==VID, Prov:=f_pEDBTP(TpStrList,X).
+       RID==VID, Prov:=f_pEDB(TpStrList,X).
 
 /* IDB vertex */
 idb1 pQList(@X,QID,a_LIST<RID>) :- provQuery(@X,QID,VID,Ret),
@@ -221,7 +197,8 @@ idb8 ePReturn(@X,QID) :- pResultTmp(@X,QID,Ret,VID,Buf),
        f_size(Buf)==f_size(List), f_size(Buf)!=0.
 
 idb9 pReturn(@Ret,QID,VID,Prov) :- ePReturn(@X,QID),
-       pResultTmp(@X,QID,Ret,VID,Buf), Prov:=f_pIDB(Buf,X).
+       pResultTmp(@X,QID,Ret,VID,Buf), provStr(@X,VID,TpStrList),
+       Prov:=f_pIDBTP(Buf,X,TpStrList).
 
 /* Rule Vertex */
 rv1 rQList(@X,NQID,List) :- ruleQuery(@X,NQID,RID,Ret),
@@ -246,5 +223,4 @@ rv8 eRReturn(@X,NQID) :- rResultTmp(@X,NQID,Ret,RID,Buf),
       rQList(@X,NQID,List), f_size(Buf)==f_size(List).
 rv9 rReturn(@Ret,NQID,RID,Prov) :- eRReturn(@X,NQID),
       rResultTmp(@X,NQID,Ret,RID,Buf),
-      ruleExec(@X,RID,R,List), ruleInfo(@X,R,RHead,RBody),
-      Prov:=f_pRULEITM(Buf,X,R,RHead,RBody).
+      ruleExec(@X,RID,R,List), Prov:=f_pRULE(Buf,X,R).

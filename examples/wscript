@@ -335,5 +335,15 @@ def build(bld):
     # obj = bld.create_ns3_program('pktfwd-norm-prov-ruleauxtable-test')
     # obj.source = 'pktfwd-norm-prov-ruleauxtable-test.cc'
 
-    obj = bld.create_ns3_program('pktfwd-norm-prov-ruleauxtable-query-test')
-    obj.source = 'pktfwd-norm-prov-ruleauxtable-query-test.cc'
+    # obj = bld.create_ns3_program('pktfwd-norm-prov-ruleauxtable-query-test')
+    # obj.source = 'pktfwd-norm-prov-ruleauxtable-query-test.cc'
+
+    # obj = bld.create_ns3_program('pktfwd-norm-prov-exspan-withitm-query-test')
+    # obj.source = 'pktfwd-norm-prov-exspan-withitm-query-test.cc'
+
+    # obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-oct092016-test')
+    # obj.source = 'pktfwd-norm-dist-hlist-online-oct092016-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-auxtables-test')
+    obj.source = 'pktfwd-norm-dist-hlist-online-auxtables-test.cc'
+

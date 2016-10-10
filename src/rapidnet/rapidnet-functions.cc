@@ -554,13 +554,13 @@ FSvRemove::New (Ptr<Expression> svExpr,
 
 /* ************************************************************** */
 
-// Ptr<Value>
-// FPEdb::Eval(Ptr<Tuple> tuple)
-// {
-//   string prov = m_prov->Eval (tuple)-> ToString();
+Ptr<Value>
+FPEdb::Eval(Ptr<Tuple> tuple)
+{
+  string prov = m_prov->Eval (tuple)-> ToString();
 
-//   return StrValue::New (prov);
-// }
+  return StrValue::New (prov);
+}
 
 Ptr<FunctionExpr>
 FPEdb::New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBase> app)
@@ -1166,15 +1166,15 @@ FStrLength::New (Ptr<Expression> str, Ptr<RapidNetApplicationBase> app)
 /* Re-implement the FPEdb and FPRule functions*/
 /* The new implementation returns concrete tuple information in the provenance*/
 
-Ptr<Value>
-FPEdb::Eval(Ptr<Tuple> tuple)
-{
-  list<Ptr<Value> > provList = rn_list (m_prov->Eval(tuple));
 
+/* Fetch the concrete tuple information based on its representation in list*/
+std::string
+FetchTupleStr(list<Ptr<Value> >& attrs)
+{
   ostringstream tupleStr;
   bool is_tuple_name = true;
   bool is_first_var = true;
-  for (rn_list_iterator it = provList.begin();it != provList.end(); it++)
+  for (rn_list_iterator it = attrs.begin();it != attrs.end(); it++)
     {
       // Tuple name
       if (is_tuple_name)
@@ -1198,11 +1198,76 @@ FPEdb::Eval(Ptr<Tuple> tuple)
     }
   tupleStr << ")";
 
-  return StrValue::New (tupleStr.str());
+  return tupleStr.str();
 }
 
+Ptr<Value>
+FPEdbTp::Eval(Ptr<Tuple> tuple)
+{
+  list<Ptr<Value> > provList = rn_list (m_prov->Eval(tuple));
+
+  string tupleStr = FetchTupleStr(provList);
+  return StrValue::New (tupleStr);
+}
+
+Ptr<FunctionExpr>
+FPEdbTp::New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FPEdbTp> retval = Create<FPEdbTp>();
+  retval->m_prov = prov;
+  retval->m_id = id;
+  return retval;
+}
+
+
+Ptr<Value>
+FPIdbTp::Eval(Ptr<Tuple> tuple)
+{
+  list<Ptr<Value> > provList = rn_list (m_provList->Eval (tuple));
+  list<Ptr<Value> > attrList = rn_list (m_attrList->Eval (tuple));
+
+  string tupleStr = FetchTupleStr(attrList);
+
+  stringstream ss;
+
+  ss << tupleStr << "<-";
+  if (provList.size() != 1)
+  {
+   ss << "(";
+ }
+
+ int index = 0;
+
+ for (rn_list_iterator it = provList.begin (); it != provList.end (); it++)
+ {
+  if (index++!=0) ss << "+";
+  ss << (*it)->ToString ();
+}
+
+//  string loc = m_loc->Eval (tuple)->ToString ();
+//  ss << ")@[" << loc << "]";
+
+if (provList.size() != 1) 
+{
+ ss << ")";
+}
+
+return StrValue::New (ss.str ());
+}
+
+Ptr<FunctionExpr>
+FPIdbTp::New (Ptr<Expression> provList, Ptr<Expression> loc, Ptr<Expression> attrList, Ptr<RapidNetApplicationBase> app)
+{
+  Ptr<FPIdbTp> retval = Create<FPIdbTp>();
+  retval->m_provList = provList;
+  retval->m_loc = loc;
+  retval->m_attrList = attrList;
+  return retval;
+}
+
+
 /* Find the value for var in provList*/
-string
+std::string
 FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
 {
   // Find the first appearance of var in the rule body
@@ -1279,7 +1344,7 @@ FetchVarValue(string var, string rbody, list<Ptr<Value> >& provList)
 
 /* Symbolically execute the rule to derive the head tuple in string*/
 /* Currently we assume all head attributes take values from body relations*/
-string 
+std::string 
 DeriveSymbolicHead(string rule, string rhead, string rbody, list<Ptr<Value> >& provList)
 {
   cout << endl << "DeriveSymbolicHead" << endl;

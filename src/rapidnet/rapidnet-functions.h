@@ -533,6 +533,19 @@ private:
   Ptr<Expression> m_prov, m_id;
 };
 
+  /* FPEdbTp returns concrete tuple information*/
+class FPEdbTp : public FunctionExpr
+{
+public:
+  virtual ~FPEdbTp () {}
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+  static Ptr<FunctionExpr> New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBase> app = NULL);
+
+private:
+  Ptr<Expression> m_prov, m_id;
+};
+
+
 class FPIdb : public FunctionExpr
 {
 public:
@@ -543,6 +556,18 @@ public:
 private:
   Ptr<Expression> m_provList, m_loc;
 };
+
+class FPIdbTp : public FunctionExpr
+{
+public:
+  virtual ~FPIdbTp () {}
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+  static Ptr<FunctionExpr> New (Ptr<Expression> provList, Ptr<Expression> loc, Ptr<Expression> attrList, Ptr<RapidNetApplicationBase> app = NULL);
+
+private:
+  Ptr<Expression> m_provList, m_loc, m_attrList;
+};
+
 
 class FPRule : public FunctionExpr
 {
