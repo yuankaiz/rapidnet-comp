@@ -17,20 +17,20 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-prov-auxtable-query-module.h"
-#include "ns3/pktfwd-norm-online-query-init-module.h"
+#include "ns3/pktfwd-norm-prov-exspan-withitm-query-module.h"
+#include "ns3/pktfwd-norm-prov-provquery-oct0116-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
 
 
-#define ModuleName PktfwdNormProvAuxtableQuery
-#define ModuleNameStr "PktfwdNormProvAuxtableQuery"
-#define ModuleHelper PktfwdNormProvAuxtableQueryHelper
-#define ModuleNameSpace pktfwdnormprovauxtablequery
-#define QueryModuleName PktfwdNormOnlineQueryInit
-#define QueryModuleNameStr "PktfwdNormOnlineQueryInit"
-#define QueryModuleHelper PktfwdNormProvProvqueHelper
+#define ModuleName PktfwdNormProvExspanWithitmQuery
+#define ModuleNameStr "PktfwdNormProvExspanWithitmQuery"
+#define ModuleHelper PktfwdNormProvExspanWithitmQueryHelper
+#define ModuleNameSpace pktfwdnormprovexspanwithitmquery
+#define QueryModuleName PktfwdNormProvProvqueryOct0116
+#define QueryModuleNameStr "PktfwdNormProvProvqueryOct0116"
+#define QueryModuleHelper PktfwdNormProvProvqueryOct0116Helper
 #define QueryModuleNameSpace pktfwdnormprovprovqueryoct0116
 
 /* Links connecting network devices*/

@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('pktfwd-norm-online-query-init', ['internet-stack'])
+    module.source = [
+        'pktfwd-norm-online-query-init.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'pktfwd-norm-online-query-init'
+    headers.source = [
+        'pktfwd-norm-online-query-init.h',
+        'pktfwd-norm-online-query-init-helper.h',
+        ]
