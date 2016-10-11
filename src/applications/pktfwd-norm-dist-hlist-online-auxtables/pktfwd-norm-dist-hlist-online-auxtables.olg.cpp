@@ -34,20 +34,20 @@ The workaround is to call it cid or chord id. */
 rr01 ruleInfo(@Node, RName, RHead, RBody) :-
  recordRule(@Node),
  RName := "rh1",
- RHead := "packet(@Next,SrcAdd,DstAdd,Data)",
- RBody := "initPacket(@Node,SrcAdd,DstAdd,Data);link(@Node,Next).".
+ RHead := "packet(Next,SrcAdd,DstAdd,Data)",
+ RBody := "initPacket(Node,SrcAdd,DstAdd,Data);link(Node,Next).".
 
 rr02 ruleInfo(@Node, RName, RHead, RBody) :-
  recordRule(@Node),
  RName := "rs1",
- RHead := "packet(@Next,SrcAdd,DstAdd,Data)",
- RBody := "packet(@Node, SrcAdd, DstAdd, Data);flowEntry(@Node, DstAdd, Next);link(@Node, Next).".
+ RHead := "packet(Next,SrcAdd,DstAdd,Data)",
+ RBody := "packet(Node,SrcAdd,DstAdd,Data);flowEntry(Node,DstAdd,Next);link(Node,Next).".
 
 rr03 ruleInfo(@Node, RName, RHead, RBody) :-
  recordRule(@Node),
  RName := "rh2",
- RHead := "recvPacket(@Node,SrcAdd,DstAdd,Data)",
- RBody := "packet(@Node,SrcAdd,DstAdd,Data);DstAdd == Node.".
+ RHead := "recvPacket(Node,SrcAdd,DstAdd,Data)",
+ RBody := "packet(Node,SrcAdd,DstAdd,Data);DstAdd==Node.".
 
 /* Provenance information for the slow-changing tables and input events*/
 prov_r00 provStr(@Node, VID, TpStrList) :-

@@ -110,6 +110,7 @@ all_modules = (
     'applications/pktfwd-norm-dist-hlist-online-oct092016',
     'applications/pktfwd-norm-dist-hlist-online-auxtables',
     'applications/pktfwd-norm-dist-hlist-online-auxtables-query',
+    'applications/pktfwd-norm-dist-hlist-rmitm-auxtables',
     'applications/pktfwd-norm-online-query-init',
     )
 
