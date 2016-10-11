@@ -8,4 +8,4 @@ rq1 provQuery(@Loc, QID, VID, Ret) :-
     QID := f_sha1(""+VID+Time).
 
 rq2 records(@Ret, QID, RID, Prov) :-
-    ruleReturn(@Ret, QID, RID, Prov).
+    rReturn(@Ret, QID, RID, Prov).

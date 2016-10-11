@@ -28,10 +28,6 @@ materialize(ruleInfo, infinity, infinity, keys(2:str)).
 
 /* Provenance querying tables*/
 materialize(provResult, infinity, infinity, keys(2:cid)).
-materialize(ruleReturn, infinity, infinity, keys(2:cid)).
-materialize(tupleReturn, infinity, infinity, keys(2:cid)).
-materialize(ruleQuery, infinity, infinity, keys(2:cid)).
-materialize(tupleQuery, infinity, infinity, keys(2:cid)).
 materialize(slowChangeQuery, infinity, infinity, keys(2:cid)).
 
 
@@ -42,20 +38,20 @@ The workaround is to call it cid or chord id. */
 rr01 ruleInfo(@Node, RName, RHead, RBody) :-
 	recordRule(@Node),
 	RName := "rh1",
-	RHead := "packet(@Next,SrcAdd,DstAdd,Data)",
-	RBody := "initPacket(@Node,SrcAdd,DstAdd,Data);link(@Node,Next).".
+	RHead := "packet(Next,SrcAdd,DstAdd,Data)",
+	RBody := "initPacket(Node,SrcAdd,DstAdd,Data);link(Node,Next).".
 
 rr02 ruleInfo(@Node, RName, RHead, RBody) :-
 	recordRule(@Node),
 	RName := "rs1",
-	RHead := "packet(@Next,SrcAdd,DstAdd,Data)",
-	RBody := "packet(@Node, SrcAdd, DstAdd, Data);flowEntry(@Node, DstAdd, Next);link(@Node, Next).".
+	RHead := "packet(Next,SrcAdd,DstAdd,Data)",
+	RBody := "packet(Node,SrcAdd,DstAdd,Data);flowEntry(Node,DstAdd,Next);link(Node,Next).".
 
 rr03 ruleInfo(@Node, RName, RHead, RBody) :-
 	recordRule(@Node),
 	RName := "rh2",
-	RHead := "recvPacket(@Node,SrcAdd,DstAdd,Data)",
-	RBody := "packet(@Node,SrcAdd,DstAdd,Data);DstAdd == Node.".
+	RHead := "recvPacket(Node,SrcAdd,DstAdd,Data)",
+	RBody := "packet(Node,SrcAdd,DstAdd,Data);DstAdd == Node.".
 
 /* Provenance information for the slow-changing tables and input events*/
 prov_r00 provStr(@Node, VID, TpStrList) :-
@@ -206,8 +202,7 @@ prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
 prov_rh2_1 erecvPacketTemp(@RLOC, Node, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-  
 	   packetProv(@Node, SrcAdd, DstAdd, Data, Tag), 
 	   DstAdd == Node, 
-	   PID := f_sha1("NULL"),
-	   List := f_append(PID),
+	   List := f_empty(),
 	   RLOC := Node, 
 	   R := "rh2", 
 	   RID := f_sha1((R+ RLOC)+ List).
@@ -297,88 +292,87 @@ rho3 provRef(@Node, PID, EquiHash, PIDev) :-
 	ProgID := f_first(PIDHash2),
 	EquiHash := f_sha1(""+ProgID+PIDequi).
 
-rh04 recvPacket(@Node, SrcAdd, DstAdd, Data) :-
+rho4 recvPacket(@Node, SrcAdd, DstAdd, Data) :-
 	recvPacketNP(@Node, SrcAdd, DstAdd, Data, PIDHash).
 
 /* Provenance querying */
-
 /* Query initialization*/
-rq_res ruleQuery(@Loc,NQID,RID,Count,PIDev,X) :- 
+rqini rQuery(@Loc,NQID,RID,Count,PIDev,Ret) :- 
 	provQuery(@X,QID,PID,Ret),
 	provRef(@X,PID,EquiHash,PIDev),
 	provHashTable(@X,EquiHash,ProgID,Loc,RID,Count),
 	NQID := f_sha1(""+QID+RID).
 
 /* Query the event tuple*/
-rq_rule1 tupleQuery(@X,NNQID,PIDev,TupleRet) :-
-	ruleQuery(@X,NQID,RID,Count,PIDev,Ret),
+rqev tQuery(@X,NNQID,PIDev,TupleRet) :-
+	rQuery(@X,NQID,RID,Count,PIDev,Ret),
 	provLink(@X,RID,CurCount,Preloc,PreRID,PreCount),
 	Preloc == X,
-	PreRID == f_sha1(""),
+	PreRID == f_sha1("NULL"),
 	TupleRet := X,
 	NNQID := f_sha1(""+NQID+PIDev).
 
 /* Recursively query the RIDs*/
-rq_rule2 ruleQuery(@Preloc,NNQID,PreRID,PreCount,PIDev,X) :-
-	ruleQuery(@X,NQID,RID,Count,PIDev,Ret),
+rqrec rQuery(@Preloc,NNQID,PreRID,PreCount,PIDev,X) :-
+	rQuery(@X,NQID,RID,Count,PIDev,Ret),
 	provLink(@X,RID,CurCount,Preloc,PreRID,PreCount),
-	PreRID != f_sha1(""),
+	PreRID != f_sha1("NULL"),
 	NNQID := f_sha1(""+NQID+PreRID).
 
 /* Query the slow-changing tuples*/
-rq_tp1 slowChangeQuery(@X,NQID,List,TupleRet) :-
-	ruleQuery(@X,NQID,RID,Count,PIDev,Ret),
+rqsc1 slowChangeQuery(@X,NQID,List,TupleRet) :-
+	rQuery(@X,NQID,RID,Count,PIDev,Ret),
 	ruleExec(@X,RID,R,List),
 	TupleRet := X.
 
-rq_tp2 tupleItr(@X,NQID,N) :-
+rqsc2 tupleItr(@X,NQID,N) :-
 	slowChangeQuery(@X,NQID,List,TupleRet),
 	N := 1.
 
-rq_tp3 tupleItr(@X,NQID,N) :-
+rqsc3 tupleItr(@X,NQID,N) :-
 	tupleItr(@X,NQID,N1),
 	slowChangeQuery(@X,NQID,List,TupleRet),
 	N1 < f_size(List),
 	N := N1 + 1.
 	
-rq_tp4 tupleQuery(@X,NNQID,VID,TupleRet) :-
-	slowChangeQuery(@X,NQID,List,TupleRet),
+rqsc4 tQuery(@X,NNQID,VID,TupleRet) :-
 	tupleItr(@X,NQID,N),
+	slowChangeQuery(@X,NQID,List,TupleRet),
 	VID := f_item(List,N),
 	NNQID := f_sha1(""+NQID+VID).
 
-rq_tp5 tupleReturn(@TupleRet,NNQID,VID,Prov) :-
-	tupleQuery(@X,NNQID,VID,TupleRet),
+rqsc5 tReturn(@TupleRet,NNQID,VID,Prov) :-
+	tQuery(@X,NNQID,VID,TupleRet),
 	provStr(@X,VID,TpStrList),
 	Prov := f_pEDBTP(TpStrList,X).
 
 /* Collect provenance results*/
-rq_rt1 provResult(@X,NQID,RID,Buff,R,BodyNum,Ret):-
-	ruleQuery(@X,NQID,RID,Count,PIDev,Ret),
+rqrt1 provResult(@X,NQID,RID,Buff,R,BodyNum,Ret):-
+	rQuery(@X,NQID,RID,Count,PIDev,Ret),
 	ruleExec(@X,RID,R,List),
 	BodyNum := f_size(List)+1,
 	Buff := f_empty().
 
-rq_rt2 provResult(@X,NQID,RID,NewBuff,R,BodyNum,Ret) :-
-	tupleReturn(@X,NNQID,VID,Prov),
+rqrt2 provResult(@X,NQID,RID,NewBuff,R,BodyNum,Ret) :-
+	tReturn(@X,NNQID,VID,Prov),
 	provResult(@X,NQID,RID,Buff,R,BodyNum,Ret),
 	NNQID == f_sha1(""+NQID+VID),
 	ProvBuff := f_append(Prov),
 	NewBuff := f_concat(Buff,ProvBuff).
 
-rq_rt3 provResult(@X,NQID,RID,NewBuff,R,BodyNum,Ret) :-
-	ruleReturn(@X,NNQID,PreRID,Prov),
+rqrt3 provResult(@X,NQID,RID,NewBuff,R,BodyNum,Ret) :-
+	rReturn(@X,NNQID,PreRID,Prov),
 	provResult(@X,NQID,RID,Buff,R,BodyNum,Ret),
 	NNQID == f_sha1(""+NQID+PreRID),
 	ProvBuff := f_append(Prov),
 	NewBuff := f_concat(Buff,ProvBuff).
 
-rq_rt4 ruleReturnSig(@X,NQID,RID,Buff,R,BodyNum,Ret) :-
+rqrt4 rReturnSig(@X,NQID,RID,Buff,R,BodyNum,Ret) :-
 	provResult(@X,NQID,RID,Buff,R,BodyNum,Ret),	
 	f_size(Buff) == BodyNum.
 
-rq_rt5 ruleReturn(@Ret,NQID,RID,Prov) :-
-	ruleReturnSig(@X,NQID,RID,Buff,R,BodyNum,Ret),
+rqrt5 rReturn(@Ret,NQID,RID,Prov) :-
+	rReturnSig(@X,NQID,RID,Buff,R,BodyNum,Ret),
 	ruleInfo(@X,R,RHead,RBody),
 	Prov := f_pRULEITM(Buff,X,R,RHead,RBody).
 	

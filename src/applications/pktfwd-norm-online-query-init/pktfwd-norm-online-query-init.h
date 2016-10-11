@@ -30,8 +30,8 @@ class PktfwdNormOnlineQueryInit : public RapidNetApplicationBase
 {
 public:
   static const string PROVQUERY;
+  static const string RRETURN;
   static const string RECORDS;
-  static const string RULERETURN;
   static const string TUPLE;
 
   static TypeId GetTypeId (void);
@@ -54,7 +54,7 @@ protected:
 
   virtual void Rq1Eca0Ins (Ptr<Tuple> tuple);
 
-  virtual void Rq2_eca (Ptr<Tuple> ruleReturn);
+  virtual void Rq2_eca (Ptr<Tuple> rReturn);
 
 };
 

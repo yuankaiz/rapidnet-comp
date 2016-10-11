@@ -33,6 +33,15 @@
 #define QueryModuleNameSpace pktfwdnormonlinequeryinit
 
 
+/* Rule recording flag*/
+#define recordrule(node)\
+  tuple(ModuleName::RECORDRULE,\
+  attr("recordRule_attr1", Ipv4Value, node))
+
+#define insert_recordrule(node)                                            \
+  app(node) -> Insert(recordrule(addr(node)));
+
+
 /* Links connecting network devices*/
 #define link(sw, nei)\
   tuple(ModuleName::LINK,\
@@ -126,6 +135,14 @@ void SetupFlowTable()
   insert_flowentry(2, 3, 3);
 }
 
+void InitRuleRecording()
+{
+  insert_recordrule(1);
+  insert_recordrule(2);
+  insert_recordrule(3);
+}
+
+
 void SetProgramID()
 {
   insert_programid(1,3,"1");
@@ -175,7 +192,7 @@ void InitApps(int nodeNum)
   address.Assign(csmaDevices);
 
   apps.Add(Create<ModuleHelper>()->Install(mainNodes));
-  queryApps.Add(Create<PktfwdNormOnlineQueryInitHelper>()->Install(queryNode));
+  queryApps.Add(Create<QueryModuleHelper>()->Install(queryNode));
 
   SetMaxJitter (apps, 0.001);
   SetMaxJitter (queryApps, 0.001);
@@ -197,6 +214,7 @@ main (int argc, char *argv[])
   queryApps.Stop (Seconds (500.0));
 
   schedule (0.0001, BuildTopology);
+  schedule (1.0000, InitRuleRecording);
   schedule (2.0001, SetProgramID);
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, FirstPacketInsertion);

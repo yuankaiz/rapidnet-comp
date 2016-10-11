@@ -17,8 +17,8 @@ using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::pktfwdnormonlinequeryinit;
 
 const string PktfwdNormOnlineQueryInit::PROVQUERY = "provQuery";
+const string PktfwdNormOnlineQueryInit::RRETURN = "rReturn";
 const string PktfwdNormOnlineQueryInit::RECORDS = "records";
-const string PktfwdNormOnlineQueryInit::RULERETURN = "ruleReturn";
 const string PktfwdNormOnlineQueryInit::TUPLE = "tuple";
 
 NS_LOG_COMPONENT_DEFINE ("PktfwdNormOnlineQueryInit");
@@ -95,7 +95,7 @@ PktfwdNormOnlineQueryInit::DemuxRecv (Ptr<Tuple> tuple)
     {
       Rq1Eca0Ins (tuple);
     }
-  if (IsRecvEvent (tuple, RULERETURN))
+  if (IsRecvEvent (tuple, RRETURN))
     {
       Rq2_eca (tuple);
     }
@@ -149,18 +149,18 @@ PktfwdNormOnlineQueryInit::Rq1Eca0Ins (Ptr<Tuple> tuple)
 }
 
 void
-PktfwdNormOnlineQueryInit::Rq2_eca (Ptr<Tuple> ruleReturn)
+PktfwdNormOnlineQueryInit::Rq2_eca (Ptr<Tuple> rReturn)
 {
   RAPIDNET_LOG_INFO ("Rq2_eca triggered");
 
-  Ptr<Tuple> result = ruleReturn;
+  Ptr<Tuple> result = rReturn;
 
   result = result->Project (
     RECORDS,
-    strlist ("ruleReturn_attr1",
-      "ruleReturn_attr2",
-      "ruleReturn_attr3",
-      "ruleReturn_attr4"),
+    strlist ("rReturn_attr1",
+      "rReturn_attr2",
+      "rReturn_attr3",
+      "rReturn_attr4"),
     strlist ("records_attr1",
       "records_attr2",
       "records_attr3",
