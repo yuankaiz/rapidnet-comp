@@ -102,7 +102,6 @@ all_modules = (
     'applications/pktfwd-norm-prov-oct0116',
     'applications/pktfwd-norm-prov-query-oct0116',
     'applications/pktfwd-norm-prov-provquery-oct0116',
-    'applications/id-equi-test',
     'applications/pktfwd-norm-prov-auxtable-oct0116',
     'applications/pktfwd-norm-prov-auxtable-query',
     'applications/pktfwd-norm-prov-ruleauxtable',
@@ -110,6 +109,8 @@ all_modules = (
     'applications/pktfwd-norm-prov-exspan-withitm-query',
     'applications/pktfwd-norm-dist-hlist-online-oct092016',
     'applications/pktfwd-norm-dist-hlist-online-auxtables',
+    'applications/pktfwd-norm-dist-hlist-online-auxtables-query',
+    'applications/pktfwd-norm-online-query-init',
     )
 
 def set_options(opt):

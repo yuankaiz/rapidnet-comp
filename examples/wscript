@@ -344,6 +344,9 @@ def build(bld):
     # obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-oct092016-test')
     # obj.source = 'pktfwd-norm-dist-hlist-online-oct092016-test.cc'
 
-    obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-auxtables-test')
-    obj.source = 'pktfwd-norm-dist-hlist-online-auxtables-test.cc'
+    # obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-auxtables-test')
+    # obj.source = 'pktfwd-norm-dist-hlist-online-auxtables-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-auxtables-query-test')
+    obj.source = 'pktfwd-norm-dist-hlist-online-auxtables-query-test.cc'
 

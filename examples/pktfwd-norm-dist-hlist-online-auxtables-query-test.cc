@@ -17,21 +17,30 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pktfwd-norm-prov-auxtable-query-module.h"
+#include "ns3/pktfwd-norm-dist-hlist-online-auxtables-query-module.h"
 #include "ns3/pktfwd-norm-online-query-init-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 #include "ns3/helper-module.h"
 
-
-#define ModuleName PktfwdNormProvAuxtableQuery
-#define ModuleNameStr "PktfwdNormProvAuxtableQuery"
-#define ModuleHelper PktfwdNormProvAuxtableQueryHelper
-#define ModuleNameSpace pktfwdnormprovauxtablequery
+#define ModuleName PktfwdNormDistHlistOnlineAuxtablesQuery
+#define ModuleNameStr "PktfwdNormDistHlistOnlineAuxtablesQuery"
+#define ModuleHelper PktfwdNormDistHlistOnlineAuxtablesQueryHelper
+#define ModuleNameSpace pktfwdnormdisthlistonlineauxtablesquery
 #define QueryModuleName PktfwdNormOnlineQueryInit
 #define QueryModuleNameStr "PktfwdNormOnlineQueryInit"
-#define QueryModuleHelper PktfwdNormProvProvqueHelper
-#define QueryModuleNameSpace pktfwdnormprovprovqueryoct0116
+#define QueryModuleHelper PktfwdNormOnlineQueryInitHelper
+#define QueryModuleNameSpace pktfwdnormonlinequeryinit
+
+
+/* Rule recording flag*/
+#define recordrule(node)\
+  tuple(ModuleName::RECORDRULE,\
+  attr("recordRule_attr1", Ipv4Value, node))
+
+#define insert_recordrule(node)                                            \
+  app(node) -> Insert(recordrule(addr(node)));
+
 
 /* Links connecting network devices*/
 #define link(sw, nei)\
@@ -63,6 +72,17 @@
 #define insert_flowentry(sw, dst, next)				\
   app(sw) -> Insert(flowentry(addr(sw), addr(dst), addr(next)));
 
+/* Program ID*/
+#define programid(host, dstadd, progid)         \
+  tuple(ModuleName::PROGRAMID,\
+  attr("programID_attr1", Ipv4Value, host),  \
+  attr("programID_attr2", Ipv4Value, dstadd), \
+  attr("programID_attr3", StrValue, progid))
+
+#define insert_programid(host, dstadd, progid)                            \
+  app(host) -> Insert(programid(addr(host), addr(dstadd), progid));
+
+
 /* Tuple to query*/
 #define queryTuple(ret, name, loc, src, dst, data) \
   tuple(QueryModuleName::TUPLE,\
@@ -89,8 +109,9 @@ ApplicationContainer queryApps;
 void Print ()
 {
   PrintRelation (apps, ModuleName::RECVPACKET);
-  // PrintRelation (apps, ModuleName::PROV);
-  // PrintRelation (apps, ModuleName::RULEEXEC);
+  PrintRelation (apps, ModuleName::RULEEXEC);
+  PrintRelation (apps, ModuleName::PROVSTR);
+  PrintRelation (apps, ModuleName::RULEINFO);
 
   PrintRelation (queryApps, QueryModuleName::RECORDS);
 }
@@ -104,9 +125,7 @@ void BuildTopology()
   
   /* Connect switches to hosts and each other*/
   insert_link(1, 2);
-  //  insert_link(2, 1);
   insert_link(2, 3);    
-  //  insert_link(3, 2);
 }
 
 void SetupFlowTable()
@@ -116,9 +135,28 @@ void SetupFlowTable()
   insert_flowentry(2, 3, 3);
 }
 
-void PacketInsertion()
+void InitRuleRecording()
+{
+  insert_recordrule(1);
+  insert_recordrule(2);
+  insert_recordrule(3);
+}
+
+
+void SetProgramID()
+{
+  insert_programid(1,3,"1");
+}
+
+void FirstPacketInsertion()
 {
   insert_packet(1, 1, 3, "data");
+
+}
+
+void SecondPacketInsertion()
+{
+  insert_packet(1, 1, 3, "hello");
 }
 
 void QueryInsertion()
@@ -176,8 +214,11 @@ main (int argc, char *argv[])
   queryApps.Stop (Seconds (500.0));
 
   schedule (0.0001, BuildTopology);
+  schedule (1.0000, InitRuleRecording);
+  schedule (2.0001, SetProgramID);
   schedule (3.0000, SetupFlowTable);
-  schedule (4.0000, PacketInsertion);
+  schedule (4.0000, FirstPacketInsertion);
+  schedule (6.0000, SecondPacketInsertion);
   schedule (400.0000, QueryInsertion);
   schedule (499.0000, Print);
 
