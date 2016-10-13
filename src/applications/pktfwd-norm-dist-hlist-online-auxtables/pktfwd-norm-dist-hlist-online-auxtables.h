@@ -43,6 +43,7 @@ public:
   static const string PROGRAMID;
   static const string PROVHASHTABLE;
   static const string PROVLINK;
+  static const string PROVREF;
   static const string PROVSTR;
   static const string RECORDRULE;
   static const string RECVPACKET;
