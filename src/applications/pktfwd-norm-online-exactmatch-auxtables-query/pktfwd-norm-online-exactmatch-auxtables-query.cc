@@ -128,7 +128,8 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::InitDatabase ()
     attrdef ("provLink_attr3", INT32),
     attrdef ("provLink_attr4", IPV4),
     attrdef ("provLink_attr5", ID),
-    attrdef ("provLink_attr6", INT32)));
+    attrdef ("provLink_attr6", INT32),
+    attrdef ("provLink_attr7", ID)));
 
   AddRelationWithKeys (PROVREF, attrdeflist (
     attrdef ("provRef_attr2", ID)));
@@ -1069,6 +1070,14 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp
     FFirst::New (
       VarExpr::New ("TempTag2"))));
 
+  result->Assign (Assignor::New ("TempTag3",
+    FRemoveFirst::New (
+      VarExpr::New ("TempTag2"))));
+
+  result->Assign (Assignor::New ("PIDequi",
+    FFirst::New (
+      VarExpr::New ("TempTag3"))));
+
   result = result->Project (
     PROVLINK,
     strlist ("epacketTemp_attr1",
@@ -1076,13 +1085,15 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp
       "CurCount",
       "Preloc",
       "PreRID",
-      "PreCount"),
+      "PreCount",
+      "PIDequi"),
     strlist ("provLink_attr1",
       "provLink_attr2",
       "provLink_attr3",
       "provLink_attr4",
       "provLink_attr5",
-      "provLink_attr6"));
+      "provLink_attr6",
+      "provLink_attr7"));
 
   Insert (result);
 }
@@ -1664,6 +1675,14 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Prov_rh2_4_eca (Ptr<Tuple> erecvPacket
     FFirst::New (
       VarExpr::New ("TempTag2"))));
 
+  result->Assign (Assignor::New ("TempTag3",
+    FRemoveFirst::New (
+      VarExpr::New ("TempTag2"))));
+
+  result->Assign (Assignor::New ("PIDequi",
+    FFirst::New (
+      VarExpr::New ("TempTag3"))));
+
   result = result->Project (
     PROVLINK,
     strlist ("erecvPacketTemp_attr1",
@@ -1671,13 +1690,15 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Prov_rh2_4_eca (Ptr<Tuple> erecvPacket
       "CurCount",
       "Preloc",
       "PreRID",
-      "PreCount"),
+      "PreCount",
+      "PIDequi"),
     strlist ("provLink_attr1",
       "provLink_attr2",
       "provLink_attr3",
       "provLink_attr4",
       "provLink_attr5",
-      "provLink_attr6"));
+      "provLink_attr6",
+      "provLink_attr7"));
 
   Insert (result);
 }
@@ -1806,18 +1827,10 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Ro1_eca (Ptr<Tuple> recvPacketProv)
     FFirst::New (
       VarExpr::New ("RemainTag5"))));
 
-  result->Assign (Assignor::New ("EquiHash",
-    FSha1::New (
-      Operation::New (RN_PLUS,
-        Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("ProgID")),
-        VarExpr::New ("PIDequi")))));
-
   result = result->Project (
     PROVHASHTABLE,
     strlist ("recvPacketProv_attr1",
-      "EquiHash",
+      "PIDequi",
       "ProgID",
       "Loc",
       "RID",
@@ -1887,27 +1900,11 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Ro2_eca (Ptr<Tuple> recvPacketProv)
     FFirst::New (
       VarExpr::New ("RemainTag4"))));
 
-  result->Assign (Assignor::New ("RemainTag5",
-    FRemoveFirst::New (
-      VarExpr::New ("RemainTag4"))));
-
-  result->Assign (Assignor::New ("ProgID",
-    FFirst::New (
-      VarExpr::New ("RemainTag5"))));
-
-  result->Assign (Assignor::New ("EquiHash",
-    FSha1::New (
-      Operation::New (RN_PLUS,
-        Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("ProgID")),
-        VarExpr::New ("PIDequi")))));
-
   result = result->Project (
     PROVREF,
     strlist ("recvPacketProv_attr1",
       "PID",
-      "EquiHash",
+      "PIDequi",
       "PIDev"),
     strlist ("provRef_attr1",
       "provRef_attr2",
@@ -1997,27 +1994,11 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rho3_eca (Ptr<Tuple> recvPacketNP)
     FFirst::New (
       VarExpr::New ("PIDHash1"))));
 
-  result->Assign (Assignor::New ("PIDHash2",
-    FRemoveFirst::New (
-      VarExpr::New ("PIDHash1"))));
-
-  result->Assign (Assignor::New ("ProgID",
-    FFirst::New (
-      VarExpr::New ("PIDHash2"))));
-
-  result->Assign (Assignor::New ("EquiHash",
-    FSha1::New (
-      Operation::New (RN_PLUS,
-        Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("ProgID")),
-        VarExpr::New ("PIDequi")))));
-
   result = result->Project (
     PROVREF,
     strlist ("recvPacketNP_attr1",
       "PID",
-      "EquiHash",
+      "PIDequi",
       "PIDev"),
     strlist ("provRef_attr1",
       "provRef_attr2",
@@ -2080,6 +2061,7 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqini_eca (Ptr<Tuple> provQuery)
       "provHashTable_attr5",
       "provHashTable_attr6",
       "provRef_attr4",
+      "provRef_attr3",
       "provQuery_attr4",
       "provHashTable_attr4"),
     strlist ("rQuery_attr1",
@@ -2088,6 +2070,7 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqini_eca (Ptr<Tuple> provQuery)
       "rQuery_attr4",
       "rQuery_attr5",
       "rQuery_attr6",
+      "rQuery_attr7",
       RN_DEST));
 
   Send (result);
@@ -2102,8 +2085,8 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqev_eca (Ptr<Tuple> rQuery)
 
   result = GetRelation (PROVLINK)->Join (
     rQuery,
-    strlist ("provLink_attr2", "provLink_attr1"),
-    strlist ("rQuery_attr3", "rQuery_attr1"));
+    strlist ("provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
 
   result->Assign (Assignor::New ("TupleRet",
     VarExpr::New ("rQuery_attr1")));
@@ -2150,8 +2133,8 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqrec_eca (Ptr<Tuple> rQuery)
 
   result = GetRelation (PROVLINK)->Join (
     rQuery,
-    strlist ("provLink_attr2", "provLink_attr1"),
-    strlist ("rQuery_attr3", "rQuery_attr1"));
+    strlist ("provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
 
   result->Assign (Assignor::New ("NNQID",
     FSha1::New (
@@ -2174,6 +2157,7 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqrec_eca (Ptr<Tuple> rQuery)
       "provLink_attr5",
       "provLink_attr6",
       "rQuery_attr5",
+      "rQuery_attr6",
       "rQuery_attr1",
       "provLink_attr4"),
     strlist ("rQuery_attr1",
@@ -2182,6 +2166,7 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqrec_eca (Ptr<Tuple> rQuery)
       "rQuery_attr4",
       "rQuery_attr5",
       "rQuery_attr6",
+      "rQuery_attr7",
       RN_DEST));
 
   Send (result);
@@ -2375,7 +2360,7 @@ PktfwdNormOnlineExactmatchAuxtablesQuery::Rqrt1_eca (Ptr<Tuple> rQuery)
       "Buff",
       "ruleExec_attr3",
       "BodyNum",
-      "rQuery_attr6"),
+      "rQuery_attr7"),
     strlist ("provResult_attr1",
       "provResult_attr2",
       "provResult_attr3",

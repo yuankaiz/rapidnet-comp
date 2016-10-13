@@ -109,6 +109,7 @@ ApplicationContainer queryApps;
 void Print ()
 {
   PrintRelation (apps, ModuleName::RECVPACKET);
+  PrintRelation (apps, ModuleName::PROVLINK);
   PrintRelation (apps, ModuleName::RULEEXEC);
   //  PrintRelation (apps, ModuleName::PROVSTR);
   //  PrintRelation (apps, ModuleName::RULEINFO);
