@@ -356,4 +356,7 @@ def build(bld):
     obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-rmitm-auxtables-query-test')
     obj.source = 'pktfwd-norm-dist-hlist-rmitm-auxtables-query-test.cc'
 
+    obj = bld.create_ns3_program('pktfwd-norm-online-exactmatch-auxtables-query-test')
+    obj.source = 'pktfwd-norm-online-exactmatch-auxtables-query-test.cc'
+
 
