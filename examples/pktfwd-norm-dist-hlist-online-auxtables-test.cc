@@ -101,8 +101,9 @@ void Print ()
 {
   PrintRelation (apps, ModuleName::RECVPACKET);
   PrintRelation (apps, ModuleName::RULEEXEC);
-  PrintRelation (apps, ModuleName::PROVSTR);
-  PrintRelation (apps, ModuleName::RULEINFO);
+  PrintRelation (apps, ModuleName::PROVLINK);
+  //  PrintRelation (apps, ModuleName::PROVSTR);
+  //  PrintRelation (apps, ModuleName::RULEINFO);
 
 //  PrintRelation (queryApps, PktfwdNormNodevProvquery::RECORDS);
 }
