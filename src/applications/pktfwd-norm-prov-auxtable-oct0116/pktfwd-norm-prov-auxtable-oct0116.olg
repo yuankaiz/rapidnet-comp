@@ -116,12 +116,16 @@ prov_rs1_6 provStr(@Next, VID, TpStrList) :-
 /*Packet initialization*/
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List) :- 
 	   initPacket(@Node, SrcAdd, DstAdd, Data), 
+	   flowEntry(@Node, DstAdd, Next),
 	   link(@Node, Next), 
 	   PID2 := f_sha1(((("initPacket"+ Node)+ SrcAdd)+ DstAdd)+ Data), 
-	   List := f_append(PID2), 
+	   List2 := f_append(PID2), 
 	   PID3 := f_sha1(("link"+ Node)+ Next), 
 	   List3 := f_append(PID3), 
-	   List := f_concat(List, List3), 
+	   PID4 := f_sha1("flowEntry"+Node+DstAdd+Next),
+	   List4 := f_append(PID4),
+	   List5 := f_concat(List2, List3),
+	   List := f_concat(List5, List4),
 	   RLOC := Node, 
 	   R := "rh1", 
 	   RID := f_sha1((R+ RLOC)+ List).

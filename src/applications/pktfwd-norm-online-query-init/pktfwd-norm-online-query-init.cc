@@ -78,7 +78,8 @@ PktfwdNormOnlineQueryInit::InitDatabase ()
   AddRelationWithKeys (RECORDS, attrdeflist (
     attrdef ("records_attr1", IPV4),
     attrdef ("records_attr2", ID),
-    attrdef ("records_attr3", ID)));
+    attrdef ("records_attr3", ID),
+    attrdef ("records_attr4", STR)));
 
   AddRelationWithKeys (TUPLE, attrdeflist (
     attrdef ("tuple_attr1", IPV4),
