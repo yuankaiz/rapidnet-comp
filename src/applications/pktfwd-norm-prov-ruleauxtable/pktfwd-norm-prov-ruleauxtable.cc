@@ -224,9 +224,13 @@ PktfwdNormProvRuleauxtable::DemuxRecv (Ptr<Tuple> tuple)
     {
       Prov_rh1_1Eca0Ins (tuple);
     }
-  if (IsInsertEvent (tuple, LINK))
+  if (IsInsertEvent (tuple, FLOWENTRY))
     {
       Prov_rh1_1Eca1Ins (tuple);
+    }
+  if (IsInsertEvent (tuple, LINK))
+    {
+      Prov_rh1_1Eca2Ins (tuple);
     }
   if (IsRecvEvent (tuple, PACKET))
     {
@@ -1303,10 +1307,15 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (LINK)->Join (
+  result = GetRelation (FLOWENTRY)->Join (
     initPacket,
-    strlist ("link_attr1"),
-    strlist ("initPacket_attr1"));
+    strlist ("flowEntry_attr2", "flowEntry_attr1"),
+    strlist ("initPacket_attr3", "initPacket_attr1"));
+
+  result = GetRelation (LINK)->Join (
+    result,
+    strlist ("link_attr2", "link_attr1"),
+    strlist ("flowEntry_attr3", "initPacket_attr1"));
 
   result->Assign (Assignor::New ("PID2",
     FSha1::New (
@@ -1320,7 +1329,7 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("List2",
     FAppend::New (
       VarExpr::New ("PID2"))));
 
@@ -1330,16 +1339,35 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
         Operation::New (RN_PLUS,
           ValueExpr::New (StrValue::New ("link")),
           VarExpr::New ("initPacket_attr1")),
-        VarExpr::New ("link_attr2")))));
+        VarExpr::New ("flowEntry_attr3")))));
 
   result->Assign (Assignor::New ("List3",
     FAppend::New (
       VarExpr::New ("PID3"))));
 
+  result->Assign (Assignor::New ("PID4",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("flowEntry")),
+            VarExpr::New ("initPacket_attr1")),
+          VarExpr::New ("initPacket_attr3")),
+        VarExpr::New ("flowEntry_attr3")))));
+
+  result->Assign (Assignor::New ("List4",
+    FAppend::New (
+      VarExpr::New ("PID4"))));
+
+  result->Assign (Assignor::New ("List5",
+    FConcat::New (
+      VarExpr::New ("List2"),
+      VarExpr::New ("List3"))));
+
   result->Assign (Assignor::New ("List",
     FConcat::New (
-      VarExpr::New ("List"),
-      VarExpr::New ("List3"))));
+      VarExpr::New ("List5"),
+      VarExpr::New ("List4"))));
 
   result->Assign (Assignor::New ("RLOC",
     VarExpr::New ("initPacket_attr1")));
@@ -1358,7 +1386,7 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
-      "link_attr2",
+      "flowEntry_attr3",
       "initPacket_attr2",
       "initPacket_attr3",
       "initPacket_attr4",
@@ -1380,9 +1408,116 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca0Ins (Ptr<Tuple> initPacket)
 }
 
 void
-PktfwdNormProvRuleauxtable::Prov_rh1_1Eca1Ins (Ptr<Tuple> link)
+PktfwdNormProvRuleauxtable::Prov_rh1_1Eca1Ins (Ptr<Tuple> flowEntry)
 {
   RAPIDNET_LOG_INFO ("Prov_rh1_1Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (INITPACKET)->Join (
+    flowEntry,
+    strlist ("initPacket_attr3", "initPacket_attr1"),
+    strlist ("flowEntry_attr2", "flowEntry_attr1"));
+
+  result = GetRelation (LINK)->Join (
+    result,
+    strlist ("link_attr2", "link_attr1"),
+    strlist ("flowEntry_attr3", "flowEntry_attr1"));
+
+  result->Assign (Assignor::New ("PID2",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          Operation::New (RN_PLUS,
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("initPacket")),
+              VarExpr::New ("flowEntry_attr1")),
+            VarExpr::New ("initPacket_attr2")),
+          VarExpr::New ("flowEntry_attr2")),
+        VarExpr::New ("initPacket_attr4")))));
+
+  result->Assign (Assignor::New ("List2",
+    FAppend::New (
+      VarExpr::New ("PID2"))));
+
+  result->Assign (Assignor::New ("PID3",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          ValueExpr::New (StrValue::New ("link")),
+          VarExpr::New ("flowEntry_attr1")),
+        VarExpr::New ("flowEntry_attr3")))));
+
+  result->Assign (Assignor::New ("List3",
+    FAppend::New (
+      VarExpr::New ("PID3"))));
+
+  result->Assign (Assignor::New ("PID4",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("flowEntry")),
+            VarExpr::New ("flowEntry_attr1")),
+          VarExpr::New ("flowEntry_attr2")),
+        VarExpr::New ("flowEntry_attr3")))));
+
+  result->Assign (Assignor::New ("List4",
+    FAppend::New (
+      VarExpr::New ("PID4"))));
+
+  result->Assign (Assignor::New ("List5",
+    FConcat::New (
+      VarExpr::New ("List2"),
+      VarExpr::New ("List3"))));
+
+  result->Assign (Assignor::New ("List",
+    FConcat::New (
+      VarExpr::New ("List5"),
+      VarExpr::New ("List4"))));
+
+  result->Assign (Assignor::New ("RLOC",
+    VarExpr::New ("flowEntry_attr1")));
+
+  result->Assign (Assignor::New ("R",
+    ValueExpr::New (StrValue::New ("rh1"))));
+
+  result->Assign (Assignor::New ("RID",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          VarExpr::New ("R"),
+          VarExpr::New ("RLOC")),
+        VarExpr::New ("List")))));
+
+  result = result->Project (
+    EPACKETTEMP,
+    strlist ("RLOC",
+      "flowEntry_attr3",
+      "initPacket_attr2",
+      "flowEntry_attr2",
+      "initPacket_attr4",
+      "RID",
+      "R",
+      "List",
+      "RLOC"),
+    strlist ("epacketTemp_attr1",
+      "epacketTemp_attr2",
+      "epacketTemp_attr3",
+      "epacketTemp_attr4",
+      "epacketTemp_attr5",
+      "epacketTemp_attr6",
+      "epacketTemp_attr7",
+      "epacketTemp_attr8",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+PktfwdNormProvRuleauxtable::Prov_rh1_1Eca2Ins (Ptr<Tuple> link)
+{
+  RAPIDNET_LOG_INFO ("Prov_rh1_1Eca2Ins triggered");
 
   Ptr<RelationBase> result;
 
@@ -1390,6 +1525,11 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca1Ins (Ptr<Tuple> link)
     link,
     strlist ("initPacket_attr1"),
     strlist ("link_attr1"));
+
+  result = GetRelation (FLOWENTRY)->Join (
+    result,
+    strlist ("flowEntry_attr2", "flowEntry_attr3", "flowEntry_attr1"),
+    strlist ("initPacket_attr3", "link_attr2", "link_attr1"));
 
   result->Assign (Assignor::New ("PID2",
     FSha1::New (
@@ -1403,7 +1543,7 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca1Ins (Ptr<Tuple> link)
           VarExpr::New ("initPacket_attr3")),
         VarExpr::New ("initPacket_attr4")))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("List2",
     FAppend::New (
       VarExpr::New ("PID2"))));
 
@@ -1419,10 +1559,29 @@ PktfwdNormProvRuleauxtable::Prov_rh1_1Eca1Ins (Ptr<Tuple> link)
     FAppend::New (
       VarExpr::New ("PID3"))));
 
+  result->Assign (Assignor::New ("PID4",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("flowEntry")),
+            VarExpr::New ("link_attr1")),
+          VarExpr::New ("initPacket_attr3")),
+        VarExpr::New ("link_attr2")))));
+
+  result->Assign (Assignor::New ("List4",
+    FAppend::New (
+      VarExpr::New ("PID4"))));
+
+  result->Assign (Assignor::New ("List5",
+    FConcat::New (
+      VarExpr::New ("List2"),
+      VarExpr::New ("List3"))));
+
   result->Assign (Assignor::New ("List",
     FConcat::New (
-      VarExpr::New ("List"),
-      VarExpr::New ("List3"))));
+      VarExpr::New ("List5"),
+      VarExpr::New ("List4"))));
 
   result->Assign (Assignor::New ("RLOC",
     VarExpr::New ("link_attr1")));
