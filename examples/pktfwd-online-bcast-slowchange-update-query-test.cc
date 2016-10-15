@@ -118,11 +118,12 @@ ApplicationContainer queryApps;
 void Print ()
 {
   PrintRelation (apps, ModuleName::RECVPACKET);
-  //  PrintRelation (apps, ModuleName::PROVHASHTABLE);
+  PrintRelation (apps, ModuleName::PROVHASHTABLE);
   PrintRelation (apps, ModuleName::FLOWENTRY);
-  //  PrintRelation (apps, ModuleName::RULEEXEC);
-  //  PrintRelation (apps, ModuleName::PROVLINK);
+  PrintRelation (apps, ModuleName::RULEEXEC);
+  PrintRelation (apps, ModuleName::PROVLINK);
   PrintRelation (apps, ModuleName::PROVSTR);
+  PrintRelation (apps, ModuleName::PROVRESULT);
   //  PrintRelation (apps, ModuleName::RULEINFO);
 
   PrintRelation (queryApps, QueryModuleName::RECORDS);
@@ -194,7 +195,7 @@ void QueryInsertion()
 {
   Ptr<RapidNetApplicationBase> qnode = queryApps.Get(0)->GetObject<RapidNetApplicationBase>();
   insert_queryTuple("recvPacket", 5, 1, 5, "data");
-  //  insert_queryTuple("recvPacket", 5, 1, 5, "hello");
+  insert_queryTuple("recvPacket", 5, 1, 5, "hello");
 }
 
 void InitApps(int nodeNum)
@@ -251,7 +252,7 @@ main (int argc, char *argv[])
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, FirstPacketInsertion);
   schedule (6.0000, UpdateSlowChangingTable);
-  //  schedule (10.0000, FirstPacketInsertion);
+  schedule (10.0000, FirstPacketInsertion);
   schedule (10.0000, SecondPacketInsertion);
   schedule (400.0000, QueryInsertion);
   schedule (499.0000, Print);

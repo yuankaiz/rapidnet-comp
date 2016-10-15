@@ -173,8 +173,8 @@ def build(bld):
     # #obj = bld.create_ns3_program('rapidnet-app-emulator')
     # #obj.source = 'rapidnet-app-emulator.cc'   
 
-    # obj = bld.create_ns3_program('pingpong-test')
-    # obj.source = 'pingpong-test.cc'
+    obj = bld.create_ns3_program('pingpong-test')
+    obj.source = 'pingpong-test.cc'
 
     # obj = bld.create_ns3_program('arp-test')
     # obj.source = 'arp-test.cc'
@@ -358,5 +358,8 @@ def build(bld):
 
     # obj = bld.create_ns3_program('pktfwd-norm-online-exactmatch-auxtables-query-test')
     # obj.source = 'pktfwd-norm-online-exactmatch-auxtables-query-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-query-test')
+    obj.source = 'pktfwd-online-bcast-slowchange-update-query-test.cc'
 
 

@@ -140,13 +140,16 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::InitDatabase ()
     attrdef ("provLink_attr4", IPV4),
     attrdef ("provLink_attr5", ID),
     attrdef ("provLink_attr6", INT32),
-    attrdef ("provLink_attr7", ID)));
+    attrdef ("provLink_attr7", ID),
+    attrdef ("provLink_attr8", ID)));
 
   AddRelationWithKeys (PROVREF, attrdeflist (
     attrdef ("provRef_attr2", ID)));
 
   AddRelationWithKeys (PROVRESULT, attrdeflist (
-    attrdef ("provResult_attr2", ID)));
+    attrdef ("provResult_attr2", ID),
+    attrdef ("provResult_attr3", ID),
+    attrdef ("provResult_attr4", ID)));
 
   AddRelationWithKeys (PROVSTR, attrdeflist (
     attrdef ("provStr_attr2", ID)));
@@ -1018,6 +1021,31 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_1_eca (Ptr<Tuple> packetProv)
           VarExpr::New ("RLOC")),
         VarExpr::New ("List")))));
 
+  result->Assign (Assignor::New ("ProvID",
+    FFirst::New (
+      VarExpr::New ("packetProv_attr5"))));
+
+  result->Assign (Assignor::New ("NewProvID",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          ValueExpr::New (StrValue::New ("")),
+          VarExpr::New ("ProvID")),
+        VarExpr::New ("RID")))));
+
+  result->Assign (Assignor::New ("NewProvID",
+    FAppend::New (
+      VarExpr::New ("NewProvID"))));
+
+  result->Assign (Assignor::New ("NewTag1",
+    FRemoveFirst::New (
+      VarExpr::New ("packetProv_attr5"))));
+
+  result->Assign (Assignor::New ("NewTag",
+    FConcat::New (
+      VarExpr::New ("NewProvID"),
+      VarExpr::New ("NewTag1"))));
+
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
@@ -1028,7 +1056,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_1_eca (Ptr<Tuple> packetProv)
       "RID",
       "R",
       "List",
-      "packetProv_attr5",
+      "NewTag",
       "RLOC"),
     strlist ("epacketTemp_attr1",
       "epacketTemp_attr2",
@@ -1107,9 +1135,17 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp)
 
   Ptr<Tuple> result = epacketTemp;
 
-  result->Assign (Assignor::New ("PreCount",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("epacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("TempTag0",
+    FRemoveFirst::New (
+      VarExpr::New ("epacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("PreCount",
+    FFirst::New (
+      VarExpr::New ("TempTag0"))));
 
   result->Assign (Assignor::New ("CurCount",
     Operation::New (RN_PLUS,
@@ -1118,7 +1154,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp)
 
   result->Assign (Assignor::New ("TempTag1",
     FRemoveFirst::New (
-      VarExpr::New ("epacketTemp_attr9"))));
+      VarExpr::New ("TempTag0"))));
 
   result->Assign (Assignor::New ("Preloc",
     FFirst::New (
@@ -1148,14 +1184,16 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_4_eca (Ptr<Tuple> epacketTemp)
       "Preloc",
       "PreRID",
       "PreCount",
-      "PIDequi"),
+      "PIDequi",
+      "ProvID"),
     strlist ("provLink_attr1",
       "provLink_attr2",
       "provLink_attr3",
       "provLink_attr4",
       "provLink_attr5",
       "provLink_attr6",
-      "provLink_attr7"));
+      "provLink_attr7",
+      "provLink_attr8"));
 
   Insert (result);
 }
@@ -1167,9 +1205,21 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_5_eca (Ptr<Tuple> epacketTemp)
 
   Ptr<Tuple> result = epacketTemp;
 
-  result->Assign (Assignor::New ("Count",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("epacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("ProvIDList",
+    FAppend::New (
+      VarExpr::New ("ProvID"))));
+
+  result->Assign (Assignor::New ("TempNewTag0",
+    FRemoveFirst::New (
+      VarExpr::New ("epacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("Count",
+    FFirst::New (
+      VarExpr::New ("TempNewTag0"))));
 
   result->Assign (Assignor::New ("NewCount",
     Operation::New (RN_PLUS,
@@ -1182,7 +1232,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_5_eca (Ptr<Tuple> epacketTemp)
 
   result->Assign (Assignor::New ("TempNewTag1",
     FRemoveFirst::New (
-      VarExpr::New ("epacketTemp_attr9"))));
+      VarExpr::New ("TempNewTag0"))));
 
   result->Assign (Assignor::New ("TempNewTag2",
     FRemoveFirst::New (
@@ -1210,10 +1260,15 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rs1_5_eca (Ptr<Tuple> epacketTemp)
       VarExpr::New ("Loclist"),
       VarExpr::New ("TempNewTag4"))));
 
-  result->Assign (Assignor::New ("NewTag",
+  result->Assign (Assignor::New ("TempNewTag6",
     FConcat::New (
       VarExpr::New ("NewCountlist"),
       VarExpr::New ("TempNewTag5"))));
+
+  result->Assign (Assignor::New ("NewTag",
+    FConcat::New (
+      VarExpr::New ("ProvIDList"),
+      VarExpr::New ("TempNewTag6"))));
 
   result = result->Project (
     PACKETPROV,
@@ -1711,9 +1766,26 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh1_1_eca (Ptr<Tuple> initPacketCou
     FAppend::New (
       VarExpr::New ("InitProvHash"))));
 
+  result->Assign (Assignor::New ("ProvID",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          ValueExpr::New (StrValue::New ("")),
+          VarExpr::New ("InitProvHash")),
+        VarExpr::New ("RID")))));
+
+  result->Assign (Assignor::New ("ProvIDList",
+    FAppend::New (
+      VarExpr::New ("ProvID"))));
+
+  result->Assign (Assignor::New ("TempTag0",
+    FConcat::New (
+      VarExpr::New ("ProvIDList"),
+      VarExpr::New ("Countlist"))));
+
   result->Assign (Assignor::New ("TempTag1",
     FConcat::New (
-      VarExpr::New ("Countlist"),
+      VarExpr::New ("TempTag0"),
       VarExpr::New ("InitProvNodelist"))));
 
   result->Assign (Assignor::New ("TempTag2",
@@ -1875,9 +1947,26 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh1_2_eca (Ptr<Tuple> initPacketPro
     FAppend::New (
       VarExpr::New ("InitProvHash"))));
 
+  result->Assign (Assignor::New ("ProvID",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          ValueExpr::New (StrValue::New ("")),
+          VarExpr::New ("InitProvHash")),
+        VarExpr::New ("RID")))));
+
+  result->Assign (Assignor::New ("ProvIDList",
+    FAppend::New (
+      VarExpr::New ("ProvID"))));
+
+  result->Assign (Assignor::New ("TempTag0",
+    FConcat::New (
+      VarExpr::New ("ProvIDList"),
+      VarExpr::New ("Countlist"))));
+
   result->Assign (Assignor::New ("TempTag1",
     FConcat::New (
-      VarExpr::New ("Countlist"),
+      VarExpr::New ("TempTag0"),
       VarExpr::New ("InitProvNodelist"))));
 
   result->Assign (Assignor::New ("TempTag2",
@@ -1951,6 +2040,31 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_1_eca (Ptr<Tuple> packetProv)
           VarExpr::New ("RLOC")),
         VarExpr::New ("List")))));
 
+  result->Assign (Assignor::New ("ProvID",
+    FFirst::New (
+      VarExpr::New ("packetProv_attr5"))));
+
+  result->Assign (Assignor::New ("NewProvID",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          ValueExpr::New (StrValue::New ("")),
+          VarExpr::New ("ProvID")),
+        VarExpr::New ("RID")))));
+
+  result->Assign (Assignor::New ("NewProvID",
+    FAppend::New (
+      VarExpr::New ("NewProvID"))));
+
+  result->Assign (Assignor::New ("NewTag1",
+    FRemoveFirst::New (
+      VarExpr::New ("packetProv_attr5"))));
+
+  result->Assign (Assignor::New ("NewTag",
+    FConcat::New (
+      VarExpr::New ("NewProvID"),
+      VarExpr::New ("NewTag1"))));
+
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("packetProv_attr3"),
@@ -1966,7 +2080,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_1_eca (Ptr<Tuple> packetProv)
       "RID",
       "R",
       "List",
-      "packetProv_attr5",
+      "NewTag",
       "RLOC"),
     strlist ("erecvPacketTemp_attr1",
       "erecvPacketTemp_attr2",
@@ -2019,9 +2133,17 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_4_eca (Ptr<Tuple> erecvPacketTe
 
   Ptr<Tuple> result = erecvPacketTemp;
 
-  result->Assign (Assignor::New ("PreCount",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("erecvPacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("TempTag0",
+    FRemoveFirst::New (
+      VarExpr::New ("erecvPacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("PreCount",
+    FFirst::New (
+      VarExpr::New ("TempTag0"))));
 
   result->Assign (Assignor::New ("CurCount",
     Operation::New (RN_PLUS,
@@ -2030,7 +2152,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_4_eca (Ptr<Tuple> erecvPacketTe
 
   result->Assign (Assignor::New ("TempTag1",
     FRemoveFirst::New (
-      VarExpr::New ("erecvPacketTemp_attr9"))));
+      VarExpr::New ("TempTag0"))));
 
   result->Assign (Assignor::New ("Preloc",
     FFirst::New (
@@ -2060,14 +2182,16 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_4_eca (Ptr<Tuple> erecvPacketTe
       "Preloc",
       "PreRID",
       "PreCount",
-      "PIDequi"),
+      "PIDequi",
+      "ProvID"),
     strlist ("provLink_attr1",
       "provLink_attr2",
       "provLink_attr3",
       "provLink_attr4",
       "provLink_attr5",
       "provLink_attr6",
-      "provLink_attr7"));
+      "provLink_attr7",
+      "provLink_attr8"));
 
   Insert (result);
 }
@@ -2079,9 +2203,21 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_5_eca (Ptr<Tuple> erecvPacketTe
 
   Ptr<Tuple> result = erecvPacketTemp;
 
-  result->Assign (Assignor::New ("Count",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("erecvPacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("ProvIDList",
+    FAppend::New (
+      VarExpr::New ("ProvID"))));
+
+  result->Assign (Assignor::New ("TempNewTag0",
+    FRemoveFirst::New (
+      VarExpr::New ("erecvPacketTemp_attr9"))));
+
+  result->Assign (Assignor::New ("Count",
+    FFirst::New (
+      VarExpr::New ("TempNewTag0"))));
 
   result->Assign (Assignor::New ("NewCount",
     Operation::New (RN_PLUS,
@@ -2094,7 +2230,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_5_eca (Ptr<Tuple> erecvPacketTe
 
   result->Assign (Assignor::New ("TempNewTag1",
     FRemoveFirst::New (
-      VarExpr::New ("erecvPacketTemp_attr9"))));
+      VarExpr::New ("TempNewTag0"))));
 
   result->Assign (Assignor::New ("TempNewTag2",
     FRemoveFirst::New (
@@ -2122,10 +2258,15 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Prov_rh2_5_eca (Ptr<Tuple> erecvPacketTe
       VarExpr::New ("Loclist"),
       VarExpr::New ("TempNewTag4"))));
 
-  result->Assign (Assignor::New ("NewTag",
+  result->Assign (Assignor::New ("TempNewTag6",
     FConcat::New (
       VarExpr::New ("NewCountlist"),
       VarExpr::New ("TempNewTag5"))));
+
+  result->Assign (Assignor::New ("NewTag",
+    FConcat::New (
+      VarExpr::New ("ProvIDList"),
+      VarExpr::New ("TempNewTag6"))));
 
   result = result->Project (
     RECVPACKETPROV,
@@ -2152,13 +2293,21 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Ro1_eca (Ptr<Tuple> recvPacketProv)
 
   Ptr<Tuple> result = recvPacketProv;
 
-  result->Assign (Assignor::New ("Count",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("recvPacketProv_attr5"))));
 
-  result->Assign (Assignor::New ("RemainTag1",
+  result->Assign (Assignor::New ("RemainTag0",
     FRemoveFirst::New (
       VarExpr::New ("recvPacketProv_attr5"))));
+
+  result->Assign (Assignor::New ("Count",
+    FFirst::New (
+      VarExpr::New ("RemainTag0"))));
+
+  result->Assign (Assignor::New ("RemainTag1",
+    FRemoveFirst::New (
+      VarExpr::New ("RemainTag0"))));
 
   result->Assign (Assignor::New ("Loc",
     FFirst::New (
@@ -2233,13 +2382,21 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Ro2_eca (Ptr<Tuple> recvPacketProv)
           VarExpr::New ("recvPacketProv_attr3")),
         VarExpr::New ("recvPacketProv_attr4")))));
 
-  result->Assign (Assignor::New ("Count",
+  result->Assign (Assignor::New ("ProvID",
     FFirst::New (
       VarExpr::New ("recvPacketProv_attr5"))));
 
-  result->Assign (Assignor::New ("RemainTag1",
+  result->Assign (Assignor::New ("RemainTag0",
     FRemoveFirst::New (
       VarExpr::New ("recvPacketProv_attr5"))));
+
+  result->Assign (Assignor::New ("Count",
+    FFirst::New (
+      VarExpr::New ("RemainTag0"))));
+
+  result->Assign (Assignor::New ("RemainTag1",
+    FRemoveFirst::New (
+      VarExpr::New ("RemainTag0"))));
 
   result->Assign (Assignor::New ("Loc",
     FFirst::New (
@@ -2625,8 +2782,8 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqev_eca (Ptr<Tuple> rQuery)
 
   result = GetRelation (PROVLINK)->Join (
     rQuery,
-    strlist ("provLink_attr7", "provLink_attr2", "provLink_attr1"),
-    strlist ("rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
+    strlist ("provLink_attr3", "provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr4", "rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
 
   result->Assign (Assignor::New ("TupleRet",
     VarExpr::New ("rQuery_attr1")));
@@ -2635,8 +2792,10 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqev_eca (Ptr<Tuple> rQuery)
     FSha1::New (
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("rQuery_attr2")),
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("")),
+            VarExpr::New ("rQuery_attr2")),
+          VarExpr::New ("provLink_attr8")),
         VarExpr::New ("rQuery_attr5")))));
 
   result = result->Select (Selector::New (
@@ -2673,15 +2832,17 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrec_eca (Ptr<Tuple> rQuery)
 
   result = GetRelation (PROVLINK)->Join (
     rQuery,
-    strlist ("provLink_attr7", "provLink_attr2", "provLink_attr1"),
-    strlist ("rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
+    strlist ("provLink_attr3", "provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr4", "rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
 
   result->Assign (Assignor::New ("NNQID",
     FSha1::New (
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("rQuery_attr2")),
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("")),
+            VarExpr::New ("rQuery_attr2")),
+          VarExpr::New ("provLink_attr8")),
         VarExpr::New ("provLink_attr5")))));
 
   result = result->Select (Selector::New (
@@ -2719,8 +2880,13 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqsc1_eca (Ptr<Tuple> rQuery)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (RULEEXEC)->Join (
+  result = GetRelation (PROVLINK)->Join (
     rQuery,
+    strlist ("provLink_attr3", "provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr4", "rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
+
+  result = GetRelation (RULEEXEC)->Join (
+    result,
     strlist ("ruleExec_attr2", "ruleExec_attr1"),
     strlist ("rQuery_attr3", "rQuery_attr1"));
 
@@ -2731,12 +2897,14 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqsc1_eca (Ptr<Tuple> rQuery)
     SLOWCHANGEQUERY,
     strlist ("rQuery_attr1",
       "rQuery_attr2",
+      "provLink_attr8",
       "ruleExec_attr4",
       "TupleRet"),
     strlist ("slowChangeQuery_attr1",
       "slowChangeQuery_attr2",
       "slowChangeQuery_attr3",
-      "slowChangeQuery_attr4"));
+      "slowChangeQuery_attr4",
+      "slowChangeQuery_attr5"));
 
   Insert (result);
 }
@@ -2784,7 +2952,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqsc3_eca (Ptr<Tuple> tupleItr)
     Operation::New (RN_LT,
       VarExpr::New ("tupleItr_attr3"),
       FSize::New (
-        VarExpr::New ("slowChangeQuery_attr3")))));
+        VarExpr::New ("slowChangeQuery_attr4")))));
 
   result = result->Project (
     TUPLEITR,
@@ -2812,15 +2980,17 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqsc4_eca (Ptr<Tuple> tupleItr)
 
   result->Assign (Assignor::New ("VID",
     FItem::New (
-      VarExpr::New ("slowChangeQuery_attr3"),
+      VarExpr::New ("slowChangeQuery_attr4"),
       VarExpr::New ("tupleItr_attr3"))));
 
   result->Assign (Assignor::New ("NNQID",
     FSha1::New (
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
-          ValueExpr::New (StrValue::New ("")),
-          VarExpr::New ("tupleItr_attr2")),
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("")),
+            VarExpr::New ("tupleItr_attr2")),
+          VarExpr::New ("slowChangeQuery_attr3")),
         VarExpr::New ("VID")))));
 
   result = result->Project (
@@ -2828,7 +2998,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqsc4_eca (Ptr<Tuple> tupleItr)
     strlist ("tupleItr_attr1",
       "NNQID",
       "VID",
-      "slowChangeQuery_attr4"),
+      "slowChangeQuery_attr5"),
     strlist ("tQuery_attr1",
       "tQuery_attr2",
       "tQuery_attr3",
@@ -2877,8 +3047,13 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt1_eca (Ptr<Tuple> rQuery)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (RULEEXEC)->Join (
+  result = GetRelation (PROVLINK)->Join (
     rQuery,
+    strlist ("provLink_attr3", "provLink_attr7", "provLink_attr2", "provLink_attr1"),
+    strlist ("rQuery_attr4", "rQuery_attr6", "rQuery_attr3", "rQuery_attr1"));
+
+  result = GetRelation (RULEEXEC)->Join (
+    result,
     strlist ("ruleExec_attr2", "ruleExec_attr1"),
     strlist ("rQuery_attr3", "rQuery_attr1"));
 
@@ -2897,6 +3072,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt1_eca (Ptr<Tuple> rQuery)
     strlist ("rQuery_attr1",
       "rQuery_attr2",
       "rQuery_attr3",
+      "provLink_attr8",
       "Buff",
       "ruleExec_attr3",
       "BodyNum",
@@ -2907,7 +3083,8 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt1_eca (Ptr<Tuple> rQuery)
       "provResult_attr4",
       "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"));
+      "provResult_attr7",
+      "provResult_attr8"));
 
   Insert (result);
 }
@@ -2930,7 +3107,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt2_eca (Ptr<Tuple> tReturn)
 
   result->Assign (Assignor::New ("NewBuff",
     FConcat::New (
-      VarExpr::New ("provResult_attr4"),
+      VarExpr::New ("provResult_attr5"),
       VarExpr::New ("ProvBuff"))));
 
   result = result->Select (Selector::New (
@@ -2939,8 +3116,10 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt2_eca (Ptr<Tuple> tReturn)
       FSha1::New (
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("")),
-            VarExpr::New ("provResult_attr2")),
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("")),
+              VarExpr::New ("provResult_attr2")),
+            VarExpr::New ("provResult_attr4")),
           VarExpr::New ("tReturn_attr3"))))));
 
   result = result->Project (
@@ -2948,17 +3127,19 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt2_eca (Ptr<Tuple> tReturn)
     strlist ("tReturn_attr1",
       "provResult_attr2",
       "provResult_attr3",
+      "provResult_attr4",
       "NewBuff",
-      "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"),
+      "provResult_attr7",
+      "provResult_attr8"),
     strlist ("provResult_attr1",
       "provResult_attr2",
       "provResult_attr3",
       "provResult_attr4",
       "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"));
+      "provResult_attr7",
+      "provResult_attr8"));
 
   Insert (result);
 }
@@ -2981,7 +3162,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt3_eca (Ptr<Tuple> rReturn)
 
   result->Assign (Assignor::New ("NewBuff",
     FConcat::New (
-      VarExpr::New ("provResult_attr4"),
+      VarExpr::New ("provResult_attr5"),
       VarExpr::New ("ProvBuff"))));
 
   result = result->Select (Selector::New (
@@ -2990,8 +3171,10 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt3_eca (Ptr<Tuple> rReturn)
       FSha1::New (
         Operation::New (RN_PLUS,
           Operation::New (RN_PLUS,
-            ValueExpr::New (StrValue::New ("")),
-            VarExpr::New ("provResult_attr2")),
+            Operation::New (RN_PLUS,
+              ValueExpr::New (StrValue::New ("")),
+              VarExpr::New ("provResult_attr2")),
+            VarExpr::New ("provResult_attr4")),
           VarExpr::New ("rReturn_attr3"))))));
 
   result = result->Project (
@@ -2999,17 +3182,19 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt3_eca (Ptr<Tuple> rReturn)
     strlist ("rReturn_attr1",
       "provResult_attr2",
       "provResult_attr3",
+      "provResult_attr4",
       "NewBuff",
-      "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"),
+      "provResult_attr7",
+      "provResult_attr8"),
     strlist ("provResult_attr1",
       "provResult_attr2",
       "provResult_attr3",
       "provResult_attr4",
       "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"));
+      "provResult_attr7",
+      "provResult_attr8"));
 
   Insert (result);
 }
@@ -3024,18 +3209,18 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Rqrt4Eca0Ins (Ptr<Tuple> provResult)
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       FSize::New (
-        VarExpr::New ("provResult_attr4")),
-      VarExpr::New ("provResult_attr6"))));
+        VarExpr::New ("provResult_attr5")),
+      VarExpr::New ("provResult_attr7"))));
 
   result = result->Project (
     RRETURNSIG,
     strlist ("provResult_attr1",
       "provResult_attr2",
       "provResult_attr3",
-      "provResult_attr4",
       "provResult_attr5",
       "provResult_attr6",
-      "provResult_attr7"),
+      "provResult_attr7",
+      "provResult_attr8"),
     strlist ("rReturnSig_attr1",
       "rReturnSig_attr2",
       "rReturnSig_attr3",

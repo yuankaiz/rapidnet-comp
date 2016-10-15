@@ -1,4 +1,4 @@
-materialize(records, infinity, infinity, keys(1,2:cid,3:cid)).
+materialize(records, infinity, infinity, keys(1,2:cid,3:cid,4:str)).
 materialize(tuple, infinity, infinity, keys(1,2:str)).
 
 rq1 provQuery(@Loc, QID, VID, Ret) :-
