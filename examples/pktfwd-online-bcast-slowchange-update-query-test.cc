@@ -254,7 +254,7 @@ main (int argc, char *argv[])
   schedule (6.0000, UpdateSlowChangingTable);
   schedule (10.0000, FirstPacketInsertion);
   schedule (10.0000, SecondPacketInsertion);
-  schedule (400.0000, QueryInsertion);
+  schedule (300.0000, QueryInsertion);
   schedule (499.0000, Print);
 
   Simulator::Run ();
