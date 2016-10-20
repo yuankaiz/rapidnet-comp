@@ -152,10 +152,11 @@ void Print ()
 {
   PrintRelation (apps, ModuleName::LINK);
   // PrintRelation (apps, ModuleName::RECVPACKET);
-  // PrintRelation (apps, ModuleName::PROVHASHTABLE);
+  PrintRelation (apps, ModuleName::PROVHASHTABLE);
   // PrintRelation (apps, ModuleName::FLOWENTRY);
-  // PrintRelation (apps, ModuleName::RULEEXEC);
-  // PrintRelation (apps, ModuleName::PROVLINK);
+  PrintRelation (apps, ModuleName::RULEEXEC);
+  PrintRelation (apps, ModuleName::PROVLINK);
+  PrintRelation (apps, ModuleName::PROVREF);
   // PrintRelation (apps, ModuleName::PROVSTR);
   // PrintRelation (apps, ModuleName::PROVRESULT);
   //  PrintRelation (apps, ModuleName::RULEINFO);
@@ -306,16 +307,16 @@ main (int argc, char *argv[])
   queryApps.Start (Seconds(0.0));
   queryApps.Stop (Seconds (500.0));
 
- schedule (0.0001, BuildTopology);
+  schedule (0.0001, BuildTopology);
   schedule (1.0000, InitRuleRecording);
   schedule (2.0001, SetProgramID);
   schedule (3.0000, SetupFlowTable);
   schedule (4.0000, FirstPacketInsertion);
   schedule (6.0000, UpdateSlowChangingTable);
-  schedule (10.0000, FirstPacketInsertion);
-  schedule (10.0000, SecondPacketInsertion);
+  //  schedule (10.0000, FirstPacketInsertion);
+  //  schedule (10.0000, SecondPacketInsertion);
   schedule (300.0000, QueryInsertion);
- schedule (499.0000, Print);
+  schedule (499.0000, Print);
 
   Simulator::Run ();
   Simulator::Destroy ();

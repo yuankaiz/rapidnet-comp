@@ -114,6 +114,7 @@ all_modules = (
     'applications/pktfwd-norm-dist-hlist-rmitm-auxtables-query',
     'applications/pktfwd-norm-online-exactmatch-auxtables-query',
     'applications/pktfwd-online-bcast-slowchange-update-query',
+    'applications/pktfwd-online-bcast-slowchange-update',
     'applications/pktfwd-norm-online-query-init',
     )
 

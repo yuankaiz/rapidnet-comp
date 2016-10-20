@@ -362,7 +362,10 @@ def build(bld):
     # obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-query-test')
     # obj.source = 'pktfwd-online-bcast-slowchange-update-query-test.cc'
 
-    obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-query-p2p-test')
-    obj.source = 'pktfwd-online-bcast-slowchange-update-query-p2p-test.cc'
+    # obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-query-p2p-test')
+    # obj.source = 'pktfwd-online-bcast-slowchange-update-query-p2p-test.cc'
+
+    obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-p2p-test')
+    obj.source = 'pktfwd-online-bcast-slowchange-update-p2p-test.cc'
 
 
