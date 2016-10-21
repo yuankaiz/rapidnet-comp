@@ -1347,10 +1347,15 @@ PktfwdNormDistHlistOnlineAuxtablesQuery::Rh1_eca (Ptr<Tuple> initPacketCount)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (LINK)->Join (
+  result = GetRelation (FLOWENTRY)->Join (
     initPacketCount,
-    strlist ("link_attr1"),
-    strlist ("initPacketCount_attr1"));
+    strlist ("flowEntry_attr2", "flowEntry_attr1"),
+    strlist ("initPacketCount_attr3", "initPacketCount_attr1"));
+
+  result = GetRelation (LINK)->Join (
+    result,
+    strlist ("link_attr2", "link_attr1"),
+    strlist ("flowEntry_attr3", "initPacketCount_attr1"));
 
   result->Assign (Assignor::New ("PIDev",
     FSha1::New (
@@ -1393,12 +1398,12 @@ PktfwdNormDistHlistOnlineAuxtablesQuery::Rh1_eca (Ptr<Tuple> initPacketCount)
 
   result = result->Project (
     PACKET,
-    strlist ("link_attr2",
+    strlist ("flowEntry_attr3",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",
       "PIDHash",
-      "link_attr2"),
+      "flowEntry_attr3"),
     strlist ("packet_attr1",
       "packet_attr2",
       "packet_attr3",
@@ -1416,22 +1421,46 @@ PktfwdNormDistHlistOnlineAuxtablesQuery::Prov_rh1_1_eca (Ptr<Tuple> initPacketCo
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (LINK)->Join (
+  result = GetRelation (FLOWENTRY)->Join (
     initPacketCount,
-    strlist ("link_attr1"),
-    strlist ("initPacketCount_attr1"));
+    strlist ("flowEntry_attr2", "flowEntry_attr1"),
+    strlist ("initPacketCount_attr3", "initPacketCount_attr1"));
 
-  result->Assign (Assignor::New ("PID",
+  result = GetRelation (LINK)->Join (
+    result,
+    strlist ("link_attr2", "link_attr1"),
+    strlist ("flowEntry_attr3", "initPacketCount_attr1"));
+
+  result->Assign (Assignor::New ("PID1",
+    FSha1::New (
+      Operation::New (RN_PLUS,
+        Operation::New (RN_PLUS,
+          Operation::New (RN_PLUS,
+            ValueExpr::New (StrValue::New ("flowEntry")),
+            VarExpr::New ("initPacketCount_attr1")),
+          VarExpr::New ("initPacketCount_attr3")),
+        VarExpr::New ("flowEntry_attr3")))));
+
+  result->Assign (Assignor::New ("List1",
+    FAppend::New (
+      VarExpr::New ("PID1"))));
+
+  result->Assign (Assignor::New ("PID2",
     FSha1::New (
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
           ValueExpr::New (StrValue::New ("link")),
           VarExpr::New ("initPacketCount_attr1")),
-        VarExpr::New ("link_attr2")))));
+        VarExpr::New ("flowEntry_attr3")))));
+
+  result->Assign (Assignor::New ("List2",
+    FAppend::New (
+      VarExpr::New ("PID2"))));
 
   result->Assign (Assignor::New ("List",
-    FAppend::New (
-      VarExpr::New ("PID"))));
+    FConcat::New (
+      VarExpr::New ("List1"),
+      VarExpr::New ("List2"))));
 
   result->Assign (Assignor::New ("RLOC",
     VarExpr::New ("initPacketCount_attr1")));
@@ -1526,7 +1555,7 @@ PktfwdNormDistHlistOnlineAuxtablesQuery::Prov_rh1_1_eca (Ptr<Tuple> initPacketCo
   result = result->Project (
     EPACKETTEMP,
     strlist ("RLOC",
-      "link_attr2",
+      "flowEntry_attr3",
       "initPacketCount_attr2",
       "initPacketCount_attr3",
       "initPacketCount_attr4",

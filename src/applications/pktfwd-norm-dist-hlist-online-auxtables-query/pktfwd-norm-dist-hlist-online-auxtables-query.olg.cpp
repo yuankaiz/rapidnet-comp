@@ -163,6 +163,7 @@ prov_ri3 equiHashTable(@Node, DstAdd, PIDequi) :-
 /* Execution of original rh1*/
 rh1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
+    flowEntry(@Node, DstAdd, Next),
     link(@Node, Next),
     PIDev := f_sha1("initPacket" + Node + SrcAdd + DstAdd + Data),
     PIDcount != 0,
@@ -176,10 +177,14 @@ rh1 packet(@Next, SrcAdd, DstAdd, Data, PIDHash) :-
 /* Tag = (count, preNode, preRID, equiKey, eventHash, progID)*/
 prov_rh1_1 epacketTemp(@RLOC, Next, SrcAdd, DstAdd, Data, RID, R, List, Tag) :-
     initPacketCount(@Node, SrcAdd, DstAdd, Data, PIDequi, ProgID, PIDcount),
+    flowEntry(@Node, DstAdd, Next),
     link(@Node, Next),
     PIDcount == 0,
-    PID := f_sha1(("link"+ Node)+ Next),
-    List := f_append(PID),
+    PID1 := f_sha1("flowEntry"+Node+DstAdd+Next),
+    List1 := f_append(PID1),
+    PID2 := f_sha1(("link"+ Node)+ Next),
+    List2 := f_append(PID2),
+    List := f_concat(List1, List2),
     RLOC := Node,
     R := "rh1",
     RID := f_sha1((R+ RLOC)+ List),
