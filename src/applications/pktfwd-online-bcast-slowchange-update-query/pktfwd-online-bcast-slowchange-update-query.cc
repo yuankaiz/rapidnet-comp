@@ -361,7 +361,7 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::DemuxRecv (Ptr<Tuple> tuple)
     {
       Ru5_eca (tuple);
     }
-  if (IsRecvEvent (tuple, RESETTRIGGER))
+  if (IsRecvEvent (tuple, TRIGRECORDCOUNT))
     {
       Ru6_eca (tuple);
     }
@@ -2698,23 +2698,28 @@ PktfwdOnlineBcastSlowchangeUpdateQuery::Ru5_eca (Ptr<Tuple> trigRecordCount)
 }
 
 void
-PktfwdOnlineBcastSlowchangeUpdateQuery::Ru6_eca (Ptr<Tuple> resetTrigger)
+PktfwdOnlineBcastSlowchangeUpdateQuery::Ru6_eca (Ptr<Tuple> trigRecordCount)
 {
   RAPIDNET_LOG_INFO ("Ru6_eca triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (EQUIHASHTABLE)->Join (
-    resetTrigger,
+    trigRecordCount,
     strlist ("equiHashTable_attr1"),
-    strlist ("resetTrigger_attr1"));
+    strlist ("trigRecordCount_attr1"));
 
   result->Assign (Assignor::New ("NewFlag",
     ValueExpr::New (Int32Value::New (0))));
 
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("trigRecordCount_attr3"),
+      ValueExpr::New (Int32Value::New (0)))));
+
   result = result->Project (
     EQUIHASHTABLE,
-    strlist ("resetTrigger_attr1",
+    strlist ("trigRecordCount_attr1",
       "equiHashTable_attr2",
       "equiHashTable_attr3",
       "NewFlag"),
