@@ -173,7 +173,7 @@ protected:
 
   virtual void Ru5_eca (Ptr<Tuple> trigRecordCount);
 
-  virtual void Ru6_eca (Ptr<Tuple> resetTrigger);
+  virtual void Ru6_eca (Ptr<Tuple> trigRecordCount);
 
   virtual void Rqini_eca (Ptr<Tuple> provQuery);
 

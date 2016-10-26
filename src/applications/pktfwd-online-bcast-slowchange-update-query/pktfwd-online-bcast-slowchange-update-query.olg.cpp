@@ -414,8 +414,9 @@ ru5 resetTrigger(@Next, SeqID) :-
 
 /* Refresh the local equiHashTable*/
 ru6 equiHashTable(@Node, PIDequi, EquiKeys, NewFlag) :-
- resetTrigger(@Node, SeqID),
+ trigRecordCount(@Node, SeqID, SeqCount),
  equiHashTable(@Node, PIDequi, EquiKeys, Flag),
+ SeqCount == 0,
  NewFlag := 0.
 
 
