@@ -196,7 +196,7 @@ Relation::GetKey (Ptr<Tuple> tuple)
       type = attr->GetType ();
 
       //Check for attribute type
-      NS_ASSERT_MSG (m_relaxed || type == it->second, "Expected type '" <<
+      NS_ASSERT_MSG (m_relaxed || type == it->second || type != ANYTYPE, "Expected type '" <<
         GetTypeName (it->second) << "' for key attribute '" <<
         it->first << "' but found '" << GetTypeName (type) << "'.");
 
