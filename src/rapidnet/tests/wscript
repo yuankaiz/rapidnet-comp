@@ -16,9 +16,9 @@ def build(bld):
         'database-test.cc',
         'tuple-attribute-test.cc',
         'aggwrap-test.cc',
-        'evp-key-test.cc',
-        'blowfish-encryption-test.cc',
-        'pki-authentication-test.cc'
+        # 'evp-key-test.cc',
+        # 'blowfish-encryption-test.cc',
+        # 'pki-authentication-test.cc'
         ]
 
     headers = bld.new_task_gen('ns3header')

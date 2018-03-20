@@ -41,7 +41,7 @@ def build(bld):
 
     if bld.env['CRYPTO']:
         rapidnet.uselib = 'CRYPTO'
-        
+    rapidnet.uselib = 'CAFFE' 
     headers = bld.new_task_gen('ns3header')
     headers.module = 'rapidnet'
     headers.source = [
@@ -74,4 +74,4 @@ def build(bld):
         'classification.h'
         ]
 
-    bld.env.append_value('LINKFLAGS', ['-lboost_serialization'])
+    bld.env.append_value('LINKFLAGS', ['-lboost_serialization','-lcrypto'])

@@ -98,18 +98,18 @@ ECA Rule idb2_eca ACTION_ADD<pResultTmp(@X, QID, Ret, VID, Buf)> :- EVENT_RECV<p
 ECA Rule idb3_eca ACTION_LOCAL_SEND<pIterate(@X, QID, N)> :- EVENT_RECV<provQuery(@X, QID, VID, Ret)>, N := 1.
 ECA Rule idb4_eca ACTION_LOCAL_SEND<pIterate(@X, QID, N)> :- EVENT_RECV<pIterate(@X, QID, N1)>, pQList(@X, QID, List), N1 < f_size(List), N := N1+ 1.
 ECA Rule idb5_eca ACTION_LOCAL_SEND<eRuleQuery(@X, NQID, RID)> :- EVENT_RECV<pIterate(@X, QID, N)>, pQList(@X, QID, List), N <= f_size(List), RID := f_item(List, N), NQID := f_sha1((+ QID)+ RID).
-ECA Rule idb6_eca ACTION_REMOTE_SEND<ruleQuery(@RLoc, QID, RID, X)> :- EVENT_RECV<eRuleQuery(@X, QID, RID)>, prov(@X, VID, RID, RLoc).
+ECA Rule idb6_eca ACTION_REMOTE_SEND<ruleQuery(@RLoc, NQID, RID, X)> :- EVENT_RECV<eRuleQuery(@X, NQID, RID)>, prov(@X, VID, RID, RLoc).
 ECA Rule idb7_eca ACTION_ADD<pResultTmp(@X, QID, Ret, VID, Buf)> :- EVENT_RECV<rReturn(@X, NQID, RID, Prov)>, pResultTmp(@X, QID, Ret, VID, Buf1), NQID == f_sha1((+ QID)+ RID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
 ECA Rule idb8Eca0Ins ACTION_LOCAL_SEND<ePReturn(@X, QID)> :- EVENT_INSERT<pResultTmp(@X, QID, Ret, VID, Buf)>, pQList(@X, QID, List), f_size(Buf) == f_size(List), f_size(Buf) != 0.
 ECA Rule idb8Eca1Ins ACTION_LOCAL_SEND<ePReturn(@X, QID)> :- EVENT_INSERT<pQList(@X, QID, List)>, pResultTmp(@X, QID, Ret, VID, Buf), f_size(Buf) == f_size(List), f_size(Buf) != 0.
 ECA Rule idb9_eca ACTION_REMOTE_SEND<pReturn(@Ret, QID, VID, Prov)> :- EVENT_RECV<ePReturn(@X, QID)>, pResultTmp(@X, QID, Ret, VID, Buf), Prov := f_pIDB(Buf, X).
-ECA Rule rv1_eca ACTION_ADD<rQList(@X, QID, List)> :- EVENT_RECV<ruleQuery(@X, QID, RID, Ret)>, ruleExec(@X, RID, R, List).
-ECA Rule rv2_eca ACTION_ADD<rResultTmp(@X, QID, Ret, RID, Buf)> :- EVENT_RECV<ruleQuery(@X, QID, RID, Ret)>, Buf := f_empty().
-ECA Rule rv3_eca ACTION_LOCAL_SEND<rIterate(@X, QID, N)> :- EVENT_RECV<ruleQuery(@X, QID, RID, Ret)>, N := 1.
-ECA Rule rv4_eca ACTION_LOCAL_SEND<rIterate(@X, QID, N)> :- EVENT_RECV<rIterate(@X, QID, N1)>, rQList(@X, QID, List), N1 < f_size(List), N := N1+ 1.
-ECA Rule rv5_eca ACTION_LOCAL_SEND<eProvQuery(@X, NQID, VID)> :- EVENT_RECV<rIterate(@X, QID, N)>, rQList(@X, QID, List), VID := f_item(List, N), NQID := f_sha1((+ QID)+ VID).
-ECA Rule rv6_eca ACTION_LOCAL_SEND<provQuery(@X, QID, VID, $1)> :- EVENT_RECV<eProvQuery(@X, QID, VID)>, $1 := X.
-ECA Rule rv7_eca ACTION_ADD<rResultTmp(@X, QID, Ret, RID, Buf)> :- EVENT_RECV<pReturn(@X, NQID, VID, Prov)>, rResultTmp(@X, QID, Ret, RID, Buf1), NQID == f_sha1((+ QID)+ VID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
-ECA Rule rv8Eca0Ins ACTION_LOCAL_SEND<eRReturn(@X, QID)> :- EVENT_INSERT<rResultTmp(@X, QID, Ret, RID, Buf)>, rQList(@X, QID, List), f_size(Buf) == f_size(List).
-ECA Rule rv8Eca1Ins ACTION_LOCAL_SEND<eRReturn(@X, QID)> :- EVENT_INSERT<rQList(@X, QID, List)>, rResultTmp(@X, QID, Ret, RID, Buf), f_size(Buf) == f_size(List).
-ECA Rule rv9_eca ACTION_REMOTE_SEND<rReturn(@Ret, QID, RID, Prov)> :- EVENT_RECV<eRReturn(@X, QID)>, rResultTmp(@X, QID, Ret, RID, Buf), ruleExec(@X, RID, R, List), Prov := f_pRULE(Buf, X, R).
+ECA Rule rv1_eca ACTION_ADD<rQList(@X, NQID, List)> :- EVENT_RECV<ruleQuery(@X, NQID, RID, Ret)>, ruleExec(@X, RID, R, List).
+ECA Rule rv2_eca ACTION_ADD<rResultTmp(@X, NQID, Ret, RID, Buf)> :- EVENT_RECV<ruleQuery(@X, NQID, RID, Ret)>, Buf := f_empty().
+ECA Rule rv3_eca ACTION_LOCAL_SEND<rIterate(@X, NQID, N)> :- EVENT_RECV<ruleQuery(@X, NQID, RID, Ret)>, N := 1.
+ECA Rule rv4_eca ACTION_LOCAL_SEND<rIterate(@X, NQID, N)> :- EVENT_RECV<rIterate(@X, NQID, N1)>, rQList(@X, NQID, List), N1 < f_size(List), N := N1+ 1.
+ECA Rule rv5_eca ACTION_LOCAL_SEND<eProvQuery(@X, NNQID, VID)> :- EVENT_RECV<rIterate(@X, NQID, N)>, rQList(@X, NQID, List), VID := f_item(List, N), NNQID := f_sha1((+ NQID)+ VID).
+ECA Rule rv6_eca ACTION_LOCAL_SEND<provQuery(@X, NNQID, VID, $1)> :- EVENT_RECV<eProvQuery(@X, NNQID, VID)>, $1 := X.
+ECA Rule rv7_eca ACTION_ADD<rResultTmp(@X, NQID, Ret, RID, Buf)> :- EVENT_RECV<pReturn(@X, NNQID, VID, Prov)>, rResultTmp(@X, NQID, Ret, RID, Buf1), NNQID == f_sha1((+ NQID)+ VID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
+ECA Rule rv8Eca0Ins ACTION_LOCAL_SEND<eRReturn(@X, NQID)> :- EVENT_INSERT<rResultTmp(@X, NQID, Ret, RID, Buf)>, rQList(@X, NQID, List), f_size(Buf) == f_size(List).
+ECA Rule rv8Eca1Ins ACTION_LOCAL_SEND<eRReturn(@X, NQID)> :- EVENT_INSERT<rQList(@X, NQID, List)>, rResultTmp(@X, NQID, Ret, RID, Buf), f_size(Buf) == f_size(List).
+ECA Rule rv9_eca ACTION_REMOTE_SEND<rReturn(@Ret, NQID, RID, Prov)> :- EVENT_RECV<eRReturn(@X, NQID)>, rResultTmp(@X, NQID, Ret, RID, Buf), ruleExec(@X, RID, R, List), Prov := f_pRULE(Buf, X, R).

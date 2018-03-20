@@ -4958,7 +4958,7 @@ Mlprovenance::Rv5_eca (Ptr<Tuple> rIterate)
       VarExpr::New ("rQList_attr3"),
       VarExpr::New ("rIterate_attr3"))));
 
-  result->Assign (Assignor::New ("NQID",
+  result->Assign (Assignor::New ("NNQID",
     FSha1::New (
       Operation::New (RN_PLUS,
         Operation::New (RN_PLUS,
@@ -4969,7 +4969,7 @@ Mlprovenance::Rv5_eca (Ptr<Tuple> rIterate)
   result = result->Project (
     EPROVQUERY,
     strlist ("rIterate_attr1",
-      "NQID",
+      "NNQID",
       "VID"),
     strlist ("eProvQuery_attr1",
       "eProvQuery_attr2",
