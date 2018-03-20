@@ -32,7 +32,7 @@
 #define attrdeftype pair<string, ValueTypeId>
 #define attrdef(name, type) attrdeftype (name, type)
 #define attrdeflist MakeList<attrdeftype>
-
+#define listattrdef(value,type) type::New (value)
 #define attr(name, type, value) \
   TupleAttribute::New (name, type::New (value))
 #define attrlist MakeList<Ptr<TupleAttribute> >
@@ -269,6 +269,27 @@ list<T> MakeList (T t1, T t2, T t3, T t4, T t5, T t6, T t7, T t8, T t9, T t10)
   retval.push_back (t8);
   retval.push_back (t9);
   retval.push_back (t10);
+  return retval;
+}
+
+/**
+ * \brief Creates a list with object(s) of given type inserted.
+ */
+template<class T>
+list<T> MakeList (T t1, T t2, T t3, T t4, T t5, T t6, T t7, T t8, T t9, T t10, T t11)
+{
+  list<T> retval;
+  retval.push_back (t1);
+  retval.push_back (t2);
+  retval.push_back (t3);
+  retval.push_back (t4);
+  retval.push_back (t5);
+  retval.push_back (t6);
+  retval.push_back (t7);
+  retval.push_back (t8);
+  retval.push_back (t9);
+  retval.push_back (t10);
+  retval.push_back (t11);
   return retval;
 }
 

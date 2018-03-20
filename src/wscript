@@ -24,6 +24,7 @@ all_modules = (
     'devices/bridge',
     'devices/tap-bridge',
     'devices/virtual-net-device',
+    'applications/mlprovenance',
     'applications/onoff',
     'applications/packet-sink',
     'applications/udp-echo',
@@ -150,6 +151,7 @@ def configure(conf):
 
     ## Used to link the 'run-tests' program with all of ns-3 code
     conf.env['NS3_MODULES'] = ['ns3-' + module.split('/')[-1] for module in all_modules]
+    conf.env.append_value('INCLUDES',['/media/sdb1/nfs/shared/caffe/include'])
 
 
 def create_ns3_module(bld, name, dependencies=()):

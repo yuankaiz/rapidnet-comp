@@ -4,6 +4,9 @@ def configure(conf):
   conf.env['CRYPTO'] = conf.check(lib='crypto', define_name='CRYPTO', uselib='CRYPTO')
   conf.report_optional_feature("crypto", "crypto library",
   conf.env['CRYPTO'], "library 'crypto' not found")
+  conf.env['CAFFE'] = conf.check(lib='caffe', define_name='CAFFE', uselib='CAFFE',
+                                   libpath="/media/sdb1/nfs/shared/caffe/build/lib",
+                                   includes='/media/sdb1/nfs/shared/caffe/include', mandatory=True)
 
 def build(bld):
     rapidnet = bld.create_ns3_module('rapidnet', ['node'])
@@ -66,7 +69,8 @@ def build(bld):
         'sendlog-authentication-manager.h',
         'sendlog-encryption-manager.h',
         'pki-authentication-manager.h',
-        'blowfish-encryption-manager.h'
+        'blowfish-encryption-manager.h',
+        'classification.h'
         ]
 
     bld.env.append_value('LINKFLAGS', ['-lboost_serialization'])
