@@ -747,29 +747,9 @@ LookupFunction (string functionName)
     {
       return "FAppend";
     }
-  else if (functionName == "f_hashIp")
-    {
-      return "FHashIP";
-    }
-  else if (functionName == "f_modulo")
-    {
-      return "FModulo";
-    }
   else if (functionName == "f_empty")
     {
       return "FEmpty";
-    }
-  else if (functionName == "f_prepend")
-    {
-      return "FPrepend";
-    }
-  else if (functionName == "f_removeFirst")
-    {
-      return "FRemoveFirst";
-    }
-  else if (functionName == "f_first")
-    {
-      return "FFirst";
     }
   else if (functionName == "f_concat")
     {
@@ -826,27 +806,14 @@ LookupFunction (string functionName)
     { 
       return "FPEdb";
     }
-  else if (functionName == "f_pEDBTP")
-    { 
-      return "FPEdbTp";
-    }
   else if (functionName == "f_pIDB")
     { 
       return "FPIdb";
-    }
-  else if (functionName == "f_pIDBTP")
-    { 
-      return "FPIdbTp";
     }
   else if (functionName == "f_pRULE")
     { 
       return "FPRule";
     }
-  else if (functionName == "f_pRULEITM")
-    { 
-      return "FPRuleItm";
-    }
-
   /*
    * Summary Vector (SV) related functions
    */
@@ -870,19 +837,27 @@ LookupFunction (string functionName)
     {
       return "FSvRemove";
     }
+  else if(functionName == "f_predictimage")
+    {
+      return "FPredictImage";
+    }
+  else if(functionName == "f_classify")
+    {
+      return "FClassify";
+    }
+  else if(functionName == "f_initclassifier")
+    {
+      return "FInitClassifier";
+    }
+  else if(functionName == "f_classifyimage")
+    {
+      return "FClassifyImage";
+    }
+  else if(functionName == "f_classifyPerson")
+    {
+      return "FClassifyPerson";
+    }
   // no functions found, return error
-  else if (functionName == "f_substr")
-    {
-      return "FSubString";
-    }
-  else if (functionName == "f_indexof")
-    {
-      return "FIndexOf";
-    }
-  else if (functionName == "f_strlen")
-    {
-      return "FStrLength";
-    }
   else
     {
       NS_LOG_ERROR ("Function " << functionName << " not known!");
@@ -1767,7 +1742,7 @@ RapidNetContext::FormatExpression (ParseExpr* expr, int indent)
         {
           case ParseMath::PLUS: op = "RN_PLUS"; break;
           case ParseMath::MINUS: op = "RN_MINUS"; break;
-          case ParseMath::TIMES: op = "RN_MULT"; break;
+          case ParseMath::TIMES: op = "RN_TIMES"; break;
           case ParseMath::DIVIDE: op = "RN_DIV"; break;
           case ParseMath::LSHIFT: op = "RN_LSHIFT"; break;
           case ParseMath::RSHIFT: op = "RN_RSHIFT"; break;
