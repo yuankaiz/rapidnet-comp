@@ -293,14 +293,17 @@ def build(bld):
     # obj = bld.create_ns3_program('myproto-test')
     # obj.source = 'myproto-test.cc'
 
+    obj = bld.create_ns3_program('mlprovenance-test')
+    obj.source = 'mlprovenance-test.cc'
+
     # obj = bld.create_ns3_program('dns-test')
     # obj.source = 'dns-test.cc'
     
     # obj = bld.create_ns3_program('dns-prov-test')
     # obj.source = 'dns-prov-test.cc'
     
-    obj = bld.create_ns3_program('dns-prov-comp-strawman-test')
-    obj.source = 'dns-prov-comp-strawman-test.cc'
+    # obj = bld.create_ns3_program('dns-prov-comp-strawman-test')
+    # obj.source = 'dns-prov-comp-strawman-test.cc'
 
     # obj = bld.create_ns3_program('dns-prov-comp-online-test')
     # obj.source = 'dns-prov-comp-online-test.cc'
