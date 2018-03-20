@@ -112,10 +112,13 @@ void SerializeProv(string storepath)
 int
 main (int argc, char *argv[])
 {
-  LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO);
-  LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
+  /* LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO); */
+  /* LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO); */
 
-  string storepath = "sp/";
+  string storepath = "output/";
+  std::ofstream ofs;
+  ofs.open("output/timing", std::ofstream::out | std::ofstream::trunc);
+  ofs.close();
 
   apps = InitRapidNetApps (1, Create<MlprovenanceHelper> ());
   apps.Start (Seconds (0.0));
@@ -129,7 +132,7 @@ main (int argc, char *argv[])
       schedule(10.0 * i, insertNextImage);
   }
 
-  schedule (1000.0, Print);
+  /* schedule (1000.0, Print); */
   Simulator::Schedule (Seconds(1900.0), SerializeProv, storepath);
 
   Simulator::Run ();

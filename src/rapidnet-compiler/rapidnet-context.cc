@@ -28,7 +28,7 @@
 #define quoted(s) ("\"" + s + "\"")
 
 //C-style quoted
-#define cquoted(s) ("\""s"\"")
+#define cquoted(s) ("\"" s "\"")
 
 #define HEADER_FILE_NAME (m_foldername + m_filename + ".h")
 #define CLASS_FILE_NAME (m_foldername + m_filename + ".cc")

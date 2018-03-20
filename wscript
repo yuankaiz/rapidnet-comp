@@ -225,6 +225,8 @@ def configure(conf):
     conf.report_optional_feature = types.MethodType(report_optional_feature, conf)
     conf.env['NS3_OPTIONAL_FEATURES'] = []
 
+    conf.env.append_value("CXXFLAGS", ["-std=c++11"])
+
     conf.env['NS3_BUILDDIR'] = conf.blddir
     conf.check_tool('compiler_cxx')
     conf.check_tool('cflags')
@@ -422,7 +424,7 @@ def create_ns3_program(bld, name, dependencies=('simulator',)):
     program.uselib_local = 'ns3'
     program.ns3_module_dependencies = ['ns3-'+dep for dep in dependencies]
     program.env.append_value('LINKFLAGS', '-lgmp')
-    if(name=='mlprovenance-test'):
+    if(name=='mlprovenance-test'): 
         program.env.append_value('CXXFLAGS', '-std=c++11')
 
     if program.env['ENABLE_STATIC_NS3']:

@@ -10,6 +10,8 @@
 #include "ns3/assignor.h"
 #include "ns3/selector.h"
 #include "ns3/rapidnet-functions.h"
+#include <chrono>
+#include <fstream>
 
 using namespace std;
 using namespace ns3;
@@ -981,6 +983,15 @@ void
 Mlprovenance::Prov_r2_1Eca0Ins (Ptr<Tuple> image)
 {
   RAPIDNET_LOG_INFO ("Prov_r2_1Eca0Ins triggered");
+
+  ofstream ofs; 
+  ofs.open("output/timing", std::ofstream::out | std::ofstream::app);
+  ofs << "[image insert] " << image->GetAttribute("image_attr2")->ToString() << '\t';
+  ofs << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << endl;
+  ofs.close();
+
+  /* cout << "[image insert] " << image->GetAttribute("image_attr2")->ToString() << '\t'; */
+  /* cout << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << endl; */
 
   Ptr<RelationBase> result;
 
@@ -4140,6 +4151,12 @@ Mlprovenance::Prov_r10_4_ecaAdd (Ptr<Tuple> eresult)
       "result_attr3",
       "result_attr4",
       "result_attr5"));
+
+  ofstream ofs; 
+  ofs.open("output/timing", std::ofstream::out | std::ofstream::app);
+  ofs << "[result insert] " << eresult->GetAttribute("eresult_attr2")->ToString() << '\t';
+  ofs << std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count() << endl;
+  ofs.close();
 
   Insert (result);
 }
