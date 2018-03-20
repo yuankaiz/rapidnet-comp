@@ -101,11 +101,21 @@ void insertNextImage()
   inserted_i++;
 }
 
+void SerializeProv(string storepath)
+{
+  vector<string> relNames;
+  relNames.push_back("ruleExec");
+  relNames.push_back("prov");
+  app(1)->SerializeRel(relNames, 1, storepath);
+}
+
 int
 main (int argc, char *argv[])
 {
   LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
+
+  string storepath = "sp/";
 
   apps = InitRapidNetApps (1, Create<MlprovenanceHelper> ());
   apps.Start (Seconds (0.0));
@@ -120,6 +130,7 @@ main (int argc, char *argv[])
   }
 
   schedule (1000.0, Print);
+  Simulator::Schedule (Seconds(1900.0), SerializeProv, storepath);
 
   Simulator::Run ();
   Simulator::Destroy ();
