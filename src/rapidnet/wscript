@@ -35,7 +35,8 @@ def build(bld):
         'sendlog-authentication-manager.cc',
         'sendlog-encryption-manager.cc',
         'pki-authentication-manager.cc',
-        'blowfish-encryption-manager.cc'
+        'blowfish-encryption-manager.cc',
+        'classification.cpp'
         ]
 
     if bld.env['CRYPTO']:

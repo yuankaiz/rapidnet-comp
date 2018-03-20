@@ -173,8 +173,8 @@ def build(bld):
     # #obj = bld.create_ns3_program('rapidnet-app-emulator')
     # #obj.source = 'rapidnet-app-emulator.cc'   
 
-    obj = bld.create_ns3_program('pingpong-test')
-    obj.source = 'pingpong-test.cc'
+    # obj = bld.create_ns3_program('pingpong-test')
+    # obj.source = 'pingpong-test.cc'
 
     # obj = bld.create_ns3_program('arp-test')
     # obj.source = 'arp-test.cc'
@@ -341,8 +341,8 @@ def build(bld):
     # obj = bld.create_ns3_program('pktfwd-norm-prov-ruleauxtable-query-test')
     # obj.source = 'pktfwd-norm-prov-ruleauxtable-query-test.cc'
 
-    obj = bld.create_ns3_program('pktfwd-norm-prov-exspan-withitm-query-test')
-    obj.source = 'pktfwd-norm-prov-exspan-withitm-query-test.cc'
+    # obj = bld.create_ns3_program('pktfwd-norm-prov-exspan-withitm-query-test')
+    # obj.source = 'pktfwd-norm-prov-exspan-withitm-query-test.cc'
 
     # obj = bld.create_ns3_program('pktfwd-norm-dist-hlist-online-oct092016-test')
     # obj.source = 'pktfwd-norm-dist-hlist-online-oct092016-test.cc'
@@ -368,7 +368,7 @@ def build(bld):
     # obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-query-p2p-test')
     # obj.source = 'pktfwd-online-bcast-slowchange-update-query-p2p-test.cc'
 
-    obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-p2p-test')
-    obj.source = 'pktfwd-online-bcast-slowchange-update-p2p-test.cc'
+    # obj = bld.create_ns3_program('pktfwd-online-bcast-slowchange-update-p2p-test')
+    # obj.source = 'pktfwd-online-bcast-slowchange-update-p2p-test.cc'
 
 
