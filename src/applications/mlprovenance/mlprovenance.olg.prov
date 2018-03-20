@@ -1,0 +1,77 @@
+materialize(associationrule, -1, 0, keys(1, 2, 3, 4)
+materialize(clf, -1, 0, keys(1, 2)
+materialize(identifiedPattern, -1, 0, keys(1, 2, 3, 4, 5)
+materialize(image, -1, 0, keys(1, 2, 3)
+materialize(pClf, -1, 0, keys(1, 2, 3)
+materialize(pQList, -1, 0, keys(1, 2)
+materialize(pResultTmp, -1, 0, keys(1, 2)
+materialize(prediction, -1, 0, keys(1, 2, 3, 4)
+materialize(prov, -1, 0, keys(1, 2, 3)
+materialize(rQList, -1, 0, keys(1, 2)
+materialize(rResultTmp, -1, 0, keys(1, 2)
+materialize(result, -1, 0, keys(1, 2, 3, 4, 5)
+materialize(ruleExec, -1, 0, keys(1, 2)
+prov_r1_1 epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List) :- clf(@Nd, Clfid), PID1 := f_sha1((clf+ Nd)+ Clfid), List := f_append(PID1), Enabled := f_initclassifier(Clfid), RLOC := Nd, R := r1, RID := f_sha1((R+ RLOC)+ List).
+prov_r1_2 ruleExec(@RLOC, RID, R, List) :- epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List).
+prov_r1_3 epClf(@Nd, Clfid, Enabled, RID, RLOC) :- epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List).
+prov_r1_4 pClf(@Nd, Clfid, Enabled) :- epClf(@Nd, Clfid, Enabled, RID, RLOC).
+prov_r1_5 prov(@Nd, VID, RID, RLOC) :- epClf(@Nd, Clfid, Enabled, RID, RLOC), VID := f_sha1(((pClf+ Nd)+ Clfid)+ Enabled).
+prov_r2_1 epListTemp(@RLOC, Nd, Id, L, RID, R, List) :- image(@Nd, Id, Img), PID1 := f_sha1(((image+ Nd)+ Id)+ Img), List := f_append(PID1), pClf(@Nd, Clfid, 1), PID2 := f_sha1(((pClf+ Nd)+ Clfid)+ 1), List2 := f_append(PID2), List := f_concat(List, List2), L := f_classifyimage(Img, Clfid), RLOC := Nd, R := r2, RID := f_sha1((R+ RLOC)+ List).
+prov_r2_2 ruleExec(@RLOC, RID, R, List) :- epListTemp(@RLOC, Nd, Id, L, RID, R, List).
+prov_r2_3 epList(@Nd, Id, L, RID, RLOC) :- epListTemp(@RLOC, Nd, Id, L, RID, R, List).
+prov_r2_4 pList(@Nd, Id, L) :- epList(@Nd, Id, L, RID, RLOC).
+prov_r2_5 prov(@Nd, VID, RID, RLOC) :- epList(@Nd, Id, L, RID, RLOC), VID := f_sha1(((pList+ Nd)+ Id)+ L).
+prov_r3_1 epIterateTemp(@RLOC, Nd, Id, N, L, RID, R, List) :- pList(@Nd, Id, L), PID1 := f_sha1(((pList+ Nd)+ Id)+ L), List := f_append(PID1), N := 1, RLOC := Nd, R := r3, RID := f_sha1((R+ RLOC)+ List).
+prov_r3_2 ruleExec(@RLOC, RID, R, List) :- epIterateTemp(@RLOC, Nd, Id, N, L, RID, R, List).
+prov_r3_3 epIterate(@Nd, Id, N, L, RID, RLOC) :- epIterateTemp(@RLOC, Nd, Id, N, L, RID, R, List).
+prov_r3_4 pIterate(@Nd, Id, N, L) :- epIterate(@Nd, Id, N, L, RID, RLOC).
+prov_r3_5 prov(@Nd, VID, RID, RLOC) :- epIterate(@Nd, Id, N, L, RID, RLOC), VID := f_sha1((((pIterate+ Nd)+ Id)+ N)+ L).
+prov_r4_1 epIterateTemp(@RLOC, Nd, Id, N, L, RID, R, List) :- pIterate(@Nd, Id, N1, L), PID1 := f_sha1((((pIterate+ Nd)+ Id)+ N1)+ L), List := f_append(PID1), N1 < f_size(L), N := N1+ 1, RLOC := Nd, R := r4, RID := f_sha1((R+ RLOC)+ List).
+prov_r5_1 epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List) :- pIterate(@Nd, Id, N, L), PID1 := f_sha1((((pIterate+ Nd)+ Id)+ N)+ L), List := f_append(PID1), N <= f_size(L), AnotherList := f_item(L, N), Item := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2), RLOC := Nd, R := r5, RID := f_sha1((R+ RLOC)+ List).
+prov_r5_2 ruleExec(@RLOC, RID, R, List) :- epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List).
+prov_r5_3 eprediction(@Nd, Id, Item, Prob, RID, RLOC) :- epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List).
+prov_r5_4 prediction(@Nd, Id, Item, Prob) :- eprediction(@Nd, Id, Item, Prob, RID, RLOC).
+prov_r5_5 prov(@Nd, VID, RID, RLOC) :- eprediction(@Nd, Id, Item, Prob, RID, RLOC), VID := f_sha1((((prediction+ Nd)+ Id)+ Item)+ Prob).
+prov_r6_1 eidentifiedPatternTemp(@RLOC, Nd, Id, Item, Rule, Prob, RID, R, List) :- associationrule(@Nd, Item, Rule, Prob1), PID1 := f_sha1((((associationrule+ Nd)+ Item)+ Rule)+ Prob1), List := f_append(PID1), prediction(@Nd, Id, Item, Prob2), PID2 := f_sha1((((prediction+ Nd)+ Id)+ Item)+ Prob2), List2 := f_append(PID2), List := f_concat(List, List2), Prob := Prob1* Prob2, RLOC := Nd, R := r6, RID := f_sha1((R+ RLOC)+ List).
+prov_r6_2 ruleExec(@RLOC, RID, R, List) :- eidentifiedPatternTemp(@RLOC, Nd, Id, Item, Rule, Prob, RID, R, List).
+prov_r6_3 eidentifiedPattern(@Nd, Id, Item, Rule, Prob, RID, RLOC) :- eidentifiedPatternTemp(@RLOC, Nd, Id, Item, Rule, Prob, RID, R, List).
+prov_r6_4 identifiedPattern(@Nd, Id, Item, Rule, Prob) :- eidentifiedPattern(@Nd, Id, Item, Rule, Prob, RID, RLOC).
+prov_r6_5 prov(@Nd, VID, RID, RLOC) :- eidentifiedPattern(@Nd, Id, Item, Rule, Prob, RID, RLOC), VID := f_sha1(((((identifiedPattern+ Nd)+ Id)+ Item)+ Rule)+ Prob).
+prov_r7_1 ecListTemp(@RLOC, Nd, Id, L, Rule, Prob, RID, R, List) :- identifiedPattern(@Nd, Id, Item, Rule, Prob), PID1 := f_sha1(((((identifiedPattern+ Nd)+ Id)+ Item)+ Rule)+ Prob), List := f_append(PID1), L := f_classifyPerson(Rule), RLOC := Nd, R := r7, RID := f_sha1((R+ RLOC)+ List).
+prov_r7_2 ruleExec(@RLOC, RID, R, List) :- ecListTemp(@RLOC, Nd, Id, L, Rule, Prob, RID, R, List).
+prov_r7_3 ecList(@Nd, Id, L, Rule, Prob, RID, RLOC) :- ecListTemp(@RLOC, Nd, Id, L, Rule, Prob, RID, R, List).
+prov_r7_4 cList(@Nd, Id, L, Rule, Prob) :- ecList(@Nd, Id, L, Rule, Prob, RID, RLOC).
+prov_r7_5 prov(@Nd, VID, RID, RLOC) :- ecList(@Nd, Id, L, Rule, Prob, RID, RLOC), VID := f_sha1(((((cList+ Nd)+ Id)+ L)+ Rule)+ Prob).
+prov_r8_1 ecIterateTemp(@RLOC, Nd, Id, N, L, Rule, Prob, RID, R, List) :- cList(@Nd, Id, L, Rule, Prob), PID1 := f_sha1(((((cList+ Nd)+ Id)+ L)+ Rule)+ Prob), List := f_append(PID1), N := 1, 0 < f_size(L), RLOC := Nd, R := r8, RID := f_sha1((R+ RLOC)+ List).
+prov_r8_2 ruleExec(@RLOC, RID, R, List) :- ecIterateTemp(@RLOC, Nd, Id, N, L, Rule, Prob, RID, R, List).
+prov_r8_3 ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC) :- ecIterateTemp(@RLOC, Nd, Id, N, L, Rule, Prob, RID, R, List).
+prov_r8_4 cIterate(@Nd, Id, N, L, Rule, Prob) :- ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC).
+prov_r8_5 prov(@Nd, VID, RID, RLOC) :- ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC), VID := f_sha1((((((cIterate+ Nd)+ Id)+ N)+ L)+ Rule)+ Prob).
+prov_r9_1 ecIterateTemp(@RLOC, Nd, Id, N, L, Rule, Prob, RID, R, List) :- cIterate(@Nd, Id, N1, L, Rule, Prob), PID1 := f_sha1((((((cIterate+ Nd)+ Id)+ N1)+ L)+ Rule)+ Prob), List := f_append(PID1), N1 < f_size(L), N := N1+ 1, RLOC := Nd, R := r9, RID := f_sha1((R+ RLOC)+ List).
+prov_r10_1 eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List) :- cIterate(@Nd, Id, N, L, Rule, Prob1), PID1 := f_sha1((((((cIterate+ Nd)+ Id)+ N)+ L)+ Rule)+ Prob1), List := f_append(PID1), N <= f_size(L), AnotherList := f_item(L, N), Person := f_item(AnotherList, 1), Prob2 := f_item(AnotherList, 2), Prob := Prob1, RLOC := Nd, R := r10, RID := f_sha1((R+ RLOC)+ List).
+prov_r10_2 ruleExec(@RLOC, RID, R, List) :- eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List).
+prov_r10_3 eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC) :- eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List).
+prov_r10_4 result(@Nd, Id, Rule, Person, Prob) :- eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC).
+prov_r10_5 prov(@Nd, VID, RID, RLOC) :- eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC), VID := f_sha1(((((result+ Nd)+ Id)+ Rule)+ Person)+ Prob).
+prov_edb_1 prov(@Nd, VID, RID, $1) :- $1 := Nd, associationrule(@Nd, Item, Rule, Prob1), VID := f_sha1((((associationrule+ Nd)+ Item)+ Rule)+ Prob1), RID := VID.
+prov_edb_2 prov(@Nd, VID, RID, $1) :- $1 := Nd, clf(@Nd, Clfid), VID := f_sha1((clf+ Nd)+ Clfid), RID := VID.
+prov_edb_3 prov(@Nd, VID, RID, $1) :- $1 := Nd, image(@Nd, Id, Img), VID := f_sha1(((image+ Nd)+ Id)+ Img), RID := VID.
+edb1 pReturn(@Ret, QID, VID, Prov) :- provQuery(@X, QID, VID, Ret), prov(@X, VID, RID, RLoc), RID == VID, Prov := f_pEDB(VID, X).
+idb1 pQList(@X, QID, LIST< RID >) :- provQuery(@X, QID, VID, Ret), prov(@X, VID, RID, RLoc), RID != VID.
+idb2 pResultTmp(@X, QID, Ret, VID, Buf) :- provQuery(@X, QID, VID, Ret), Buf := f_empty().
+idb3 pIterate(@X, QID, N) :- provQuery(@X, QID, VID, Ret), N := 1.
+idb4 pIterate(@X, QID, N) :- pIterate(@X, QID, N1), pQList(@X, QID, List), N1 < f_size(List), N := N1+ 1.
+idb5 eRuleQuery(@X, NQID, RID) :- pIterate(@X, QID, N), pQList(@X, QID, List), N <= f_size(List), RID := f_item(List, N), NQID := f_sha1((+ QID)+ RID).
+idb6 ruleQuery(@RLoc, QID, RID, X) :- eRuleQuery(@X, QID, RID), prov(@X, VID, RID, RLoc).
+idb7 pResultTmp(@X, QID, Ret, VID, Buf) :- rReturn(@X, NQID, RID, Prov), pResultTmp(@X, QID, Ret, VID, Buf1), NQID == f_sha1((+ QID)+ RID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
+idb8 ePReturn(@X, QID) :- pResultTmp(@X, QID, Ret, VID, Buf), pQList(@X, QID, List), f_size(Buf) == f_size(List), f_size(Buf) != 0.
+idb9 pReturn(@Ret, QID, VID, Prov) :- ePReturn(@X, QID), pResultTmp(@X, QID, Ret, VID, Buf), Prov := f_pIDB(Buf, X).
+rv1 rQList(@X, QID, List) :- ruleQuery(@X, QID, RID, Ret), ruleExec(@X, RID, R, List).
+rv2 rResultTmp(@X, QID, Ret, RID, Buf) :- ruleQuery(@X, QID, RID, Ret), Buf := f_empty().
+rv3 rIterate(@X, QID, N) :- ruleQuery(@X, QID, RID, Ret), N := 1.
+rv4 rIterate(@X, QID, N) :- rIterate(@X, QID, N1), rQList(@X, QID, List), N1 < f_size(List), N := N1+ 1.
+rv5 eProvQuery(@X, NQID, VID) :- rIterate(@X, QID, N), rQList(@X, QID, List), VID := f_item(List, N), NQID := f_sha1((+ QID)+ VID).
+rv6 provQuery(@X, QID, VID, $1) :- $1 := X, eProvQuery(@X, QID, VID).
+rv7 rResultTmp(@X, QID, Ret, RID, Buf) :- pReturn(@X, NQID, VID, Prov), rResultTmp(@X, QID, Ret, RID, Buf1), NQID == f_sha1((+ QID)+ VID), Buf2 := f_append(Prov), Buf := f_concat(Buf1, Buf2).
+rv8 eRReturn(@X, QID) :- rResultTmp(@X, QID, Ret, RID, Buf), rQList(@X, QID, List), f_size(Buf) == f_size(List).
+rv9 rReturn(@Ret, QID, RID, Prov) :- eRReturn(@X, QID), rResultTmp(@X, QID, Ret, RID, Buf), ruleExec(@X, RID, R, List), Prov := f_pRULE(Buf, X, R).
