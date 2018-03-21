@@ -25,6 +25,7 @@ all_modules = (
     'devices/tap-bridge',
     'devices/virtual-net-device',
     'applications/mlprovenance',
+    'applications/ml',
     'applications/onoff',
     'applications/packet-sink',
     'applications/udp-echo',

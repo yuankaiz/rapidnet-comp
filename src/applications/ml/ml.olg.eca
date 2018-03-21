@@ -1,0 +1,15 @@
+ECA Rule r1Eca0Ins ACTION_ADD<pClf(@Nd, Clfid, Enabled)> :- EVENT_INSERT<clf(@Nd, Clfid)>, Enabled := f_initclassifier(Clfid).
+ECA Rule r1Eca0Del ACTION_DELETE<pClf(@Nd, Clfid, Enabled)> :- EVENT_DELETE<clf(@Nd, Clfid)>, Enabled := f_initclassifier(Clfid).
+ECA Rule r2Eca0Ins ACTION_LOCAL_SEND<pList(@Nd, Id, L)> :- EVENT_INSERT<image(@Nd, Id, Img)>, pClf(@Nd, Clfid, 1), L := f_classifyimage(Img, Clfid).
+ECA Rule r2Eca1Ins ACTION_LOCAL_SEND<pList(@Nd, Id, L)> :- EVENT_INSERT<pClf(@Nd, Clfid, 1)>, image(@Nd, Id, Img), L := f_classifyimage(Img, Clfid).
+ECA Rule r3_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, L)> :- EVENT_RECV<pList(@Nd, Id, L)>, N := 1.
+ECA Rule r4_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, L)> :- EVENT_RECV<pIterate(@Nd, Id, N1, L)>, N1 < f_size(L), N := N1+ 1.
+ECA Rule r5_eca ACTION_ADD<prediction(@Nd, Id, Item, Prob)> :- EVENT_RECV<pIterate(@Nd, Id, N, L)>, N <= f_size(L), AnotherList := f_item(L, N), Item := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2).
+ECA Rule r6Eca0Ins ACTION_ADD<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<associationrule(@Nd, Item, Rule, Prob1)>, prediction(@Nd, Id, Item, Prob2), Prob := Prob1* Prob2.
+ECA Rule r6Eca0Del ACTION_DELETE<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_DELETE<associationrule(@Nd, Item, Rule, Prob1)>, prediction(@Nd, Id, Item, Prob2), Prob := Prob1* Prob2.
+ECA Rule r6Eca1Ins ACTION_ADD<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<prediction(@Nd, Id, Item, Prob2)>, associationrule(@Nd, Item, Rule, Prob1), Prob := Prob1* Prob2.
+ECA Rule r6Eca1Del ACTION_DELETE<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_DELETE<prediction(@Nd, Id, Item, Prob2)>, associationrule(@Nd, Item, Rule, Prob1), Prob := Prob1* Prob2.
+ECA Rule r7Eca0Ins ACTION_LOCAL_SEND<cList(@Nd, Id, L, Rule, Prob)> :- EVENT_INSERT<identifiedPattern(@Nd, Id, Item, Rule, Prob)>, L := f_classifyPerson(Rule).
+ECA Rule r8_eca ACTION_LOCAL_SEND<cIterate(@Nd, Id, N, L, Rule, Prob)> :- EVENT_RECV<cList(@Nd, Id, L, Rule, Prob)>, N := 1, 0 < f_size(L).
+ECA Rule r9_eca ACTION_LOCAL_SEND<cIterate(@Nd, Id, N, L, Rule, Prob)> :- EVENT_RECV<cIterate(@Nd, Id, N1, L, Rule, Prob)>, N1 < f_size(L), N := N1+ 1.
+ECA Rule r10_eca ACTION_ADD<result(@Nd, Id, Rule, Person, Prob)> :- EVENT_RECV<cIterate(@Nd, Id, N, L, Rule, Prob1)>, N <= f_size(L), AnotherList := f_item(L, N), Person := f_item(AnotherList, 1), Prob2 := f_item(AnotherList, 2), Prob := Prob1.
