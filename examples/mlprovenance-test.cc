@@ -115,9 +115,9 @@ main (int argc, char *argv[])
   /* LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO); */
   /* LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO); */
 
-  string storepath = "output/";
+  string storepath = "output/prov/";
   std::ofstream ofs;
-  ofs.open("output/timing", std::ofstream::out | std::ofstream::trunc);
+  ofs.open("output/prov/timing", std::ofstream::out | std::ofstream::trunc);
   ofs.close();
 
   apps = InitRapidNetApps (1, Create<MlprovenanceHelper> ());
