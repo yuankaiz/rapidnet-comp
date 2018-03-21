@@ -1,7 +1,7 @@
 from collections import defaultdict
 import os
 storageinfo = os.stat('prov/1')
-print "Provenance tables size: " + str(storageinfo.st_size) + " bytes"
+print "Provenance tables size:" , storageinfo.st_size , "bytes"
 
 class Record(object):
     def __init__(self, textline):
@@ -43,8 +43,11 @@ def timing_analysis(timing_file, iData, rData, output):
 timing_analysis("prov/timing", proviData, provrData, provoutput)
 timing_analysis("ml/timing", mliData, mlrData, mloutput)
 
+print '--------------------------------'
+print 'image processing latency (in microseconds)'
 for i, o in provoutput.iteritems():
     ptime = o
     mtime = mloutput[i]
     increase = (ptime - mtime) * 1.0 / mtime
-    print 'image ' + str(i) + ' ml-only: ' + str(mtime) + ', prov: ' + str(ptime) + ', overhead: ' + str(increase*100) + '%'
+    print 'image' , i, 'ml-only:' , "{0:.1f}".format(mtime) , ', prov:' , "{0:.1f}".format(ptime) ,
+    print ', overhead:' , "{0:.2f}".format(increase*100) , '%'
