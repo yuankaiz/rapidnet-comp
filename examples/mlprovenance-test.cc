@@ -115,7 +115,7 @@ main (int argc, char *argv[])
   /* LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO); */
   /* LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO); */
 
-  string storepath = "output/prov/";
+  string storepath = "output/prov/storage/";
   std::ofstream ofs;
   ofs.open("output/prov/timing", std::ofstream::out | std::ofstream::trunc);
   ofs.close();
@@ -130,10 +130,11 @@ main (int argc, char *argv[])
 
   for (int i=0; i < sizeof(image_names) / sizeof(*image_names); i++) {
       schedule(10.0 * i, insertNextImage);
+      Simulator::Schedule (Seconds(10.0 * i + 5), SerializeProv, storepath + "image" + to_string(i+1) + "/");
   }
 
   /* schedule (1000.0, Print); */
-  Simulator::Schedule (Seconds(1900.0), SerializeProv, storepath);
+  /* Simulator::Schedule (Seconds(1900.0), SerializeProv, storepath); */
 
   Simulator::Run ();
   Simulator::Destroy ();
