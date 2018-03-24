@@ -172,7 +172,7 @@ RapidNetApplicationBase::SetMaxJitter (uint32_t maxJitter)
 void
 RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, string storePath)
 {
-  std::cout << endl << endl << "Serialization of provenance tables" << endl << endl;
+  /* std::cout << endl << endl << "Serialization of provenance tables" << endl << endl; */
   std::ostringstream oss;
   oss << storePath << nodeID;
   const char* fileName = oss.str().data();
@@ -188,7 +188,7 @@ RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, stri
       bool exist = m_database->HasRelation(*itr);
       if (exist == true)
         {
-          std::cout << "Serialize table: " << *itr << endl;
+          /* std::cout << "Serialize table: " << *itr << endl; */
           Ptr<RelationBase> provRelation = m_database->GetRelation(*itr);
           RelationBase* provRelBasePtr = GetPointer(provRelation);
           Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);

@@ -71,7 +71,7 @@ private:
   template<typename Archive>
   void serialize(Archive& ar, const unsigned version)
   {
-    std::cout << "Process smart pointer" << std::endl;
+    /* std::cout << "Process smart pointer" << std::endl; */
     ar & m_ptr;
   }
 

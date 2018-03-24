@@ -10,6 +10,8 @@ for i in range(1, 13):
     cumusize = os.stat('prov/storage/image' + str(i) + '/1').st_size
     cumu[i] = cumusize
 
+print 'total storage', cumu[12], 'bytes'
+
 for i in range(1, 13):
     storage[i] = cumu[i] - (cumu[i-1] if i > 1 else 0)
     print 'image', i, 'provenance tables size:', storage[i], 'bytes'
@@ -61,5 +63,5 @@ for i, o in provoutput.iteritems():
     mtime = mloutput[i]
     num = len(mlrData[i])
     increase = (ptime - mtime) * 1.0 / mtime
-    print 'image' , i, 'has', num, 'results', 'ml-only:' , "{0:.1f}".format(mtime) , ', prov:' , "{0:.1f}".format(ptime) ,
+    print 'image' , i, 'has', num, 'results,', 'ml-only:' , "{0:.1f}".format(mtime) , ', prov:' , "{0:.1f}".format(ptime) ,
     print ', overhead:' , "{0:.2f}".format(increase*100) , '%'

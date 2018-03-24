@@ -91,10 +91,10 @@ protected:
   template<typename Archive>
   void serialize(Archive& ar, const unsigned version)
   {
-    std::cout << "Serialize StrValue" << std::endl;
+    /* std::cout << "Serialize StrValue" << std::endl; */
     ar & boost::serialization::base_object<Value>(*this);    
     ar & m_value;
-    std::cout << "Serialize StrValue finished" << std::endl;
+    /* std::cout << "Serialize StrValue finished" << std::endl; */
   }
 
   string m_value;

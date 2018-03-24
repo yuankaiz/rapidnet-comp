@@ -130,7 +130,7 @@ main (int argc, char *argv[])
 
   for (int i=0; i < sizeof(image_names) / sizeof(*image_names); i++) {
       schedule(10.0 * i, insertNextImage);
-      Simulator::Schedule (Seconds(10.0 * i + 5), SerializeProv, storepath + "image" + to_string(i+1) + "/");
+      /* Simulator::Schedule (Seconds(10.0 * i + 5), SerializeProv, storepath + "image" + to_string(i+1) + "/"); */
   }
 
   /* schedule (1000.0, Print); */

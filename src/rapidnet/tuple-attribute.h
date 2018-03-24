@@ -168,29 +168,39 @@ protected:
     ar.template register_type<StrValue>();
     ar.template register_type<RealValue>();
 
-    std::cout << "Reach tuple attribute?";    
+    /* std::cout << "Reach tuple attribute?"; */    
     ar & boost::serialization::base_object<Object>(*this);
 
-    std::cout << "Serialize m_value" << endl;
+    /* std::cout << "Serialize m_value" << endl; */
     Value* vp = GetPointer(m_value);
     bool exist = false;
     BoolValue* bp = dynamic_cast<BoolValue*>(vp);
-    if (bp != NULL){std::cout << "Bool type" << endl; exist = true;}
+    if (bp != NULL){
+        std::cout << "Bool type" << endl;
+        exist = true;}
     ByteArrayValue* bap = dynamic_cast<ByteArrayValue*>(vp);
-    if (bap != NULL){std::cout << "Byte Array type" << endl; exist = true;}    
+    if (bap != NULL){
+        std::cout << "Byte Array type" << endl; 
+        exist = true;}    
     IdValue* ip = dynamic_cast<IdValue*>(vp);
-    if (ip != NULL){std::cout << "IdValue type" << endl; exist = true;}        
+    if (ip != NULL){
+        std::cout << "IdValue type" << endl; 
+        exist = true;}        
     Int32Value* itp = dynamic_cast<Int32Value*>(vp);
-    if (itp != NULL){std::cout << "Int32Value type" << endl; exist = true;}
+    if (itp != NULL){
+        std::cout << "Int32Value type" << endl; 
+        exist = true;}
     Ipv4Value* ivp = dynamic_cast<Ipv4Value*>(vp);
-    if (ivp != NULL){std::cout << "Ipv4Value type" << endl; exist = true;}
+    if (ivp != NULL){
+        std::cout << "Ipv4Value type" << endl; 
+        exist = true;}
     ListValue* lp = dynamic_cast<ListValue*>(vp);
     if (lp != NULL)
       {
-        std::cout << "ListValue type" << endl; 
+        /* std::cout << "ListValue type" << endl; */ 
         exist = true;
 
-        std::cout << "List size: " << lp->Size() << endl;
+        /* std::cout << "List size: " << lp->Size() << endl; */
 
         list<Ptr<Value> > vlist = lp->GetListValue();
         list<Ptr<Value> >::iterator itr;
@@ -198,22 +208,31 @@ protected:
           {
             Value* vvp = GetPointer(*itr);
             IdValue* vip = dynamic_cast<IdValue*>(vvp);
-            if (vip != NULL){std::cout << "IdValue type" << endl;}        
+            if (vip != NULL){
+                std::cout << "IdValue type" << endl;}        
           }
       }
     RealValue* rp = dynamic_cast<RealValue*>(vp);
-    if (rp != NULL){std::cout << "RealValue type" << endl; exist = true;}
+    if (rp != NULL){
+        std::cout << "RealValue type" << endl; 
+        exist = true;}
     SvValue* svp = dynamic_cast<SvValue*>(vp);
-    if (svp != NULL){std::cout << "SvValue type" << endl; exist = true;}
+    if (svp != NULL){
+        std::cout << "SvValue type" << endl; 
+        exist = true;}
     StrValue* sp = dynamic_cast<StrValue*>(vp);
-    if (sp != NULL){std::cout << "StrValue type" << endl; exist = true;}
+    if (sp != NULL){
+        std::cout << "StrValue type" << endl; 
+        exist = true;}
     NilValue* np = dynamic_cast<NilValue*>(vp);
-    if (np != NULL){std::cout << "NilValue type" << endl; exist = true;}
-    std:cout << "Type found: " << exist << endl;
+    if (np != NULL){
+        std::cout << "NilValue type" << endl; 
+        exist = true;}
+    /* std:cout << "Type found: " << exist << endl; */
     ar & m_value;
 
     ar & m_name;
-    std::cout << "Finish tuple-attribute.h" << endl;
+    /* std::cout << "Finish tuple-attribute.h" << endl; */
   }
 
   /**
